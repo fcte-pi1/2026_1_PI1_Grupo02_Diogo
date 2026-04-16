@@ -1,16 +1,66 @@
-# Template PI1
+# 📝 [2026.1] Projeto Rato Robótico - Grupo 2
 
-Esse é o _template_ de repositório para ser utilizado pelos grupos de PI1 para organizar seu projeto. O _template_ é dividido em pastas, onde cada parte do projeto deve ser armazenada. Os arquivos a serem armazenados incluem documentação, código-fonte, arquivos de CAD, esquemáticos, arquivos de simulação de circuitos, e dados.
+Este é o repositório central para o desenvolvimento do projeto de **Projeto Integrador 1 (PI1)**. O objetivo é desenvolver um rato robótico capaz de mapear e resolver um labirinto de forma autônoma.
 
-A organização e a correta utilização do repositório do projeto serão considerados na avaliação do grupo. Dessa forma, recomenda-se que *todos os membros* do grupo leiam as instruções deste repositório, aprendam a a utilizar o git (caso ainda não saibam) e também que o grupo combine uma estratégia de como irão utilizar o repositório em conjunto. Dessa forma não deixem de utilizar todas as ferramentas que o GitHub oferece, incluindo branchs, PRs, revisões, issues, calendários, dentre outros.
+-----
 
-Lembrem sempre de evitar enviar arquivos muito grandes (>5MB). No caso de vídeos e outros arquivos pesados que são necessários, armazenar o arquivo em outra plataforma e colocar aqui apenas o _link_.
+## 🏗️ Estrutura do Projeto
 
-> [!IMPORTANT]
-> A estrutura de pastas do projeto não reflete a divisão de equipes. Os membros podem e devem trabalhar nas diferentes pastas a depender da necessidade do projeto.
+O repositório está organizado para facilitar a colaboração entre as frentes de **Energia, Estrutura, Eletrônica e Software**:
 
-## Utilização
+  * `/docs`: Documentação técnica e relatórios (LaTeX/Overleaf).
+  * `/hw`: Esquemáticos e PCBs (EasyEDA/Altium).
+  * `/mec`: Modelos CAD, arquivos para impressão 3D e design do labirinto.
+  * `/src`: Código-fonte do ESP32 (Firmware) e Dashboard Web (Frontend/Backend).
 
-1. Crie o repositório do projeto utilizando a nomenclatura padrão no formato: `<ano>.<semestre>_PI1_Grupo<n>_<professor>`. Como um exemplo, um nome formado corretamente seria `2026.1_PI1_Grupo1_Diogo`. 
+-----
 
-2. Crie uma equipe do projeto com a mesma nomenclatura do repositório porém com o sufixo `_Equipe`, como `2026.1_PI1_Grupo1_Diogo_Equipe`, e solicite, caso necessário, que a equipe tenha permissão de escrita no repositório do projeto.
+## 🚦 Como Contribuir (IMPORTANTE)
+
+Para manter a organização entre as 4 equipes, seguimos um fluxo de trabalho rigoroso. **Antes de realizar qualquer alteração, leia o nosso [Guia de Contribuição (CONTRIBUTING.md)](https://www.google.com/search?q=./CONTRIBUTING.md)**.
+
+### Resumo das Regras:
+
+1.  **Não commite na `main`**: Use a branch `develop` ou branches de funcionalidade (`feat/`, `fix/`).
+2.  **Padrão de Commits**: Use o formato `tipo(escopo): descrição` (ex: `feat(soft): adiciona algoritmo A*`).
+3.  **Issues**: Toda tarefa deve estar documentada em uma Issue e atribuída a um membro.
+
+-----
+
+## 🛠️ Tecnologias e Ferramentas
+ainda nn definido totalmente...
+
+| Frente | Tecnologias |
+| :--- | :--- |
+| **Software** | ESP32 (C++), React, MQTT, WebSockets, PHP/Laravel |
+| **Eletrônica** | EasyEDA, Motores com Encoder, Sensores Ultrassônicos/IR |
+| **Estrutura** | Impressão 3D (PLA/ABS), CAD (SolidWorks/Fusion360) |
+| **Energia** | Baterias Li-Po, Sensores de Tensão e Corrente (Telemetria Real-time) |
+
+-----
+
+## 📅 Links e Referências Rápidas
+
+  * 📘 **Relatório Técnico (Overleaf):** [Link do Projeto]
+  * 📊 **Dashboard de Telemetria:** [Link do Site/IP]
+  * 📂 **Documento de Decisões:** [Link do Google Docs]
+
+-----
+
+> [\!IMPORTANT]
+> **Atenção Grupo:** Evitem o envio de arquivos binários pesados (\>5MB). Para vídeos de testes, subam em plataformas externas (YouTube/Drive) e adicionem o link na documentação.
+
+-----
+
+### 🎓 Instruções Originais do Template (PI1)
+
+\<details\>
+\<summary\>Clique para ver as instruções da disciplina\</summary\>
+
+1.  **Nomenclatura do Repositório:** `<ano>.<semestre>_PI1_Grupo<n>_<professor>`.
+2.  **Equipe:** Criar equipe com sufixo `_Equipe` e garantir permissões de escrita.
+3.  **Avaliação:** A organização e utilização correta das ferramentas do GitHub (PRs, Issues, Branches) compõem a nota do grupo.
+
+\</details\>
+
+-----
