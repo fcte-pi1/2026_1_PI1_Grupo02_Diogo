@@ -8,14 +8,6 @@ assignees: ''
 
 ---
 
----
-name: "🚀 Padrao de Issue (Multidisciplinar)"
-about: Use este modelo para relatar problemas ou sugerir melhorias em qualquer área (Software, Aero, Eletrônica, Energia).
-title: "[SETOR] "
-labels: 
-assignees: ' '
----
-
 ## 1. Contexto e Setor
 Indique qual área do projeto esta Issue afeta predominantemente:
 - [ ] **Software** (Backend, Frontend, Algoritmos)
