@@ -29,12 +29,14 @@ Utilizamos nomes de branches padronizados para identificar rapidamente o que est
 * `eletr-`: Eletrônica
 * `estru-`: Estrutura
 * `energ-`: Energia
+* `geral-`: Envolve todas as áreas
 
 **Exemplos de nomes de branches:**
 - `feat/soft-algoritmo-busca`
 - `fix/eletr-esquematico-ponte-h`
 - `docs/energ-tabela-consumo`
 - `feat/estru-chassi-v1`
+- `docs/geral-tópico-X-EAP-do-produto`
 
 ---
 
