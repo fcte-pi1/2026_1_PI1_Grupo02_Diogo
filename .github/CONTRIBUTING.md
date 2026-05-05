@@ -16,7 +16,7 @@ Para manter a estabilidade do projeto, **não é permitido realizar commits dire
 ## 🌳 Gestão de Branches
 
 Utilizamos nomes de branches padronizados para identificar rapidamente o que está sendo desenvolvido e por qual equipe. O formato deve ser:
-`tipo/setor-descricao-curta`
+`tipo/setor-XX-descricao-curta` (XX representa o número da issue relacionada)
 
 ### Categorias de Branches (Tipos):
 * `feat/`: Para novas funcionalidades, componentes ou peças.
@@ -32,11 +32,11 @@ Utilizamos nomes de branches padronizados para identificar rapidamente o que est
 * `geral-`: Envolve todas as áreas
 
 **Exemplos de nomes de branches:**
-- `feat/soft-algoritmo-busca`
-- `fix/eletr-esquematico-ponte-h`
-- `docs/energ-tabela-consumo`
-- `feat/estru-chassi-v1`
-- `docs/geral-tópico-X-EAP-do-produto`
+- `feat/soft-12-algoritmo-busca`
+- `fix/eletr-34-51-esquematico-ponte-h`
+- `docs/energ-15-tabela-consumo`
+- `feat/estru-23-chassi-v1`
+- `docs/geral-45-tópico-X-EAP-do-produto`
 
 ---
 
