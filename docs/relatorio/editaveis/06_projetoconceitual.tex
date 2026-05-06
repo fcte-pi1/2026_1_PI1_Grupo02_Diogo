@@ -80,20 +80,132 @@
     \item \textcolor{red}{ \textbf{Análise de dados:} as variáveis definidas nos requisitos do projeto em abordagem numérica e gráfica.}
     \item \textcolor{red}{ \textbf{Diagrama de estados} esclarecendo os estados assumidos pelo \textit{software} e os eventos que causam as mudanças de estado do \textit{software}.}
     \item \textcolor{red}{ \textbf{Protótipo funcional do \textit{software}, navegável.}}
-    \item \textcolor{red}{\textbf{ Roteiro de testes funcionais:} }
-    \begin{itemize}
-        \item \textcolor{red}{Código do caso de teste;}
-        \item \textcolor{red}{Nome do caso de teste;}
-        \item \textcolor{red}{Tipo do caso de teste (unitário, integrado ou sistema);}
-        \item \textcolor{red}{ Objetivo do caso de teste;}
-        \item \textcolor{red}{ Pré-condições do sistema para o teste ser realizado;}
-        \item \textcolor{red}{ Descrição dos procedimentos a serem executados para o teste;}
-        \item \textcolor{red}{ Resultado esperado para o teste ser aprovado (pós-condição após realizado o teste);}
-        \item \textcolor{red}{ Especificação do reparo a ser executado (caso o teste não seja aprovado);}
-        \item \textcolor{red}{ Resultado após reparo (o caso do teste ser necessário de ser repetido após reparo).}
-    \end{itemize}
+    \item {\textbf{ Roteiro de testes funcionais:} }
+    \subsubsection*{CT01 – Exibição do tipo do labirinto}
+\begin{itemize}
+    \item \textbf{Código do caso de teste:} CT01
+    \item \textbf{Nome do caso de teste:} Exibir tipo do labirinto
+    \item \textbf{Tipo do caso de teste:} Sistema
+    \item \textbf{Objetivo do caso de teste:} Verificar se o tipo do labirinto é exibido corretamente no sistema.
+    \item \textbf{Pré-condições:} Micromouse enviando dados de telemetria.
+    \item \textbf{Descrição dos procedimentos:}
+    \begin{enumerate}
+        \item Acessar o sistema.
+        \item Iniciar envio de telemetria.
+        \item Observar o campo “Tipo do labirinto”.
+    \end{enumerate}
+    \item \textbf{Resultado esperado:} O tipo do labirinto é exibido corretamente e o valor corresponde ao dado enviado.
+    \item \textbf{Especificação do reparo a ser executado:} \textit    Descrever a correção necessária caso o valor exibido esteja incorreto
+    \item \textbf{Resultado após reparo:} \textit    Registrar o comportamento do sistema após a correção
 \end{itemize}
 
+\subsubsection*{CT02 – Exibição do trajeto no labirinto}
+\begin{itemize}
+    \item \textbf{Código do caso de teste:} CT02
+    \item \textbf{Nome do caso de teste:} Exibir trajeto do micromouse
+    \item \textbf{Tipo do caso de teste:} Sistema
+    \item \textbf{Objetivo do caso de teste:} Verificar se o trajeto percorrido é exibido corretamente.
+    \item \textbf{Pré-condições:} Sistema recebendo dados em tempo real.
+    \item \textbf{Descrição dos procedimentos:}
+    \begin{enumerate}
+        \item Acessar o sistema.
+        \item Iniciar execução do micromouse.
+        \item Observar a visualização do trajeto.
+    \end{enumerate}
+    \item \textbf{Resultado esperado:} O trajeto é exibido corretamente e atualizado em tempo real.
+    \item \textbf{Especificação do reparo a ser executado:} \textit    Descrever ajustes necessários caso o trajeto esteja incorreto
+    \item \textbf{Resultado após reparo:} \textit    Registrar se o trajeto passou a ser exibido corretamente
+\end{itemize}
+
+\subsubsection*{CT03 – Exibição do consumo de bateria}
+\begin{itemize}
+    \item \textbf{Código do caso de teste:} CT03
+    \item \textbf{Nome do caso de teste:} Exibir consumo de bateria
+    \item \textbf{Tipo do caso de teste:} Sistema
+    \item \textbf{Objetivo do caso de teste:} Verificar se o consumo de bateria é exibido corretamente.
+    \item \textbf{Pré-condições:} Micromouse enviando dados.
+    \item \textbf{Descrição dos procedimentos:}
+    \begin{enumerate}
+        \item Acessar o sistema.
+        \item Iniciar envio de telemetria.
+        \item Observar o campo de bateria.
+    \end{enumerate}
+    \item \textbf{Resultado esperado:} O consumo é exibido corretamente e os valores são atualizados em tempo real.
+    \item \textbf{Especificação do reparo a ser executado:} \textit    Corrigir inconsistências nos dados exibidos ou na atualização
+    \item \textbf{Resultado após reparo:} \textit    Verificar se os valores passaram a ser exibidos corretamente
+\end{itemize}
+
+\subsubsection*{CT04 – Exibição da velocidade média}
+\begin{itemize}
+    \item \textbf{Código do caso de teste:} CT04
+    \item \textbf{Nome do caso de teste:} Exibir velocidade média
+    \item \textbf{Tipo do caso de teste:} Sistema
+    \item \textbf{Objetivo do caso de teste:} Verificar se a velocidade média é exibida corretamente.
+    \item \textbf{Pré-condições:} Micromouse enviando dados.
+    \item \textbf{Descrição dos procedimentos:}
+    \begin{enumerate}
+        \item Acessar o sistema.
+        \item Iniciar envio de telemetria.
+        \item Observar o campo de velocidade.
+    \end{enumerate}
+    \item \textbf{Resultado esperado:} A velocidade média é exibida corretamente e os valores são atualizados em tempo real.
+    \item \textbf{Especificação do reparo a ser executado:} \textit    Ajustar cálculo ou exibição da velocidade
+    \item \textbf{Resultado após reparo:} \textit    Velocidade exibida corretamente
+\end{itemize}
+
+\subsubsection*{CT05 – Exibição do tempo de conclusão}
+\begin{itemize}
+    \item \textbf{Código do caso de teste:} CT05
+    \item \textbf{Nome do caso de teste:} Exibir tempo de conclusão
+    \item \textbf{Tipo do caso de teste:} Sistema
+    \item \textbf{Objetivo do caso de teste:} Verificar se o tempo de conclusão é exibido corretamente.
+    \item \textbf{Pré-condições:} Execução do micromouse finalizada.
+    \item \textbf{Descrição dos procedimentos:}
+    \begin{enumerate}
+        \item Executar o micromouse.
+        \item Aguardar o término da execução.
+        \item Observar o campo de tempo.
+    \end{enumerate}
+    \item \textbf{Resultado esperado:} O tempo de conclusão é exibido corretamente.
+    \item \textbf{Especificação do reparo a ser executado:} \textit Corrigir exibição do tempo
+    \item \textbf{Resultado após reparo:} \textit Tempo correto exibido
+\end{itemize}
+
+\subsubsection*{CT06 – Exibição do status do desafio}
+\begin{itemize}
+    \item \textbf{Código do caso de teste:} CT06
+    \item \textbf{Nome do caso de teste:} Exibir desafio cumprido
+    \item \textbf{Tipo do caso de teste:} Sistema
+    \item \textbf{Objetivo do caso de teste:} Verificar se o sistema exibe corretamente o status do desafio.
+    \item \textbf{Pré-condições:} Execução finalizada.
+    \item \textbf{Descrição dos procedimentos:}
+    \begin{enumerate}
+        \item Executar o micromouse.
+        \item Finalizar o percurso.
+        \item Observar o campo “Desafio cumprido”.
+    \end{enumerate}
+    \item \textbf{Resultado esperado:} O sistema exibe “Sim” quando o desafio é concluído e “Não” quando não concluído.
+    \item \textbf{Especificação do reparo a ser executado:} \textit Ajustar lógica de status
+    \item \textbf{Resultado após reparo:} \textit Status correto exibido
+\end{itemize}
+
+\subsubsection*{CT07 – Atualização em tempo real}
+\begin{itemize}
+    \item \textbf{Código do caso de teste:} CT07
+    \item \textbf{Nome do caso de teste:} Atualização contínua dos dados
+    \item \textbf{Tipo do caso de teste:} Sistema
+    \item \textbf{Objetivo do caso de teste:} Verificar se os dados são atualizados em tempo real.
+    \item \textbf{Pré-condições:} Sistema recebendo dados continuamente.
+    \item \textbf{Descrição dos procedimentos:}
+    \begin{enumerate}
+        \item Acessar o sistema.
+        \item Iniciar envio contínuo de dados.
+        \item Observar os campos.
+    \end{enumerate}
+    \item \textbf{Resultado esperado:} Os dados são atualizados automaticamente, não sendo necessário recarregar a página.
+    \item \textbf{Especificação do reparo a ser executado:} \textit Corrigir mecanismo de atualização
+    \item \textbf{Resultado após reparo:} \textit Dados atualizados corretamente
+\end{itemize}
 
 % \textcolor{red}{Com relação ao \textit{software}, será necessário apresentar os seguintes itens: % pacotes de componentes de \textit{software}, suas funções e características, e explicar as decisões de projeto:
 % \begin{enumerate}
