@@ -3,7 +3,10 @@
 .vscode
 
 # Adicione outros arquivos a serem ignorados aqui
-# ...
+
+# node
+node_modules/
+
 
 # LaTeX
 
