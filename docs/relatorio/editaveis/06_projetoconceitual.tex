@@ -71,18 +71,41 @@ A equipe foi dividida em quatro áreas principais: eletrônica, software, estrut
         \item \textcolor{red}{ Mais facilmente, mais rapidamente, são descrições subjetivas não-válidas. Um exemplo de requisito não-funcional de desempenho: ``a página deve carregar em até 5s quando em conexão 4G''. }
     \end{itemize}
     \item \textcolor{red}{ \textbf{Diagrama de casos de uso,} contendo os atores do sistema, os requisitos com os quais eles interagem e os tipos de relacionamentos entre requisitos realizados por um mesmo ator (ex.: \textit{include}, \textit{extend}). Obs.: este é um diagrama sobre requisitos funcionais.}
-    \item \textcolor{red}{ \textbf{Descrição da arquitetura da solução de \textit{software} proposta:}}
+    \item \textbf{Descrição da arquitetura da solução de \textit{software} proposta:}
+    
+    O \textit{software} atua como o núcleo de inteligência e monitoramento do sistema (Mission Control). Sua função é processar a telemetria enviada pelo robô em tempo real, gerenciar a construção dinâmica do mapa do labirinto, executar algoritmos de \textit{pathfinding} para determinar a rota otimizada e fornecer uma interface gráfica para visualização de métricas de energia e desempenho.
+    
+    \item \textbf{Estilo arquitetural contendo:}
+    
+    Arquitetura Orientada a Eventos (\textit{Event-Driven Architecture}) com Monólito Modular no \textit{backend}. Este padrão permite lidar com a natureza assíncrona dos dados de sensores, garantindo que o sistema reaja a eventos instantâneos sem latência perceptível. Como stack principal tem-se como:
+
     \begin{itemize}
-        \item \textcolor{red}{ Propósito do \textit{software} (qual o seu papel no sistema);}
-        \item \textcolor{red}{ Estilo arquitetural contendo:}
-        \begin{itemize}
-            \item \textcolor{red}{ Padrão adotado: MVC, MVP, Microsserviços, Monolítico, etc (Justificar);}
-            \item \textcolor{red}{ Linguagens de programação: Java, Python, C\#, JavaScript, etc.}
-            \item \textcolor{red}{ \textit{Frameworks} e bibliotecas: Spring Boot, .NET Core, React, Angular, Django, etc.}
-            \item \textcolor{red}{ Banco de dados: Relacional (PostgreSQL, MySQL, etc) X NãoSQL (MongoDB,etc). }
+            \item \textbf{Linguagens de programação:} JavaScript (ES6+) e C++.
+            \item \textbf{\textit{Frameworks}, bibliotecas e protocolos:} 
+            No \textit{front-end}, utiliza-se \textbf{React (Vite)} com \textbf{Tailwind CSS}. No \textit{back-end}, \textbf{Node.js}, \textbf{Express} e \textbf{Socket.io}. Para o \textit{firmware}, o \textit{framework} \textbf{Arduino} via \textbf{PlatformIO}. 
+            % Adicionando a lista de protocolos aqui:
+            A comunicação é regida pelos protocolos \textbf{MQTT} (entre ESP32 e Broker) para telemetria leve e \textbf{WebSockets} (entre Backend e Frontend) para atualização em tempo real.
+            
+            \item \textbf{Banco de dados:} Relacional \textbf{PostgreSQL} via Docker.
         \end{itemize}
-        \item \textcolor{red}{ Diagrama de alto nível: representação esquemática dos componentes da arquitetura, suas responsabilidades e comunicações, esclarecendo a composição do \textit{front-end} e do \textit{back-end}.}
-    \end{itemize}
+
+        \item \textbf{Diagrama de alto nível:} 
+        A arquitetura segue um fluxo de dados linear e reativo, conforme descrito abaixo:
+        
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=0.9\textwidth]{figuras/diagrama_arquitetura.png}
+            \caption{Fluxo de dados e arquitetura da solução.}
+            \label{fig:arquitetura}
+        \end{figure}
+
+    \begin{enumerate}
+        \item \textbf{ESP32:} Coleta dados de sensores e publica pacotes JSON via \textbf{MQTT} no tópico \texttt{rato/telemetria}.
+        \item \textbf{Broker Mosquitto:} Recebe as mensagens e as encaminha para os assinantes ativos.
+        \item \textbf{Node.js (\textit{Back-end}):} Atua como assinante (\textit{subscriber}) do broker, processa os dados recebidos, realiza a persistência no \textbf{PostgreSQL} e emite eventos via \textbf{WebSockets}.
+        \item \textbf{React (\textit{Front-end}):} Escuta os eventos emitidos pelo servidor e renderiza instantaneamente o labirinto e os gráficos de consumo energético.
+    \end{enumerate}
+    
     \item \textcolor{red}{ \textbf{Persistência de dados:} diagrama de entidade relacionamento do banco de dados usado na solução proposta.}
     \item \textcolor{red}{ \textbf{Análise de dados:} as variáveis definidas nos requisitos do projeto em abordagem numérica e gráfica.}
     \item \textcolor{red}{ \textbf{Diagrama de estados} esclarecendo os estados assumidos pelo \textit{software} e os eventos que causam as mudanças de estado do \textit{software}.}
