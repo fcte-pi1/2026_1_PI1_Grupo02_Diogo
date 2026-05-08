@@ -1,20 +1,82 @@
-# _Frontend_
+# Dashboard de Telemetria - Frontend
 
-Esta pasta deverá armazenar arquivos referentes a:
+Este diretório contém a interface de visualização do Rato Robótico.
 
-- Código-fonte da interface: componentes, páginas, estilos e lógica de apresentação, organizados conforme o framework utilizado ([React](https://react.dev/), [Vue](https://vuejs.org/), [Angular](https://angular.io/) etc.).
-- Arquivos de marcação e estilo estáticos: `index.html`, arquivos `.css`, `.scss` ou `.sass` de estilização global.
-- Arquivos de definição de dependências: `package.json` e `package-lock.json` (ou `yarn.lock`) com todas as bibliotecas utilizadas.
-- Arquivos de configuração do bundler/toolchain: `vite.config.js`, `webpack.config.js`, `tsconfig.json` etc.
-- Arquivos de configuração de ambiente: `.env.example` com as variáveis de ambiente públicas necessárias (ex.: URL base da API).
-- Arquivos de containerização: `Dockerfile` e `docker-compose.yml`, caso a aplicação seja servida via contêiner.
+## 🛠️ Stack Tecnológica
+- **Framework:** React (Vite)
+- **Estilização:** Tailwind CSS
+- **Comunicação:** Socket.io-client (WebSockets)
+- **Gráficos:** Recharts
 
-Evite incluir:
+## 📂 Estrutura de Pastas
+- `/src/components`: Componentes reutilizáveis (Gráficos, Gauge de Energia, Grid do Labirinto).
+- `/src/hooks`: Lógica de conexão com WebSockets e estados globais.
+- `/src/assets`: Ícones futuristas e texturas de grid hexagonal.
+- `/src/styles`: Configurações do Tailwind e temas de cores.
 
-- Dependências instaladas: a pasta `node_modules/` deve ser gerada localmente via `npm install` ou equivalente e nunca incluída no repositório.
-- Artefatos de build: diretórios como `dist/`, `build/` ou `.next/` são gerados pelo processo de compilação e não devem ser versionados.
-- Arquivos de configuração pessoal: arquivos como `.directory` (Linux/KDE) ou configurações locais de editor (ex.: `.vscode/settings.json`), salvo configurações compartilhadas como `.editorconfig`.
-- Credenciais e segredos: arquivos `.env` com valores reais nunca devem ser versionados.
+## 🚀 Como Inicializar
+1. Certifique-se de que o **Node.js** está instalado.
+2. Instale as dependências:
+   ```bash
+   npm install
+   ```
+3. Configure o arquivo `.env` baseado no `.env.example` (aponte para a URL do Backend).
+4. Inicie o servidor de desenvolvimento:
+   
+```bash
+   npm run dev
+   ```
 
-> [!WARNING]
-> **Não acrescente arquivos referentes ao _backend_ nesta pasta.** Eles deverão ser armazenados na pasta [backend](https://github.com/fcte-pi1/template/tree/main/src/backend) deste repositório.
+## 📏 Padronização
+- Siga as regras de branches: `feat/soft-descricao`.
+- Commits devem seguir o padrão: `feat(soft): descrição`.
+
+> [!IMPORTANT]
+> **Nunca** envie a pasta `node_modules/` ou arquivos `.env` com credenciais reais para o repositório.
+```
+
+---
+
+### ⚙️ README: Backend (Node.js + Express)
+
+Localização sugerida: `/software/backend/README.md`
+
+```markdown
+# 🧠 Cérebro do Sistema - Backend
+
+Responsável pelo processamento dos algoritmos de busca (A*/Flood Fill), gerenciamento do banco de dados e ponte de comunicação entre o **MQTT (ESP32)** e **WebSockets (Frontend)**.
+
+## 🛠️ Stack Tecnológica
+- **Ambiente:** Node.js + Express
+- **Banco de Dados:** PostgreSQL (via Docker)
+- **Protocolos:** MQTT (escuta o robô) e WebSockets (fala com o site)
+- **ORM:** Prisma ou Sequelize
+
+## 🏗️ Arquitetura de Dados
+Os dados recebidos do robô seguem o fluxo definido na Issue de Arquitetura:
+1. **Input:** Mensagens MQTT no tópico `rato/telemetria`.
+2. **Processamento:** O backend valida a coordenada e atualiza o mapa no banco.
+3. **Output:** Envio instantâneo via WebSockets para o Dashboard.
+
+## 🚀 Como Inicializar
+1. Utilize o Docker para subir a infraestrutura:
+   
+```bash
+   docker-compose up -d
+   ```
+2. Instale as dependências:
+   ```bash
+   npm install
+   ```
+3. Execute as migrations do banco de dados:
+   ```bash
+   npx prisma migrate dev
+   ```
+4. Inicie o servidor:
+   ```bash
+   npm run start:dev
+   ```
+
+## 📏 Padronização
+- Branches: `feat/soft-descricao`.
+- Commits: `feat(soft): descrição`.
