@@ -59,13 +59,18 @@ A equipe foi dividida em quatro áreas principais: eletrônica, software, estrut
 \textcolor{red}{Itens fundamentais:}
 
 \begin{itemize}
-    \item \textcolor{red}{ \textbf{Diagrama BPMN para entender o \textit{software} proposto:} deve deixar claro os principais atores do sistema, suas atividades (de negócios), insumos e resultados.}
-    \item \textcolor{red}{\textbf{\textit{Backlog} funcional do \textit{software}:}}
+    \item \textcolor{red}{ \textbf{Diagrama Atividades UML:}  descrever e explicar o fluxo do comportamento funcional do produto proposto, evidenciando, de forma clara e estruturada, como as atividades são executadas, em que ordem e sob quais condições. Esse diagrama permite compreender o funcionamento dinâmico do sistema, destacando:}
+
     \begin{itemize}
-        \item \textcolor{red}{ Escrito no formato de histórias de usuário ou casos de uso (decisão da equipe);}
-        \item \textcolor{red}{ Ao declarar o \textit{backlog} de requisitos funcionais, usar a  classificação de MoSCoW (\textit{Must have}, \textit{Should have} e \textit{Could have}),  para um melhor entendimento do próprio \textit{backlog}.}
-    \end{itemize}
-    \item \textcolor{red}{\textbf{ \textit{Backlog} não-funcional do \textit{software}:}}
+        \item \textcolor{red}{ os principais atores (usuários ou sistemas externos) envolvidos no processo;
+        \item as atividades de negócio realizadas por cada ator ou pelo próprio sistema;
+        \item os insumos (entradas) necessários para a execução das atividades;
+        \item os resultados (saídas) gerados ao longo do fluxo;
+        \item os pontos de decisão, paralelismo e sincronização das atividades;
+        \item Entre as notações mais relevantes, destacam-se o estado iniciail e final, atividades, nós de decisão e junção, barras de bifurcação, Raias (\textit{swimlanes}) e Fluxos de controle. }
+        \end{itemize}
+
+    \item \textcolor{red}{\textbf{\textit{Backlog} do Produto}}
     \begin{itemize}
         \item \textcolor{red}{ Descrever os requisitos não-funcionais de forma objetiva;}
         \item \textcolor{red}{ Mais facilmente, mais rapidamente, são descrições subjetivas não-válidas. Um exemplo de requisito não-funcional de desempenho: ``a página deve carregar em até 5s quando em conexão 4G''. }
@@ -114,27 +119,9 @@ A equipe foi dividida em quatro áreas principais: eletrônica, software, estrut
     \begin{itemize}
         \item \textcolor{red}{Código do caso de teste;}
         \item \textcolor{red}{Nome do caso de teste;}
-        \item \textcolor{red}{Tipo do caso de teste (unitário, integrado ou sistema);}
         \item \textcolor{red}{ Objetivo do caso de teste;}
-        \item \textcolor{red}{ Pré-condições do sistema para o teste ser realizado;}
+        \item \textcolor{red}{ Pré-condições do sistema para o teste ser realizado, quando se aplicar;}
         \item \textcolor{red}{ Descrição dos procedimentos a serem executados para o teste;}
         \item \textcolor{red}{ Resultado esperado para o teste ser aprovado (pós-condição após realizado o teste);}
-        \item \textcolor{red}{ Especificação do reparo a ser executado (caso o teste não seja aprovado);}
-        \item \textcolor{red}{ Resultado após reparo (o caso do teste ser necessário de ser repetido após reparo).}
     \end{itemize}
 \end{itemize}
-
-
-% \textcolor{red}{Com relação ao \textit{software}, será necessário apresentar os seguintes itens: % pacotes de componentes de \textit{software}, suas funções e características, e explicar as decisões de projeto:
-% \begin{enumerate}
-%     \item Um diagrama do processo de negócio do problema que a máquina se propõe a resolver (BPNM) – não é UML, mas é fundamental para entender como o sistema se comporta como um todo, incluindo o usuário;
-%     \item Lista de casos de uso (backlog do sistema). Backlog funcional;
-%     \item Lista de requisitos não-funcionais a serem satisfeitos pelo sistema;
-%     \item Diagrama de casos de uso: mostrando os requisitos funcionais, seus atores e como eles interagem entre si;
-%     \item Diagrama de Classes: apresentando quais dados são manipulados pelo sistema (internamente e externamente – ex.: resultados de experimentos);
-%     \item Diagrama de arquitetura, identificando todos os componentes da máquina e suas iterações com o software;
-%     \item Diagrama de estados da máquina (sistema);
-%     \item Descrição dos testes dos componentes da máquina e dos testes funcionais que deveriam ser feitos para avaliar o funcionamento da máquina e identificar defeitos. São importantes os testes unitários (componentes) e de integração (conjunto de componentes) e o roteiro de testes.
-% \end{enumerate}
-% }
-%\textcolor{red}{Com relação ao \textit{software}, será necessário apresentar pacotes de componentes de \textit{software}, suas funções e características, e explicar as decisões de projeto.}
