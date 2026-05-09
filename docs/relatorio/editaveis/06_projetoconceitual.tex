@@ -94,7 +94,68 @@ A equipe foi dividida em quatro áreas principais: eletrônica, software, estrut
             \item \textcolor{red}{ Banco de dados: Relacional (PostgreSQL, MySQL, etc) X NãoSQL (MongoDB,etc). }
         \item \textcolor{red}{Persistência de dados: Modelo Entidade‑Relacionamento (MER) e seu respectivo Diagrama Entidade‑Relacionamento (DER), aplicáveis quando a solução utiliza banco de dados relacional; alternativamente, diagrama de estrutura de documentos, empregado nos casos em que a arquitetura adota banco de dados não relacional.}
          \end{itemize}     
-    
+     
+         \subsection{Modelo Entidade-Relacionamento (MER) }
+
+        O modelo conceitual do sistema foi projetado para registrar o histórico de telemetria e o mapeamento de coordenadas do robô de forma eficiente. O domínio do problema foi abstraído nas seguintes entidades, atributos e relacionamentos:
+
+        \subsubsection{Entidades e Atributos}
+
+        \begin{itemize}
+            \item \textbf{Entidade: Labirinto} \\
+            Representa os diferentes mapas físicos onde as corridas ocorrem.
+            \begin{itemize}
+                \item \textbf{id\_labirinto}: Identificador único do mapa (Chave Primária).
+                \item \textbf{tipo\_matriz}: Classificação da dimensão da grade (Ex: 4x4, 8x8, 16x16).
+                \item \textbf{tamanho\_celula\_cm}: Medida física do lado de cada célula para auxiliar a renderização.
+            \end{itemize}
+
+            \item \textbf{Entidade: Desafio} \\
+            Representa o evento de uma tentativa ou corrida específica realizada pelo micromouse. Consolida as métricas finais de hardware e desempenho.
+            \begin{itemize}
+                \item \textbf{id\_desafio}: Identificador único da corrida (Chave Primária).
+                \item \textbf{data\_hora\_execucao}: Registro cronológico (timestamp) de quando a corrida foi iniciada.
+                \item \textbf{consumo\_bateria}: Métrica de energia gasta pelo robô durante o trajeto.
+                \item \textbf{velocidade\_media}: Métrica de desempenho cinemático do robô.
+                \item \textbf{tempo\_conclusao}: Tempo total gasto do início ao fim da corrida.
+                \item \textbf{desafio\_cumprido}: Indicador booleano (Verdadeiro/Falso) que define se o robô alcançou o centro do labirinto com sucesso.
+            \end{itemize}
+
+            \item \textbf{Entidade: Trajeto} \\
+            Representa a unidade de coordenada percorrida. Armazena o passo a passo do robô para permitir a reconstrução visual do caminho no front-end.
+            \begin{itemize}
+                \item \textbf{id\_trajeto}: Identificador único da coordenada registrada (Chave Primária).
+                \item \textbf{ordem\_movimento}: Valor sequencial numérico para garantir a ordenação cronológica do caminho traçado.
+                \item \textbf{posicao\_x}: Coordenada horizontal correspondente à matriz do labirinto.
+                \item \textbf{posicao\_y}: Coordenada vertical correspondente à matriz do labirinto.
+            \end{itemize}
+        \end{itemize}
+
+        \subsubsection{Relacionamentos e Cardinalidades}
+
+        O comportamento do sistema é regido pelas seguintes regras de negócio entre as entidades:
+
+        \begin{itemize}
+            \item \textbf{Relacionamento: Labirinto possui Desafio}
+            \begin{itemize}
+                \item \textbf{Descrição:} Define o local onde uma tentativa ocorreu.
+                \item \textbf{Cardinalidade (1:N):} Um \textbf{Labirinto} físico pode ser palco de \textit{N} (vários) \textbf{Desafios} ao longo do tempo (1,n). Em contrapartida, um \textbf{Desafio} específico deve ocorrer em exatamente \textit{1} único \textbf{Labirinto} (1,1).
+            \end{itemize}
+
+            \item \textbf{Relacionamento: Desafio contém Trajeto}
+            \begin{itemize}
+                \item \textbf{Descrição:} Vincula as coordenadas capturadas à sua respectiva corrida.
+                \item \textbf{Cardinalidade (1:N):} Um \textbf{Desafio} completo registra \textit{N} (vários) pontos de \textbf{Trajeto} para compor seu caminho final (1,n). Por outro lado, uma coordenada de \textbf{Trajeto} armazenada pertence estritamente a \textit{1} único \textbf{Desafio} (1,1).
+            \end{itemize}
+        \end{itemize}
+
+        \begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figuras/DER.png}
+    \caption{Diagrama Lógico de Dados (DER) do sistema de telemetria.}
+    \label{fig:der_logico}
+    \end{figure}
+
     \item \textcolor{red}{\textbf{ Roteiro de testes funcionais:} }
     \begin{itemize}
         \item \textcolor{red}{Código do caso de teste;}
