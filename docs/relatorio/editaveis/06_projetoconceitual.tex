@@ -56,19 +56,41 @@ A equipe foi dividida em quatro áreas principais: eletrônica, software, estrut
 
 \section{Descrição de \textit{software}}
 
-\textcolor{red}{Itens fundamentais:}
-
 \begin{itemize}
-    \item \textcolor{red}{ \textbf{Diagrama Atividades UML:}  descrever e explicar o fluxo do comportamento funcional do produto proposto, evidenciando, de forma clara e estruturada, como as atividades são executadas, em que ordem e sob quais condições. Esse diagrama permite compreender o funcionamento dinâmico do sistema, destacando:}
-
+    \item \textbf{Diagrama Atividades UML:}  O seguinte diagrama de atividades UML representa o fluxo de comportamento entre o micromouse e site.
+    
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=\textwidth]{figuras/UML.png}
+        \caption{UML de atividade}
+        \label{fig:UML-de-atividade}
+    \end{figure}
+      
+    
+    \item Sensores:
     \begin{itemize}
-        \item \textcolor{red}{ os principais atores (usuários ou sistemas externos) envolvidos no processo;
-        \item as atividades de negócio realizadas por cada ator ou pelo próprio sistema;
-        \item os insumos (entradas) necessários para a execução das atividades;
-        \item os resultados (saídas) gerados ao longo do fluxo;
-        \item os pontos de decisão, paralelismo e sincronização das atividades;
-        \item Entre as notações mais relevantes, destacam-se o estado iniciail e final, atividades, nós de decisão e junção, barras de bifurcação, Raias (\textit{swimlanes}) e Fluxos de controle. }
-        \end{itemize}
+        \item Sensores ultrassônico;
+        \item Sensor de tensão;
+        \item Encoders dos motores;
+        \item Cronômetro da ESP32.
+    \end{itemize} 
+    
+    \item Telemetria:
+    \begin{itemize}
+        \item Ultimo movimento;
+        \item RPM dos motores;
+        \item Tensão e corrente;
+        \item Modo do micromouse atual;
+        \item Status de conclusão;
+        \item Tempo atual.
+    \end{itemize} 
+    
+    \item Modos do micromouse: 
+    \begin{itemize}
+        \item Procura DFS: Utiliza o algoritmo de busca em profundidade (DFS) até chegar na área de conclusão;
+        \item Retorno: Utiliza o algoritmo de \textit{Floofill} para voltar ao início;
+        \item Percurso otimizado: Escolhe a melhor rota a partir dos dados coletados nos outros modos e vai até a área de conclusão.
+    \end{itemize} 
 
     \item \textcolor{red}{\textbf{\textit{Backlog} do Produto}}
     \begin{itemize}
