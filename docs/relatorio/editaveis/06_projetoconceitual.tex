@@ -37,14 +37,45 @@
 \textcolor{red}{Com relação ao consumo energético do produto desenvolvido, será necessário apresentar cálculos de consumo dos diversos componentes utilizados e explicar as decisões de projeto para atender a estas demandas.}
 
 
+\section{Análise de consumo energético}
+
+Abaixo, apresenta-se o detalhamento do consumo energético do sistema, considerando os componentes selecionados e o regime de operação previsto para o produto.
+
 \begin{itemize}
-    \item \textcolor{red}{ \textbf{Identificação dos Subsistemas Elétricos:} liste todos os componentes que consumirão energia, como sensores, microcontroladores, atuadores e módulos de armazenamento de dados. Para cada componente, registre a tensão de operação (V), corrente média (mA) e tempo estimado de uso (s).}
-    \item \textcolor{red}{ \textbf{Cálculo da Energia Consumida por Componente:} utilize a fórmula: $E = V I t$, onde $E$ é a energia em joules, $V$ é a tensão em volts, $I$ a corrente em ampères e $t$ o tempo em segundos. Realize esse cálculo para cada componente do sistema.}
-    \item \textcolor{red}{ \textbf{Estimativa do Consumo Total de Energia:} some as energias de todos os componentes para obter o consumo energético total estimado do sistema por lançamento.}
-    \item \textcolor{red}{ \textbf{Escolha da Fonte de Alimentação:} com base no consumo total, converta para watt-hora: 1 Wh = 3600 J. Adicione e justifique uma margem de segurança (pesquisar o que é usual para este tipo de sistema) e selecione uma bateria ou fonte que supra a demanda.}
-    \item \textcolor{red}{ \textbf{Planejamento do Circuito de Alimentação:} analise a necessidade de inclusão de reguladores de tensão, proteções contra sobrecorrente, e isolamento para atuadores. Como as oscilações de tensão serão controladas?}
-    \item \textcolor{red}{ \textbf{Monitoramento via \textit{software}:} implemente, no \textit{software} embarcado, rotinas para medir a tensão da bateria e registrar dados de tempo de operação. Colete os dados para análise.}
-    \item \textcolor{red}{ \textbf{Validação com Testes Reais:} realize testes de campo para comparar o consumo estimado com o real. Ajuste a capacidade da fonte se necessário e refine o software de coleta de dados. Justifique a diferença de resultados (real x teórica), de acordo com a literatura.}
+    \item \textbf{Identificação dos Subsistemas Elétricos:} 
+    O sistema é alimentado por uma bateria de 12V, cuja tensão é reduzida para o funcionamento dos demais componentes. O tempo estimado de operação contínua é de 7200 segundos (2 horas):
+    \begin{itemize}
+        \item \textbf{Microcontrolador (ESP32 DevKit):} 5V, 150mA, 7200s.
+        \item \textbf{Atuadores (2x Motores N20):} 5V (via regulador), 240mA total, 7200s.
+        \item \textbf{Sensores (Ultrassônicos):} 5V, 45mA, 7200s.
+        \item \textbf{Indicadores (Buzzer e LEDs):} 5V, 40mA, 7200s.
+        \item \textbf{Monitoramento (Sensor INA219):} 5V, 1mA, 7200s.
+    \end{itemize}
+
+    \item \textbf{Cálculo da Energia Consumida por Componente:} 
+    Os cálculos foram realizados utilizando a fórmula $E = V \cdot I \cdot t$:
+    \begin{itemize}
+        \item $E_{ESP32} = 5V \times 0,150A \times 7200s = 5.400$ J
+        \item $E_{Motores} = 5V \times 0,240A \times 7200s = 8.640$ J
+        \item $E_{Sensores} = 5V \times 0,045A \times 7200s = 1.620$ J
+        \item $E_{Indicadores} = 5V \times 0,040A \times 7200s = 1.440$ J
+        \item $E_{INA219} = 5V \times 0,001A \times 7200s = 36$ J
+    \end{itemize}
+
+    \item \textbf{Estimativa do Consumo Total de Energia:} 
+    A energia total consumida estimada para o ciclo é de \textbf{17.136 Joules}. Considerando o consumo médio de 476 mA, a demanda prevista para 2 horas de uso é de aproximadamente \textbf{952 mAh}.
+
+    \item \textbf{Escolha da Fonte de Alimentação:} 
+    O consumo total equivale a 4,76 Wh. A bateria selecionada (Li-ion 3x18650, 12V, 2000 mAh) fornece 24 Wh, garantindo uma margem de segurança superior a 50\%, o que é ideal para compensar perdas térmicas e picos de corrente.
+
+    \item \textbf{Planejamento do Circuito de Alimentação:} 
+    Utiliza-se o regulador de tensão \textbf{LM2596 (Step-Down)} para converter os 12V da bateria em 5V estáveis. O circuito conta com o sensor \textbf{INA219} para monitoramento de corrente e tensão, servindo como proteção contra sobrecargas.
+
+    \item \textbf{Monitoramento via \textit{software}:} 
+    O ESP32 realiza a leitura do sensor INA219 via código, permitindo acompanhar o consumo em tempo real e registrar o tempo de operação para evitar a descarga profunda da bateria.
+
+    \item \textbf{Validação com Testes Reais:} 
+    A validação compara a autonomia teórica com a real. Diferenças encontradas são atribuídas à eficiência do LM2596 (80-90\%) e dissipação por Efeito Joule nos condutores.
 \end{itemize}
 
 \section{Descrição de \textit{software}}
