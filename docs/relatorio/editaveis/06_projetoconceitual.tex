@@ -19,25 +19,83 @@ A equipe foi dividida em quatro áreas principais: eletrônica, software, estrut
 
 \section{Descrição de \textit{hardware}}
 
-\textcolor{red}{A descrição de \textit{hardware} no documento deve permitir que outras pessoas repliquem o produto proposto neste documento. Para isso, deve-se explicar de forma textual os principais sub-sistemas e as escolhas de projeto, além de indicar:}
+O \textit{hardware} do robô MicroMouse foi projetado com o objetivo de oferecer um sistema autônomo ágil, de baixo custo e com capacidade de processamento suficiente para a execução de 
+algoritmos de resolução de labirintos e controle em malha fechada. 
+A arquitetura foi dividida em cinco subsistemas principais: unidade de processamento, alimentação e monitoramento,  sistema de sensoriamento, locomoção e controle, interface de depuração.
 
-\begin{itemize}
-    \item \textcolor{red}{ O diagrama de blocos \cite{blockdiagram}, que oferece uma visão geral do hardware, com as principais partes do sistema e as ligações entre elas.}
-    %\item A lista de materiais \cite{bom}, que facilita a montagem do sistema, indicando tudo que deve ser adquirido. Aproveitem a lista de materiais para apresentarem o orçamento dos mesmos.
-    \item \textcolor{red}{ O esquemático \cite{esquematico}, que mostra as conexões elétricas entre os componentes. Deve-se indicar os componentes por nomes e símbolos, e as conexões entre eles, incluindo a pinagem dos componentes. Se o esquemático ficar muito grande, pode-se separa-lo em vários esquemáticos. A ligação em \textit{protoboard} não é considerada um esquemático adequado.}
-\end{itemize}
+\subsection{Unidade de Processamento (Microcontrolador)}
 
-\textcolor{red}{A Fig. \ref{fig:diagrama_blocos_e_esquematico} apresenta o diagrama de blocos e o esquemático de um circuito conversor de corrente alternada para corrente direta, a título de exemplo. Repare que o diagrama de blocos indica os subsistemas do circuito completo apresentado no esquemático.
-% Comecem com o diagrama de blocos, que é mais genérico, e depois indiquem os detalhes com a lista de materiais e os esquemáticos.
-}
+    O núcleo do sistema é o microcontrolador ESP32. A escolha por este componente justifica-se pelo seu alto poder de processamento 
+    (necessário para o cálculo de rotas e processamento de múltiplos sensores em tempo real) e pela ampla disponibilidade de pinos de Entrada e Saída de Propósito Geral 
+    (GPIOs), que suportam interrupções de \textit{hardware} (essenciais para a leitura dos encoders) e modulação por largura de pulso (PWM) para o controle fino da 
+    velocidade dos motores. O ESP32 opera com nível lógico de 3,3V. 
 
-\begin{figure}
-    \centering
-    \includegraphics[width=0.5\linewidth]{figuras/Exemplo-diagrama-de-blocos.png}
-    \includegraphics[width=0.5\linewidth]{figuras/Esquematico.png}
-    \caption{\textcolor{red}{Diagrama de blocos e esquemático de um circuito conversor de corrente alternada para corrente direta. Extraído de \cite{block_n_schematic}.}}
-    \label{fig:diagrama_blocos_e_esquematico}
-\end{figure}
+\subsection{Alimentação e Monitoramento}
+
+    O sistema é alimentado por uma bateria de Lítio, cuja tensão nominal varia de acordo com a carga. 
+    Para garantir a estabilidade do circuito, as seguintes escolhas de projeto foram feitas:
+    
+    \begin{itemize}
+        \item Conversor Buck (LM2596-R-12): Utilizado para rebaixar e regular a tensão da bateria para 5V contínuos. 
+        Esta tensão estabilizada de 5V é responsável por alimentar os sensores, a ponte H e o próprio ESP32 (através do pino VIN, que possui seu próprio regulador interno para 3,3V).
+        \item Monitoramento de Energia (INA219): Para evitar a descarga profunda da bateria e monitorar o consumo instantâneo de corrente do robô, implementou-se o sensor INA219. 
+        Ele se comunica com o ESP32 via protocolo I2C (pinos SDA e SCL), fornecendo dados de telemetria cruciais para a autonomia do robô.
+    \end{itemize}
+
+\subsection{Sistema de Sensoriamento}
+
+    A percepção do labirinto é realizada por três sensores ultrassônicos HC-SR04 (posicionados, tipicamente, na frente, esquerda e direita).
+
+    \begin{itemize}
+        \item Escolha de Projeto (Divisor de Tensão): Os sensores HC-SR04 são alimentados com 5V e, consequentemente, enviam o sinal de retorno (ECHO) em 5V. 
+        Como os pinos do ESP32 toleram apenas 3,3V, foi projetado um circuito divisor de tensão utilizando resistores de 1K$ \Omega $ e 2K$ \Omega $ na linha de cada pino ECHO. 
+        Isso rebaixa a tensão do sinal para níveis seguros, protegendo o microcontrolador contra danos elétricos. 
+        O sinal de gatilho (TRIG) é enviado diretamente pelo ESP32.
+    \end{itemize}
+
+\subsection{Locomoção e Controle}
+
+    O deslocamento do robô é garantido por um sistema de tração diferencial composto pelos seguintes elementos:
+    
+    \begin{itemize}
+        \item Atuadores: Motores DC N20 equipados com encoders magnéticos. 
+        Os encoders fornecem o feedback de posição e velocidade (Sinais MA e MB) em malha fechada, permitindo a implementação de um controle PID para garantir que o robô 
+        ande em linha reta e realize curvas precisas de 90 graus.
+        \item Driver de Motor (Ponte H MX1508): O controle de sentido e velocidade (via PWM) dos motores é feito pelo CI MX1508. 
+        Este componente foi selecionado por ter um formato extremamente compacto, ideal para o espaço restrito de um MicroMouse, e por suportar perfeitamente a corrente 
+        demandada pelos minimotores N20.
+    \end{itemize}
+
+\subsection{Interface de Depuração}
+
+    Para facilitar o desenvolvimento do firmware e a identificação de estados do robô durante os testes 
+    (como "labirinto resolvido", "erro de leitura" ou "bateria fraca"), implementou-se um circuito de depuração com componentes de interface humana:
+
+    \begin{itemize}
+        \item Sinalização Visual e Sonora: Dois LEDs com resistores limitadores de corrente (330$ \Omega $ a 1k$ \Omega $) e um Buzzer ativo para emitir alertas.
+        \item Escolha de Projeto (Acionamento do Buzzer): Como buzzers podem demandar uma corrente superior àquela que um pino GPIO do ESP32 consegue fornecer com segurança, 
+        foi adicionado um transistor NPN (Q1) operando como chave. 
+        O microcontrolador aciona a base do transistor (via um resistor de 1k$ \Omega $), que por sua vez permite a passagem da corrente necessária para ativar o buzzer, 
+        isolando o ESP32 da carga.
+    \end{itemize}
+
+\subsection{Esquemático e Diagrama de Bloco}
+
+    \begin{figure}[h]
+        \centering
+        \includegraphics[width=0.9\linewidth]{figuras/Diagrama-de-Blocos.png}
+        \caption{{Diagrama de Blocos do sistema Ratobô.}}
+        \label{fig:diagrama_blocos}
+    \end{figure}
+
+    \begin{landscape}
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.9\linewidth]{figuras/Esquematico.png}
+        \caption{{Esquemático do Sistema Ratobô.}}
+        \label{fig:esquematico}
+    \end{figure}
+    \end{landscape}
 
 \section{Análise de consumo energético}
 
@@ -111,7 +169,7 @@ A equipe foi dividida em quatro áreas principais: eletrônica, software, estrut
             \end{itemize}
 
             \item \textbf{Entidade: Desafio} \\
-            Representa o evento de uma tentativa ou corrida específica realizada pelo micromouse. Consolida as métricas finais de hardware e desempenho.
+            Representa o evento de uma tentativa ou corrida específica realizada pelo micromouse. Consolida as métricas finais de \textit{hardware} e desempenho.
             \begin{itemize}
                 \item \textbf{id\_desafio}: Identificador único da corrida (Chave Primária).
                 \item \textbf{data\_hora\_execucao}: Registro cronológico (timestamp) de quando a corrida foi iniciada.
