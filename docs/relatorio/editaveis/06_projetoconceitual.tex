@@ -66,13 +66,7 @@ A equipe foi dividida em quatro áreas principais: eletrônica, software, estrut
         \label{fig:UML-de-atividade}
     \end{figure}
       
-    \item Modos do micromouse: 
-    \begin{itemize}
-        \item Procura DFS: Utiliza o algoritmo de busca em profundidade (DFS) até chegar na área de conclusão;
-        \item Retorno: Utiliza o algoritmo de \textit{Floofill} para voltar ao início;
-        \item Percurso otimizado: Escolhe a melhor rota a partir dos dados coletados nos outros modos e vai até a área de conclusão.
-    \end{itemize} 
-
+    
     \item Sensores:
     \begin{itemize}
         \item Sensores ultrassônico;
@@ -80,17 +74,23 @@ A equipe foi dividida em quatro áreas principais: eletrônica, software, estrut
         \item Encoders dos motores;
         \item Cronômetro da ESP32.
     \end{itemize} 
-
+    
     \item Telemetria:
     \begin{itemize}
         \item Ultimo movimento;
         \item RPM dos motores;
         \item Tensão e corrente;
-        \item Modo atual;
+        \item Modo do micromouse atual;
         \item Status de conclusão;
         \item Tempo atual.
     \end{itemize} 
-    % minha seção
+    
+    \item Modos do micromouse: 
+    \begin{itemize}
+        \item Procura DFS: Utiliza o algoritmo de busca em profundidade (DFS) até chegar na área de conclusão;
+        \item Retorno: Utiliza o algoritmo de \textit{Floofill} para voltar ao início;
+        \item Percurso otimizado: Escolhe a melhor rota a partir dos dados coletados nos outros modos e vai até a área de conclusão.
+    \end{itemize} 
 
     \item \textcolor{red}{\textbf{\textit{Backlog} do Produto}}
     \begin{itemize}
