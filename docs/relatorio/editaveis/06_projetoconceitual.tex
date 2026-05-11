@@ -15,29 +15,123 @@ A equipe foi dividida em quatro áreas principais: eletrônica, software, estrut
 \end{landscape}
 \section{Estrutura}
 
-\textcolor{red}{Apresentar desenho em CAD, indicar dimensões por lado/aresta/cota, indicar materiais utilizados e explicar o desenho e as decisões de projeto.}
+\subsection{Desenhos do carrinho}
+
+Os modelos e a montagem do projeto foram feitos no Fusion 360. A escolha dos locais dos componentes buscou acomodar todos os elementos do carrinho, mantendo facilidade de acesso à parte eletrônica.
+
+As Figuras~\ref{fig:desenhos_carrinho_1} e~\ref{fig:desenhos_carrinho_2} apresentam as vistas lateral, superior, frontal e isométrica do carrinho, além da vista explodida com os componentes.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[page=1,width=0.9\linewidth]{figuras/desenhos-carrinho.pdf}
+    \caption{Desenhos técnicos do carrinho — página 1.}
+    \label{fig:desenhos_carrinho_1}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[page=2,width=0.9\linewidth]{figuras/desenhos-carrinho.pdf}
+    \caption{Desenhos técnicos do carrinho — página 2.}
+    \label{fig:desenhos_carrinho_2}
+\end{figure}
+
+\subsection{Decisões de projeto}
+
+\subsubsection{Motor}
+
+O motor escolhido foi o OEM N20 750 RPM, pois é um motor versátil e atende à tensão necessária para o projeto.
+
+\subsubsection{Roda}
+
+A roda foi escolhida por ter adaptação direta com o motor e tamanho adequado para garantir conforto no manuseio do carrinho. Além disso, a parte de borracha permite boa aderência mesmo em superfícies não ideais.
+
+\subsubsection{Placa de apoio}
+
+Com o objetivo de alocar todos os componentes e facilitar o manuseio das diferentes partes, foi integrado um segundo andar com o uso de parafusos espaçadores de 25 mm. Essa estrutura serve para apoiar a bateria e permitir a presença de componentes na parte inferior.
+
+\subsubsection{Roda da frente}
+
+Como o projeto não requer sensor na parte inferior para reconhecer as cores do labirinto, foi escolhida uma roda dianteira com maior liberdade de movimento.
 
 \section{Descrição de \textit{hardware}}
 
-\textcolor{red}{A descrição de \textit{hardware} no documento deve permitir que outras pessoas repliquem o produto proposto neste documento. Para isso, deve-se explicar de forma textual os principais sub-sistemas e as escolhas de projeto, além de indicar:}
+O \textit{hardware} do robô MicroMouse foi projetado com o objetivo de oferecer um sistema autônomo ágil, de baixo custo e com capacidade de processamento suficiente para a execução de 
+algoritmos de resolução de labirintos e controle em malha fechada. 
+A arquitetura foi dividida em cinco subsistemas principais: unidade de processamento, alimentação e monitoramento,  sistema de sensoriamento, locomoção e controle, interface de depuração.
 
-\begin{itemize}
-    \item \textcolor{red}{ O diagrama de blocos \cite{blockdiagram}, que oferece uma visão geral do hardware, com as principais partes do sistema e as ligações entre elas.}
-    %\item A lista de materiais \cite{bom}, que facilita a montagem do sistema, indicando tudo que deve ser adquirido. Aproveitem a lista de materiais para apresentarem o orçamento dos mesmos.
-    \item \textcolor{red}{ O esquemático \cite{esquematico}, que mostra as conexões elétricas entre os componentes. Deve-se indicar os componentes por nomes e símbolos, e as conexões entre eles, incluindo a pinagem dos componentes. Se o esquemático ficar muito grande, pode-se separa-lo em vários esquemáticos. A ligação em \textit{protoboard} não é considerada um esquemático adequado.}
-\end{itemize}
+\subsection{Unidade de Processamento (Microcontrolador)}
 
-\textcolor{red}{A Fig. \ref{fig:diagrama_blocos_e_esquematico} apresenta o diagrama de blocos e o esquemático de um circuito conversor de corrente alternada para corrente direta, a título de exemplo. Repare que o diagrama de blocos indica os subsistemas do circuito completo apresentado no esquemático.
-% Comecem com o diagrama de blocos, que é mais genérico, e depois indiquem os detalhes com a lista de materiais e os esquemáticos.
-}
+    O núcleo do sistema é o microcontrolador ESP32. A escolha por este componente justifica-se pelo seu alto poder de processamento 
+    (necessário para o cálculo de rotas e processamento de múltiplos sensores em tempo real) e pela ampla disponibilidade de pinos de Entrada e Saída de Propósito Geral 
+    (GPIOs), que suportam interrupções de \textit{hardware} (essenciais para a leitura dos encoders) e modulação por largura de pulso (PWM) para o controle fino da 
+    velocidade dos motores. O ESP32 opera com nível lógico de 3,3V. 
 
-\begin{figure}
-    \centering
-    \includegraphics[width=0.5\linewidth]{figuras/Exemplo-diagrama-de-blocos.png}
-    \includegraphics[width=0.5\linewidth]{figuras/Esquematico.png}
-    \caption{\textcolor{red}{Diagrama de blocos e esquemático de um circuito conversor de corrente alternada para corrente direta. Extraído de \cite{block_n_schematic}.}}
-    \label{fig:diagrama_blocos_e_esquematico}
-\end{figure}
+\subsection{Alimentação e Monitoramento}
+
+    O sistema é alimentado por uma bateria de Lítio, cuja tensão nominal varia de acordo com a carga. 
+    Para garantir a estabilidade do circuito, as seguintes escolhas de projeto foram feitas:
+    
+    \begin{itemize}
+        \item Conversor Buck (LM2596-R-12): Utilizado para rebaixar e regular a tensão da bateria para 5V contínuos. 
+        Esta tensão estabilizada de 5V é responsável por alimentar os sensores, a ponte H e o próprio ESP32 (através do pino VIN, que possui seu próprio regulador interno para 3,3V).
+        \item Monitoramento de Energia (INA219): Para evitar a descarga profunda da bateria e monitorar o consumo instantâneo de corrente do robô, implementou-se o sensor INA219. 
+        Ele se comunica com o ESP32 via protocolo I2C (pinos SDA e SCL), fornecendo dados de telemetria cruciais para a autonomia do robô.
+    \end{itemize}
+
+\subsection{Sistema de Sensoriamento}
+
+    A percepção do labirinto é realizada por três sensores ultrassônicos HC-SR04 (posicionados, tipicamente, na frente, esquerda e direita).
+
+    \begin{itemize}
+        \item Escolha de Projeto (Divisor de Tensão): Os sensores HC-SR04 são alimentados com 5V e, consequentemente, enviam o sinal de retorno (ECHO) em 5V. 
+        Como os pinos do ESP32 toleram apenas 3,3V, foi projetado um circuito divisor de tensão utilizando resistores de 1K$ \Omega $ e 2K$ \Omega $ na linha de cada pino ECHO. 
+        Isso rebaixa a tensão do sinal para níveis seguros, protegendo o microcontrolador contra danos elétricos. 
+        O sinal de gatilho (TRIG) é enviado diretamente pelo ESP32.
+    \end{itemize}
+
+\subsection{Locomoção e Controle}
+
+    O deslocamento do robô é garantido por um sistema de tração diferencial composto pelos seguintes elementos:
+    
+    \begin{itemize}
+        \item Atuadores: Motores DC N20 equipados com encoders magnéticos. 
+        Os encoders fornecem o feedback de posição e velocidade (Sinais MA e MB) em malha fechada, permitindo a implementação de um controle PID para garantir que o robô 
+        ande em linha reta e realize curvas precisas de 90 graus.
+        \item Driver de Motor (Ponte H MX1508): O controle de sentido e velocidade (via PWM) dos motores é feito pelo CI MX1508. 
+        Este componente foi selecionado por ter um formato extremamente compacto, ideal para o espaço restrito de um MicroMouse, e por suportar perfeitamente a corrente 
+        demandada pelos minimotores N20.
+    \end{itemize}
+
+\subsection{Interface de Depuração}
+
+    Para facilitar o desenvolvimento do firmware e a identificação de estados do robô durante os testes 
+    (como "labirinto resolvido", "erro de leitura" ou "bateria fraca"), implementou-se um circuito de depuração com componentes de interface humana:
+
+    \begin{itemize}
+        \item Sinalização Visual e Sonora: Dois LEDs com resistores limitadores de corrente (330$ \Omega $ a 1k$ \Omega $) e um Buzzer ativo para emitir alertas.
+        \item Escolha de Projeto (Acionamento do Buzzer): Como buzzers podem demandar uma corrente superior àquela que um pino GPIO do ESP32 consegue fornecer com segurança, 
+        foi adicionado um transistor NPN (Q1) operando como chave. 
+        O microcontrolador aciona a base do transistor (via um resistor de 1k$ \Omega $), que por sua vez permite a passagem da corrente necessária para ativar o buzzer, 
+        isolando o ESP32 da carga.
+    \end{itemize}
+
+\subsection{Esquemático e Diagrama de Bloco}
+
+    \begin{figure}[h]
+        \centering
+        \includegraphics[width=0.9\linewidth]{figuras/Diagrama-de-Blocos.png}
+        \caption{{Diagrama de Blocos do sistema Ratobô.}}
+        \label{fig:diagrama_blocos}
+    \end{figure}
+
+    \begin{landscape}
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.9\linewidth]{figuras/Esquematico.png}
+        \caption{{Esquemático do Sistema Ratobô.}}
+        \label{fig:esquematico}
+    \end{figure}
+    \end{landscape}
 
 \section{Análise de consumo energético}
 
@@ -106,14 +200,44 @@ A equipe foi dividida em quatro áreas principais: eletrônica, software, estrut
     
     Arquitetura Orientada a Eventos (\textit{Event-Driven Architecture}) com Monólito Modular no \textit{backend}. Este padrão permite lidar com a natureza assíncrona dos dados de sensores, garantindo que o sistema reaja a eventos instantâneos sem latência perceptível. Como stack principal tem-se como:
 
-    \begin{itemize}
+        O modelo conceitual do sistema foi projetado para registrar o histórico de telemetria e o mapeamento de coordenadas do robô de forma eficiente. O domínio do problema foi abstraído nas seguintes entidades, atributos e relacionamentos:
+
+        \subsubsection{Entidades e Atributos}
+
+        \begin{itemize}
+            \item \textbf{Entidade: Labirinto} \\
+            Representa os diferentes mapas físicos onde as corridas ocorrem.
+            \begin{itemize}
+                \item \textbf{id\_labirinto}: Identificador único do mapa (Chave Primária).
+                \item \textbf{tipo\_matriz}: Classificação da dimensão da grade (Ex: 4x4, 8x8, 16x16).
+                \item \textbf{tamanho\_celula\_cm}: Medida física do lado de cada célula para auxiliar a renderização.
+            \end{itemize}
+
+            \item \textbf{Entidade: Desafio} \\
+            Representa o evento de uma tentativa ou corrida específica realizada pelo micromouse. Consolida as métricas finais de \textit{hardware} e desempenho.
+            \begin{itemize}
+                \item \textbf{id\_desafio}: Identificador único da corrida (Chave Primária).
+                \item \textbf{data\_hora\_execucao}: Registro cronológico (timestamp) de quando a corrida foi iniciada.
+                \item \textbf{consumo\_bateria}: Métrica de energia gasta pelo robô durante o trajeto.
+                \item \textbf{velocidade\_media}: Métrica de desempenho cinemático do robô.
+                \item \textbf{tempo\_conclusao}: Tempo total gasto do início ao fim da corrida.
+                \item \textbf{desafio\_cumprido}: Indicador booleano (Verdadeiro/Falso) que define se o robô alcançou o centro do labirinto com sucesso.
+            \end{itemize}
+
+            \item \textbf{Entidade: Trajeto} \\
+            Representa a unidade de coordenada percorrida. Armazena o passo a passo do robô para permitir a reconstrução visual do caminho no front-end.
+            \begin{itemize}
+                \item \textbf{id\_trajeto}: Identificador único da coordenada registrada (Chave Primária).
+                \item \textbf{ordem\_movimento}: Valor sequencial numérico para garantir a ordenação cronológica do caminho traçado.
+                \item \textbf{posicao\_x}: Coordenada horizontal correspondente à matriz do labirinto.
+                \item \textbf{posicao\_y}: Coordenada vertical correspondente à matriz do labirinto.
+            \end{itemize}
+
+            \begin{itemize}
             \item \textbf{Linguagens de programação:} JavaScript (ES6+) e C++.
-            \item \textbf{\textit{Frameworks}, bibliotecas e protocolos:} 
-            No \textit{front-end}, utiliza-se \textbf{React (Vite)} com \textbf{Tailwind CSS}. No \textit{back-end}, \textbf{Node.js}, \textbf{Express} e \textbf{Socket.io}. Para o \textit{firmware}, o \textit{framework} \textbf{Arduino} via \textbf{PlatformIO}. 
-            % Adicionando a lista de protocolos aqui:
-            A comunicação é regida pelos protocolos \textbf{MQTT} (entre ESP32 e Broker) para telemetria leve e \textbf{WebSockets} (entre Backend e Frontend) para atualização em tempo real.
-            
+            \item \textbf{\textit{Frameworks}, bibliotecas e protocolos:} No \textit{front-end}, utiliza-se \textbf{React (Vite)} com \textbf{Tailwind CSS}. No \textit{back-end}, \textbf{Node.js}, \textbf{Express} e \textbf{Socket.io}. Para o \textit{firmware}, o \textit{framework} \textbf{Arduino} via \textbf{PlatformIO}. A comunicação é regida pelos protocolos \textbf{MQTT} (entre ESP32 e Broker) para telemetria leve e \textbf{WebSockets} (entre Backend e Frontend) para atualização em tempo real.
             \item \textbf{Banco de dados:} Relacional \textbf{PostgreSQL} via Docker.
+            \end{itemize}
         \end{itemize}
 
         \item \textbf{Diagrama de alto nível:} 
@@ -262,6 +386,7 @@ A equipe foi dividida em quatro áreas principais: eletrônica, software, estrut
     \item \textbf{Resultado esperado:} Os dados são atualizados automaticamente, não sendo necessário recarregar a página.
     \item \textbf{Especificação do reparo a ser executado:} \textit Corrigir mecanismo de atualização
     \item \textbf{Resultado após reparo:} \textit Dados atualizados corretamente
+\end{itemize}
 \item \textbf{Roteiro de testes do algoritmo principal:}
 
 \subsubsection*{CT01 – Inicialização do mapa interno}
@@ -449,7 +574,7 @@ A equipe foi dividida em quatro áreas principais: eletrônica, software, estrut
     \label{fig:der_logico}
     \end{figure}
 
-    \item \textcolor{red}{\textbf{ Roteiro de testes funcionais:} }
+    \textbf{Roteiro de testes funcionais:}
     \begin{itemize}
         \item \textcolor{red}{Código do caso de teste;}
         \item \textcolor{red}{Nome do caso de teste;}
