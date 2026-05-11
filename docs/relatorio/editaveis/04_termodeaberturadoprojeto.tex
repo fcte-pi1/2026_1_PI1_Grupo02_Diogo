@@ -13,16 +13,18 @@
 \end{description}
 
 \section{Objetivos}
-\textcolor{red}{O que a empresa pretende obter com a realização do projeto. Descrever o que se pretende realizar para resolver o problema central ou explorar a oportunidade identificada. Para a correta definição do objetivo siga a regra "SMART":
+O objetivo principal deste projeto é desenvolver e gerenciar a construção de um robô Micromouse autônomo, capaz de mapear e resolver fisicamente labirintos de diferentes dimensões, integrado a uma aplicação web para armazenamento e exibição de dados de telemetria em tempo real, utilizando a gestão por Estrutura Analítica do Projeto (EAP).
+
+Para a correta definição, seguem os objetivos detalhados sob a regra SMART:
+
 \begin{description}
-    \item [\textit{Specific} (específico):] Deve ser redigido de forma clara, concisa e compreensiva;
-    \item [\textit{Measurable} (mensurável):] O objetivo específico deve ser mensurável, ou seja, 
-possível de ser medido por meio de um ou mais indicadores;
-    \item [\textit{Agreed} (acordado):] Deve ser acordado com as partes interessadas, ou seja, as áreas envolvidas na empresa: P\&D, Produção, Comercial, Marketing, Financeira, Jurídica, Manutenção, ambiental, entre outras;
-    \item [\textit{Realistic} (realista):] Deve estar centrado na realidade, no que é possível de ser feito considerando as premissas e restrições existentes, como: orçamento e tempo;
-    \item [\textit{Time Bound} (Limitado no tempo):] Deve ter um prazo determinado para sua finalização.
+    \item [\textit{Specific} (específico):] Desenvolver um sistema robótico autônomo (máximo de 25 cm de comprimento ou largura) capaz de navegar em labirintos de dimensões 4x4, 8x8 e 16x16 sem pular, voar, escalar ou danificar a pista. O projeto engloba a criação de uma interface web conectada a um banco de dados (Modelo Entidade-Relacionamento) para exibir e armazenar em tempo real a telemetria da corrida: tipo de labirinto, trajeto por coordenadas (x,y), consumo de energia, velocidade média, tempo de conclusão e status de sucesso. Todo o projeto será versionado no GitHub seguindo padrões de repositório e controle de tarefas por \textit{issues}.    
+    \item [\textit{Measurable} (mensurável):] O sucesso será atestado pela capacidade do robô em completar os três tamanhos de labirintos de forma totalmente autônoma, pelo armazenamento íntegro dos dados de "Desafio" e "Trajeto" no banco de dados e pela construção física da pista de testes 4x4 com chão preto e paredes brancas de 5 cm com topos vermelhos.
+    \item [\textit{Agreed} (acordado):] O escopo e os requisitos técnicos deste projeto foram definidos em comum acordo entre os membros da equipe e estão plenamente alinhados com as diretrizes e competências técnicas exigidas pela disciplina de Projeto Integrador 1 (PI1). O plano de trabalho recebeu o aval do professor.
+    \item [\textit{Realistic} (realista):] A execução do projeto fundamenta-se na utilização de componentes de baixo custo e alta disponibilidade no mercado nacional, tornando a construção financeiramente viável. A complexidade do algoritmo é compatível com o cronograma acadêmico e com o nível de conhecimento técnico da equipe, prevendo a confecção de um labirinto modular para testes preliminares antes da avaliação oficial.
+    \item [\textit{Time Bound} (Limitado no tempo):]O desenvolvimento está estritamente vinculado ao calendário acadêmico do semestre letivo. O cronograma estabelece que a parte que vamos usar nos testes esteja pronto um pouco antes, garantindo que o protótipo esteja plenamente funcional para a bateria de testes oficiais no labirinto. A entrega final, incluindo o ratinho e a documentação técnica completa, ocorrerá impreterivelmente na data estipulada para a apresentação final da disciplina.
 \end{description}
-}
+
 
 \section{Mercado-alvo}
 
@@ -39,7 +41,37 @@ De forma mais específica, destacam-se:
 
 \section{Requisitos}
 
-\textcolor{red}{Listar os fatos que são essenciais para o consumidor adquirir o produto, exemplo: cor, tamanho, material, tempo de vida-útil, dispositivo de segurança \textbf{x}, entre outros.}
+\begin{table}[H] 
+    \centering
+    \caption{Requisitos do sistema Micromouse}
+    \label{tab:requisitos_micromouse}
+    \renewcommand{\arraystretch}{1.3} 
+    \begin{tabular}{|l|l|p{8.5cm}|}
+        \hline
+        \textbf{Código} & \textbf{Categoria} & \textbf{Descrição do Requisito} \\
+        \hline
+        RF-01 & Navegação Autônoma & O micromouse deve resolver três labirintos de tamanhos diferentes ($4\times4$, $8\times8$ e $16\times16$) de forma totalmente autônoma, descobrindo paredes, mapeando o caminho e detectando a chegada ao centro. \\
+        \hline
+        RF-02 & Interface Web (Telemetria) & O sistema deve exibir os dados de telemetria em tempo real na interface web, incluindo: tipo do labirinto, trajeto, consumo de bateria, velocidade média, tempo e se o desafio foi cumprido (S/N). \\
+        \hline
+        RF-03 & Banco de Dados & O sistema deve armazenar os dados finais das execuções em um banco de dados ao término de cada desafio. \\
+        \hline
+        RF-04 & Consulta de Histórico & A aplicação web deve permitir consultar o banco de dados para exibir informações detalhadas de um labirinto específico ou de todos os labirintos armazenados. \\
+        \hline
+        RNF-01 & Dimensões do Robô & O micromouse não deve exceder 25 cm de comprimento ou largura (não há restrições de altura). \\
+        \hline
+        RNF-02 & Restrições de Locomoção & O robô não pode voar, pular, escalar, utilizar propulsão por combustão/foguete, nem causar qualquer tipo de dano ao labirinto. \\
+        \hline
+        RNF-03 & Inalterabilidade & Não é permitido alterar o código ou a memória do labirinto durante a corrida. Intervenções só são permitidas em caso de colisão ou mau funcionamento. \\
+        \hline
+        RNF-04 & Pista de Testes & O grupo deve desenvolver uma pista de testes física $4\times4$ com chão preto e paredes brancas de 5 cm de altura com topos vermelhos, seguindo as dimensões oficiais. \\
+        \hline
+        RNF-05 & Autoria e Desenvolvimento & O sistema deve ser integralmente desenvolvido pelos alunos utilizando os conhecimentos das engenharias da FCTE, sendo proibido o uso de soluções prontas comerciais ou plágio. \\
+        \hline
+        RNF-06 & Gestão e Repositório & O gerenciamento do projeto e o versionamento de código (código-fonte, CAD, esquemáticos) devem utilizar o GitHub com um repositório padronizado e controle de tarefas através de \textit{issues} limitadas a dois membros por \textit{issue}. \\
+        \hline
+    \end{tabular}
+\end{table}
 
 \section{Justificativa}
 
@@ -68,7 +100,20 @@ Engenharia 1.
 
 \section{Indicadores}
 
-\textcolor{red}{Listar até 10 indicadores que determinam o mercado consumidor do produto desenvolvido: exemplo: 1) n\textdegree de alunos da FGA que utilizam ônibus às 18:00; 2) n\textdegree de usuários do restaurante universitários, 3) número de idosos classificados como público-alvo no DF e no estado de Goiás, 4) n\textdegree de empresas de segurança registradas no DF etc.}
+\begin{enumerate}
+    \item Número de alunos matriculados em cursos de engenharia.
+    \item Relevância de competições de micromouse ao redor do mundo.
+    \item Número de cursos de engenharia envolvidos no projeto.
+    \item Quantidade de alunos interessados em robótica universitária.
+    \item Número de faculdades que podem utilizar o projeto para fins didáticos.
+    \item Crescimento de robótica e automação no setor educacional e industrial.
+    \item Número de empresas que valorizam profissionais com capacidade de trabalhar em grupo.
+    \item Quantidade de estudantes com dúvidas de como desenvolver um projeto de ponta a ponta.
+    \item Número de diferentes ferramentas educacionais e profissionais utilizadas.
+    \item Necessidade de profissionais capacitados em programação embarcada, controle e automação. 
+    
+\end{enumerate}
+
 % \section{Aprovações}
 
 % \begin{tabular}{ l l }
