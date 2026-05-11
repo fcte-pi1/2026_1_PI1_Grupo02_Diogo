@@ -94,64 +94,335 @@ A equipe foi dividida em quatro áreas principais: eletrônica, software, estrut
 
     \item \textcolor{red}{\textbf{\textit{Backlog} do Produto}}
     \begin{itemize}
-        \item \textcolor{red}{ Descrever os   requisitos funcionais (RF) com a técnica de documentação e especificação de história de usuário (HU);}
-        \item \textcolor{red}{ Descrever os requisitos não-funcionais (RNF) de forma objetiva; Mais facilmente, mais rapidamente, mais responsivo, de fácil uso, são descrições subjetivas não-válidas. Um exemplo de requisito não-funcional de desempenho: ``a página deve carregar em até 5s quando em conexão 4G''. }
-        \item \textcolor{red}{ Ao descrever os requisitos (RF e RNF), usar a  classificação MoSCoW (\textit{Must have}, \textit{Should have} e \textit{Could have}),  para auxiliar a priorização dos itens do backlog.}
-        \item \textcolor{red}{ Protótipos de interfafe gráfica do \textit{software} em alta fidelidade.}
-        \begin{itemize}
-            \item \textcolor{red}{\textbf{ Todas HUs devem conter sua descrição (Eu-Como-Para), critérios de aceitação e protótipos de interface, documentadas no github. }}
-            \end{itemize} 
-
-        \end{itemize}
-
-    \item \textcolor{red}{ \textbf{Descrição da arquitetura da solução de \textit{software} proposta:}}
-    \begin{itemize}
+        \item \textcolor{red}{ Descrever os requisitos não-funcionais de forma objetiva;}
+        \item \textcolor{red}{ Mais facilmente, mais rapidamente, são descrições subjetivas não-válidas. Um exemplo de requisito não-funcional de desempenho: ``a página deve carregar em até 5s quando em conexão 4G''. }
+    \end{itemize}
+    \item \textcolor{red}{ \textbf{Diagrama de casos de uso,} contendo os atores do sistema, os requisitos com os quais eles interagem e os tipos de relacionamentos entre requisitos realizados por um mesmo ator (ex.: \textit{include}, \textit{extend}). Obs.: este é um diagrama sobre requisitos funcionais.}
+    \item \textbf{Descrição da arquitetura da solução de \textit{software} proposta:}
     
-        \item \textcolor{red}{ Esta subseção deve contemplar o documento de arquitetura do sistema e deve ser estruturado segundo as visões (4+1) previstas no processo unificado (UP): lógica, de processos;  implementação, implantação e dados (substuirá a visão de casos de uso).}
-        
-        \item \textcolor{red}{ Propósito do \textit{software} (qual o seu papel no sistema);}
-        \item \textcolor{red}{ Padrão adotado: MVC, MVP, Microsserviços, Monolítico, etc (Justificar);}
-        \item \textcolor{red}{ Linguagens de programação: Java, Python, C\#, JavaScript, etc.}
-        \item \textcolor{red}{ \textit{Frameworks} e bibliotecas: Spring Boot, .NET Core, React, Angular, Django, etc.}
-            \item \textcolor{red}{ Banco de dados: Relacional (PostgreSQL, MySQL, etc) X NãoSQL (MongoDB,etc). }
-        \item \textcolor{red}{Persistência de dados: Modelo Entidade‑Relacionamento (MER) e seu respectivo Diagrama Entidade‑Relacionamento (DER), aplicáveis quando a solução utiliza banco de dados relacional; alternativamente, diagrama de estrutura de documentos, empregado nos casos em que a arquitetura adota banco de dados não relacional.}
-         \end{itemize}     
-     
-         \subsection{Modelo Entidade-Relacionamento (MER) }
+    O \textit{software} atua como o núcleo de inteligência e monitoramento do sistema (Mission Control). Sua função é processar a telemetria enviada pelo robô em tempo real, gerenciar a construção dinâmica do mapa do labirinto, executar algoritmos de \textit{pathfinding} para determinar a rota otimizada e fornecer uma interface gráfica para visualização de métricas de energia e desempenho.
+    
+    \item \textbf{Estilo arquitetural contendo:}
+    
+    Arquitetura Orientada a Eventos (\textit{Event-Driven Architecture}) com Monólito Modular no \textit{backend}. Este padrão permite lidar com a natureza assíncrona dos dados de sensores, garantindo que o sistema reaja a eventos instantâneos sem latência perceptível. Como stack principal tem-se como:
 
-        O modelo conceitual do sistema foi projetado para registrar o histórico de telemetria e o mapeamento de coordenadas do robô de forma eficiente. O domínio do problema foi abstraído nas seguintes entidades, atributos e relacionamentos:
-
-        \subsubsection{Entidades e Atributos}
-
-        \begin{itemize}
-            \item \textbf{Entidade: Labirinto} \\
-            Representa os diferentes mapas físicos onde as corridas ocorrem.
-            \begin{itemize}
-                \item \textbf{id\_labirinto}: Identificador único do mapa (Chave Primária).
-                \item \textbf{tipo\_matriz}: Classificação da dimensão da grade (Ex: 4x4, 8x8, 16x16).
-                \item \textbf{tamanho\_celula\_cm}: Medida física do lado de cada célula para auxiliar a renderização.
-            \end{itemize}
-
-            \item \textbf{Entidade: Desafio} \\
-            Representa o evento de uma tentativa ou corrida específica realizada pelo micromouse. Consolida as métricas finais de hardware e desempenho.
-            \begin{itemize}
-                \item \textbf{id\_desafio}: Identificador único da corrida (Chave Primária).
-                \item \textbf{data\_hora\_execucao}: Registro cronológico (timestamp) de quando a corrida foi iniciada.
-                \item \textbf{consumo\_bateria}: Métrica de energia gasta pelo robô durante o trajeto.
-                \item \textbf{velocidade\_media}: Métrica de desempenho cinemático do robô.
-                \item \textbf{tempo\_conclusao}: Tempo total gasto do início ao fim da corrida.
-                \item \textbf{desafio\_cumprido}: Indicador booleano (Verdadeiro/Falso) que define se o robô alcançou o centro do labirinto com sucesso.
-            \end{itemize}
-
-            \item \textbf{Entidade: Trajeto} \\
-            Representa a unidade de coordenada percorrida. Armazena o passo a passo do robô para permitir a reconstrução visual do caminho no front-end.
-            \begin{itemize}
-                \item \textbf{id\_trajeto}: Identificador único da coordenada registrada (Chave Primária).
-                \item \textbf{ordem\_movimento}: Valor sequencial numérico para garantir a ordenação cronológica do caminho traçado.
-                \item \textbf{posicao\_x}: Coordenada horizontal correspondente à matriz do labirinto.
-                \item \textbf{posicao\_y}: Coordenada vertical correspondente à matriz do labirinto.
-            \end{itemize}
+    \begin{itemize}
+            \item \textbf{Linguagens de programação:} JavaScript (ES6+) e C++.
+            \item \textbf{\textit{Frameworks}, bibliotecas e protocolos:} 
+            No \textit{front-end}, utiliza-se \textbf{React (Vite)} com \textbf{Tailwind CSS}. No \textit{back-end}, \textbf{Node.js}, \textbf{Express} e \textbf{Socket.io}. Para o \textit{firmware}, o \textit{framework} \textbf{Arduino} via \textbf{PlatformIO}. 
+            % Adicionando a lista de protocolos aqui:
+            A comunicação é regida pelos protocolos \textbf{MQTT} (entre ESP32 e Broker) para telemetria leve e \textbf{WebSockets} (entre Backend e Frontend) para atualização em tempo real.
+            
+            \item \textbf{Banco de dados:} Relacional \textbf{PostgreSQL} via Docker.
         \end{itemize}
+
+        \item \textbf{Diagrama de alto nível:} 
+        A arquitetura segue um fluxo de dados linear e reativo, conforme descrito abaixo:
+        
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=0.9\textwidth]{figuras/diagrama_arquitetura.png}
+            \caption{Fluxo de dados e arquitetura da solução.}
+            \label{fig:arquitetura}
+        \end{figure}
+
+    \begin{enumerate}
+        \item \textbf{ESP32:} Coleta dados de sensores e publica pacotes JSON via \textbf{MQTT} no tópico \texttt{rato/telemetria}.
+        \item \textbf{Broker Mosquitto:} Recebe as mensagens e as encaminha para os assinantes ativos.
+        \item \textbf{Node.js (\textit{Back-end}):} Atua como assinante (\textit{subscriber}) do broker, processa os dados recebidos, realiza a persistência no \textbf{PostgreSQL} e emite eventos via \textbf{WebSockets}.
+        \item \textbf{React (\textit{Front-end}):} Escuta os eventos emitidos pelo servidor e renderiza instantaneamente o labirinto e os gráficos de consumo energético.
+    \end{enumerate}
+    
+    \item \textcolor{red}{ \textbf{Persistência de dados:} diagrama de entidade relacionamento do banco de dados usado na solução proposta.}
+    \item \textcolor{red}{ \textbf{Análise de dados:} as variáveis definidas nos requisitos do projeto em abordagem numérica e gráfica.}
+    \item \textcolor{red}{ \textbf{Diagrama de estados} esclarecendo os estados assumidos pelo \textit{software} e os eventos que causam as mudanças de estado do \textit{software}.}
+    \item \textcolor{red}{ \textbf{Protótipo funcional do \textit{software}, navegável.}}
+    \item {\textbf{ Roteiro de testes funcionais:} }
+    \subsubsection*{CT01 – Exibição do tipo do labirinto}
+\begin{itemize}
+    \item \textbf{Código do caso de teste:} CT01
+    \item \textbf{Nome do caso de teste:} Exibir tipo do labirinto
+    \item \textbf{Tipo do caso de teste:} Sistema
+    \item \textbf{Objetivo do caso de teste:} Verificar se o tipo do labirinto é exibido corretamente no sistema.
+    \item \textbf{Pré-condições:} Micromouse enviando dados de telemetria.
+    \item \textbf{Descrição dos procedimentos:}
+    \begin{enumerate}
+        \item Acessar o sistema.
+        \item Iniciar envio de telemetria.
+        \item Observar o campo “Tipo do labirinto”.
+    \end{enumerate}
+    \item \textbf{Resultado esperado:} O tipo do labirinto é exibido corretamente e o valor corresponde ao dado enviado.
+    \item \textbf{Especificação do reparo a ser executado:} \textit    Descrever a correção necessária caso o valor exibido esteja incorreto
+    \item \textbf{Resultado após reparo:} \textit    Registrar o comportamento do sistema após a correção
+\end{itemize}
+
+\subsubsection*{CT02 – Exibição do trajeto no labirinto}
+\begin{itemize}
+    \item \textbf{Código do caso de teste:} CT02
+    \item \textbf{Nome do caso de teste:} Exibir trajeto do micromouse
+    \item \textbf{Tipo do caso de teste:} Sistema
+    \item \textbf{Objetivo do caso de teste:} Verificar se o trajeto percorrido é exibido corretamente.
+    \item \textbf{Pré-condições:} Sistema recebendo dados em tempo real.
+    \item \textbf{Descrição dos procedimentos:}
+    \begin{enumerate}
+        \item Acessar o sistema.
+        \item Iniciar execução do micromouse.
+        \item Observar a visualização do trajeto.
+    \end{enumerate}
+    \item \textbf{Resultado esperado:} O trajeto é exibido corretamente e atualizado em tempo real.
+    \item \textbf{Especificação do reparo a ser executado:} \textit    Descrever ajustes necessários caso o trajeto esteja incorreto
+    \item \textbf{Resultado após reparo:} \textit    Registrar se o trajeto passou a ser exibido corretamente
+\end{itemize}
+
+\subsubsection*{CT03 – Exibição do consumo de bateria}
+\begin{itemize}
+    \item \textbf{Código do caso de teste:} CT03
+    \item \textbf{Nome do caso de teste:} Exibir consumo de bateria
+    \item \textbf{Tipo do caso de teste:} Sistema
+    \item \textbf{Objetivo do caso de teste:} Verificar se o consumo de bateria é exibido corretamente.
+    \item \textbf{Pré-condições:} Micromouse enviando dados.
+    \item \textbf{Descrição dos procedimentos:}
+    \begin{enumerate}
+        \item Acessar o sistema.
+        \item Iniciar envio de telemetria.
+        \item Observar o campo de bateria.
+    \end{enumerate}
+    \item \textbf{Resultado esperado:} O consumo é exibido corretamente e os valores são atualizados em tempo real.
+    \item \textbf{Especificação do reparo a ser executado:} \textit    Corrigir inconsistências nos dados exibidos ou na atualização
+    \item \textbf{Resultado após reparo:} \textit    Verificar se os valores passaram a ser exibidos corretamente
+\end{itemize}
+
+\subsubsection*{CT04 – Exibição da velocidade média}
+\begin{itemize}
+    \item \textbf{Código do caso de teste:} CT04
+    \item \textbf{Nome do caso de teste:} Exibir velocidade média
+    \item \textbf{Tipo do caso de teste:} Sistema
+    \item \textbf{Objetivo do caso de teste:} Verificar se a velocidade média é exibida corretamente.
+    \item \textbf{Pré-condições:} Micromouse enviando dados.
+    \item \textbf{Descrição dos procedimentos:}
+    \begin{enumerate}
+        \item Acessar o sistema.
+        \item Iniciar envio de telemetria.
+        \item Observar o campo de velocidade.
+    \end{enumerate}
+    \item \textbf{Resultado esperado:} A velocidade média é exibida corretamente e os valores são atualizados em tempo real.
+    \item \textbf{Especificação do reparo a ser executado:} \textit    Ajustar cálculo ou exibição da velocidade
+    \item \textbf{Resultado após reparo:} \textit    Velocidade exibida corretamente
+\end{itemize}
+
+\subsubsection*{CT05 – Exibição do tempo de conclusão}
+\begin{itemize}
+    \item \textbf{Código do caso de teste:} CT05
+    \item \textbf{Nome do caso de teste:} Exibir tempo de conclusão
+    \item \textbf{Tipo do caso de teste:} Sistema
+    \item \textbf{Objetivo do caso de teste:} Verificar se o tempo de conclusão é exibido corretamente.
+    \item \textbf{Pré-condições:} Execução do micromouse finalizada.
+    \item \textbf{Descrição dos procedimentos:}
+    \begin{enumerate}
+        \item Executar o micromouse.
+        \item Aguardar o término da execução.
+        \item Observar o campo de tempo.
+    \end{enumerate}
+    \item \textbf{Resultado esperado:} O tempo de conclusão é exibido corretamente.
+    \item \textbf{Especificação do reparo a ser executado:} \textit Corrigir exibição do tempo
+    \item \textbf{Resultado após reparo:} \textit Tempo correto exibido
+\end{itemize}
+
+\subsubsection*{CT06 – Exibição do status do desafio}
+\begin{itemize}
+    \item \textbf{Código do caso de teste:} CT06
+    \item \textbf{Nome do caso de teste:} Exibir desafio cumprido
+    \item \textbf{Tipo do caso de teste:} Sistema
+    \item \textbf{Objetivo do caso de teste:} Verificar se o sistema exibe corretamente o status do desafio.
+    \item \textbf{Pré-condições:} Execução finalizada.
+    \item \textbf{Descrição dos procedimentos:}
+    \begin{enumerate}
+        \item Executar o micromouse.
+        \item Finalizar o percurso.
+        \item Observar o campo “Desafio cumprido”.
+    \end{enumerate}
+    \item \textbf{Resultado esperado:} O sistema exibe “Sim” quando o desafio é concluído e “Não” quando não concluído.
+    \item \textbf{Especificação do reparo a ser executado:} \textit Ajustar lógica de status
+    \item \textbf{Resultado após reparo:} \textit Status correto exibido
+\end{itemize}
+
+\subsubsection*{CT07 – Atualização em tempo real}
+\begin{itemize}
+    \item \textbf{Código do caso de teste:} CT07
+    \item \textbf{Nome do caso de teste:} Atualização contínua dos dados
+    \item \textbf{Tipo do caso de teste:} Sistema
+    \item \textbf{Objetivo do caso de teste:} Verificar se os dados são atualizados em tempo real.
+    \item \textbf{Pré-condições:} Sistema recebendo dados continuamente.
+    \item \textbf{Descrição dos procedimentos:}
+    \begin{enumerate}
+        \item Acessar o sistema.
+        \item Iniciar envio contínuo de dados.
+        \item Observar os campos.
+    \end{enumerate}
+    \item \textbf{Resultado esperado:} Os dados são atualizados automaticamente, não sendo necessário recarregar a página.
+    \item \textbf{Especificação do reparo a ser executado:} \textit Corrigir mecanismo de atualização
+    \item \textbf{Resultado após reparo:} \textit Dados atualizados corretamente
+\item \textbf{Roteiro de testes do algoritmo principal:}
+
+\subsubsection*{CT01 – Inicialização do mapa interno}
+\begin{itemize}
+    \item \textbf{Código do caso de teste:} CT01
+    \item \textbf{Nome do caso de teste:} Inicialização da estrutura de dados do labirinto
+    \item \textbf{Tipo do caso de teste:} Unitário
+    \item \textbf{Objetivo do caso de teste:} Verificar se a estrutura de dados que representa o mapa interno do labirinto é inicializada corretamente antes do início de qualquer exploração.
+    \item \textbf{Pré-condições:} Firmware carregado no microcontrolador; nenhuma leitura de sensor realizada; mapa não inicializado.
+    \item \textbf{Descrição dos procedimentos:}
+    \begin{enumerate}
+        \item Executar a função de inicialização do mapa.
+        \item Inspecionar o estado de cada célula via debug serial.
+        \item Verificar as bordas externas e a posição inicial do robô.
+    \end{enumerate}
+    \item \textbf{Resultado esperado:} Todas as células marcadas como inexploradas; bordas externas marcadas como paredes; posição do robô definida na célula de partida; nenhum dado residual de execução anterior.
+    \item \textbf{Especificação do reparo a ser executado:} \textit{Revisar a função de inicialização para garantir que todos os campos da estrutura sejam explicitamente atribuídos; verificar se há uso de memória estática não zerada.}
+    \item \textbf{Resultado após reparo:} \textit{Registrar o comportamento do sistema após a correção.}
+\end{itemize}
+
+\subsubsection*{CT02 – Atualização de paredes por sensores}
+\begin{itemize}
+    \item \textbf{Código do caso de teste:} CT02
+    \item \textbf{Nome do caso de teste:} Atualização de paredes a partir de leituras de sensores
+    \item \textbf{Tipo do caso de teste:} Unitário
+    \item \textbf{Objetivo do caso de teste:} Verificar se as leituras dos sensores de proximidade são corretamente convertidas em paredes registradas no mapa interno.
+    \item \textbf{Pré-condições:} Mapa inicializado (CT01 aprovado); valores de sensores injetados manualmente indicando parede à frente e à esquerda, livre à direita.
+    \item \textbf{Descrição dos procedimentos:}
+    \begin{enumerate}
+        \item Injetar leituras simuladas indicando parede frontal e esquerda.
+        \item Chamar a função de atualização do mapa.
+        \item Inspecionar o mapa resultante via debug serial.
+    \end{enumerate}
+    \item \textbf{Resultado esperado:} Apenas as paredes frontal e esquerda da célula atual são marcadas como presentes; parede direita permanece ausente; demais células não são alteradas.
+    \item \textbf{Especificação do reparo a ser executado:} \textit{Verificar o mapeamento entre os índices de sensor e a orientação atual do robô; corrigir erros de indexação ou de conversão de coordenadas locais para globais.}
+    \item \textbf{Resultado após reparo:} \textit{Registrar se as paredes passaram a ser registradas corretamente no mapa.}
+\end{itemize}
+
+\subsubsection*{CT03 – Cálculo do próximo movimento}
+\begin{itemize}
+    \item \textbf{Código do caso de teste:} CT03
+    \item \textbf{Nome do caso de teste:} Cálculo do próximo movimento em corredor reto
+    \item \textbf{Tipo do caso de teste:} Unitário
+    \item \textbf{Objetivo do caso de teste:} Verificar se a função de decisão retorna o movimento correto dado um estado de mapa com apenas uma saída disponível.
+    \item \textbf{Pré-condições:} Mapa configurado manualmente com corredor reto (paredes à esquerda, direita e atrás; livre à frente); robô na posição inicial com orientação Norte.
+    \item \textbf{Descrição dos procedimentos:}
+    \begin{enumerate}
+        \item Configurar o mapa com o cenário descrito nas pré-condições.
+        \item Chamar a função de decisão do algoritmo.
+        \item Registrar o movimento retornado via debug serial.
+    \end{enumerate}
+    \item \textbf{Resultado esperado:} A função retorna o comando de avançar; nenhum outro movimento é considerado.
+    \item \textbf{Especificação do reparo a ser executado:} \textit{Revisar a lógica de prioridade de movimentos; verificar se a consulta ao mapa está usando a orientação correta do robô.}
+    \item \textbf{Resultado após reparo:} \textit{Registrar se o movimento correto passou a ser retornado.}
+\end{itemize}
+
+\subsubsection*{CT04 – Atualização de posição e orientação}
+\begin{itemize}
+    \item \textbf{Código do caso de teste:} CT04
+    \item \textbf{Nome do caso de teste:} Atualização de posição e orientação após movimentos
+    \item \textbf{Tipo do caso de teste:} Unitário
+    \item \textbf{Objetivo do caso de teste:} Verificar se a posição e a orientação internas do robô são atualizadas corretamente após uma sequência de movimentos.
+    \item \textbf{Pré-condições:} Posição inicial (0,0); orientação Norte; mapa sem restrições de parede.
+    \item \textbf{Descrição dos procedimentos:}
+    \begin{enumerate}
+        \item Emitir comando de avançar uma célula.
+        \item Emitir comando de girar 90° à direita.
+        \item Emitir comando de avançar uma célula.
+        \item Inspecionar posição e orientação resultantes via debug serial.
+    \end{enumerate}
+    \item \textbf{Resultado esperado:} A posição e a orientação internas refletem corretamente os movimentos executados, de acordo com o sistema de coordenadas adotado pela equipe.
+    \item \textbf{Especificação do reparo a ser executado:} \textit{Verificar os incrementos de coordenada para cada direção; corrigir o mapeamento entre orientação e variação de posição.}
+    \item \textbf{Resultado após reparo:} \textit{Registrar se a posição e orientação passaram a ser atualizadas corretamente.}
+\end{itemize}
+
+\subsubsection*{CT05 – Detecção da célula objetivo}
+\begin{itemize}
+    \item \textbf{Código do caso de teste:} CT05
+    \item \textbf{Nome do caso de teste:} Detecção da célula objetivo
+    \item \textbf{Tipo do caso de teste:} Unitário
+    \item \textbf{Objetivo do caso de teste:} Verificar se o algoritmo identifica corretamente quando o \textit{micromouse} atingiu a área central do labirinto.
+    \item \textbf{Pré-condições:} Mapa inicializado; coordenadas do objetivo definidas conforme o tamanho do labirinto em teste.
+    \item \textbf{Descrição dos procedimentos:}
+    \begin{enumerate}
+        \item Setar manualmente a posição atual para as coordenadas da célula objetivo.
+        \item Chamar a função de verificação de objetivo.
+        \item Repetir o teste com coordenadas fora da área objetivo.
+    \end{enumerate}
+    \item \textbf{Resultado esperado:} A função retorna verdadeiro para as coordenadas do objetivo e falso para todas as demais coordenadas testadas.
+    \item \textbf{Especificação do reparo a ser executado:} \textit{Corrigir as coordenadas de objetivo ou o cálculo dinâmico do centro para cada tamanho de labirinto (4×4, 8×8 e 16×16).}
+    \item \textbf{Resultado após reparo:} \textit{Registrar se a detecção passou a funcionar corretamente.}
+\end{itemize}
+
+\subsubsection*{CT06 – Integração entre algoritmo e motores}
+\begin{itemize}
+    \item \textbf{Código do caso de teste:} CT06
+    \item \textbf{Nome do caso de teste:} Integração entre algoritmo de decisão e controle de motores
+    \item \textbf{Tipo do caso de teste:} Integração
+    \item \textbf{Objetivo do caso de teste:} Verificar se o movimento calculado pelo algoritmo resulta no acionamento correto dos motores.
+    \item \textbf{Pré-condições:} CT03 e CT04 aprovados; \textit{micromouse} em superfície plana com corredor livre de três células.
+    \item \textbf{Descrição dos procedimentos:}
+    \begin{enumerate}
+        \item Configurar o mapa com um corredor reto de três células.
+        \item Executar o loop principal do algoritmo por três iterações.
+        \item Observar e registrar os movimentos físicos do \textit{micromouse}.
+    \end{enumerate}
+    \item \textbf{Resultado esperado:} O \textit{micromouse} avança três células em linha reta sem desvios perceptíveis; posição interna atualizada corretamente ao final das três iterações.
+    \item \textbf{Especificação do reparo a ser executado:} \textit{Verificar o tempo de ativação dos motores para uma célula (18 cm); calibrar encoders ou tempo de pulso para garantir deslocamento correto.}
+    \item \textbf{Resultado após reparo:} \textit{Registrar se o deslocamento passou a ocorrer corretamente.}
+\end{itemize}
+
+\subsubsection*{CT07 – Exploração autônoma no labirinto 4×4}
+\begin{itemize}
+    \item \textbf{Código do caso de teste:} CT07
+    \item \textbf{Nome do caso de teste:} Exploração autônoma completa no labirinto 4×4
+    \item \textbf{Tipo do caso de teste:} Sistema
+    \item \textbf{Objetivo do caso de teste:} Validar que o algoritmo explora todas as células acessíveis do labirinto 4×4 de forma autônoma, sem intervenção humana, e detecta corretamente o objetivo central.
+    \item \textbf{Pré-condições:} Pista 4×4 da equipe montada com paredes brancas, topos vermelhos e chão preto; mapa interno zerado; \textit{micromouse} posicionado no canto de partida.
+    \item \textbf{Descrição dos procedimentos:}
+    \begin{enumerate}
+        \item Ligar o \textit{micromouse} na posição de partida.
+        \item Aguardar até que o robô pare ou sinalize conclusão.
+        \item Registrar via telemetria o mapa gerado, o trajeto percorrido e o tempo de conclusão.
+        \item Verificar se houve colisão com alguma parede.
+    \end{enumerate}
+    \item \textbf{Resultado esperado:} Todas as células acessíveis marcadas como exploradas; objetivo central encontrado; nenhuma colisão com paredes; dados de telemetria exibidos no sistema web ao final.
+    \item \textbf{Especificação do reparo a ser executado:} \textit{Identificar células não exploradas no mapa e revisar a lógica de seleção do próximo destino; calibrar sensores se houver colisões.}
+    \item \textbf{Resultado após reparo:} \textit{Registrar se o labirinto passou a ser explorado corretamente.}
+\end{itemize}
+
+\subsubsection*{CT08 – Repetibilidade da navegação}
+\begin{itemize}
+    \item \textbf{Código do caso de teste:} CT08
+    \item \textbf{Nome do caso de teste:} Repetibilidade da navegação no labirinto 4×4
+    \item \textbf{Tipo do caso de teste:} Sistema
+    \item \textbf{Objetivo do caso de teste:} Verificar se o algoritmo produz resultados consistentes em múltiplas execuções com o mesmo labirinto fixo.
+    \item \textbf{Pré-condições:} CT07 aprovado; labirinto 4×4 com configuração de paredes fixa; \textit{micromouse} reiniciado entre execuções.
+    \item \textbf{Descrição dos procedimentos:}
+    \begin{enumerate}
+        \item Executar o CT07 três vezes consecutivas.
+        \item Registrar o mapa gerado e o tempo de conclusão em cada execução.
+    \end{enumerate}
+    \item \textbf{Resultado esperado:} Os três mapas gerados são idênticos entre si; os tempos de conclusão variam menos de 20\% entre as execuções.
+    \item \textbf{Especificação do reparo a ser executado:} \textit{Investigar fontes de não-determinismo no algoritmo, como ruído nos sensores ou condições de corrida em interrupções; implementar filtros de leitura.}
+    \item \textbf{Resultado após reparo:} \textit{Registrar se os resultados passaram a ser consistentes entre execuções.}
+
+\end{itemize}
+
+% \textcolor{red}{Com relação ao \textit{software}, será necessário apresentar os seguintes itens: % pacotes de componentes de \textit{software}, suas funções e características, e explicar as decisões de projeto:
+% \begin{enumerate}
+%     \item Um diagrama do processo de negócio do problema que a máquina se propõe a resolver (BPNM) – não é UML, mas é fundamental para entender como o sistema se comporta como um todo, incluindo o usuário;
+%     \item Lista de casos de uso (backlog do sistema). Backlog funcional;
+%     \item Lista de requisitos não-funcionais a serem satisfeitos pelo sistema;
+%     \item Diagrama de casos de uso: mostrando os requisitos funcionais, seus atores e como eles interagem entre si;
+%     \item Diagrama de Classes: apresentando quais dados são manipulados pelo sistema (internamente e externamente – ex.: resultados de experimentos);
+%     \item Diagrama de arquitetura, identificando todos os componentes da máquina e suas iterações com o software;
+%     \item Diagrama de estados da máquina (sistema);
+%     \item Descrição dos testes dos componentes da máquina e dos testes funcionais que deveriam ser feitos para avaliar o funcionamento da máquina e identificar defeitos. São importantes os testes unitários (componentes) e de integração (conjunto de componentes) e o roteiro de testes.
+% \end{enumerate}
+% }
+%\textcolor{red}{Com relação ao \textit{software}, será necessário apresentar pacotes de componentes de \textit{software}, suas funções e características, e explicar as decisões de projeto.}
 
         \subsubsection{Relacionamentos e Cardinalidades}
 
