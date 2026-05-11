@@ -94,71 +94,49 @@ A equipe foi dividida em quatro áreas principais: eletrônica, software, estrut
 
     \item \textcolor{red}{\textbf{\textit{Backlog} do Produto}}
     \begin{itemize}
-        \item \textcolor{red}{ Descrever os   requisitos funcionais (RF) com a técnica de documentação e especificação de história de usuário (HU);}
-        \item \textcolor{red}{ Descrever os requisitos não-funcionais (RNF) de forma objetiva; Mais facilmente, mais rapidamente, mais responsivo, de fácil uso, são descrições subjetivas não-válidas. Um exemplo de requisito não-funcional de desempenho: ``a página deve carregar em até 5s quando em conexão 4G''. }
-        \item \textcolor{red}{ Ao descrever os requisitos (RF e RNF), usar a  classificação MoSCoW (\textit{Must have}, \textit{Should have} e \textit{Could have}),  para auxiliar a priorização dos itens do backlog.}
-        \item \textcolor{red}{ Protótipos de interfafe gráfica do \textit{software} em alta fidelidade.}
-        \begin{itemize}
-            \item \textcolor{red}{\textbf{ Todas HUs devem conter sua descrição (Eu-Como-Para), critérios de aceitação e protótipos de interface, documentadas no github. }}
-            \end{itemize} 
-
-        \end{itemize}
-
-    \item \textcolor{red}{ \textbf{Descrição da arquitetura da solução de \textit{software} proposta:}}
-    \begin{itemize}
-    
-        \item \textcolor{red}{ Esta subseção deve contemplar o documento de arquitetura do sistema e deve ser estruturado segundo as visões (4+1) previstas no processo unificado (UP): lógica, de processos;  implementação, implantação e dados (substuirá a visão de casos de uso).}
-        
-        \item \textcolor{red}{ Propósito do \textit{software} (qual o seu papel no sistema);}
-        \item \textcolor{red}{ Padrão adotado: MVC, MVP, Microsserviços, Monolítico, etc (Justificar);}
-        \item \textcolor{red}{ Linguagens de programação: Java, Python, C\#, JavaScript, etc.}
-        \item \textcolor{red}{ \textit{Frameworks} e bibliotecas: Spring Boot, .NET Core, React, Angular, Django, etc.}
-            \item \textcolor{red}{ Banco de dados: Relacional (PostgreSQL, MySQL, etc) X NãoSQL (MongoDB,etc). }
-        \item \textcolor{red}{Persistência de dados: Modelo Entidade‑Relacionamento (MER) e seu respectivo Diagrama Entidade‑Relacionamento (DER), aplicáveis quando a solução utiliza banco de dados relacional; alternativamente, diagrama de estrutura de documentos, empregado nos casos em que a arquitetura adota banco de dados não relacional.}
-         \end{itemize}     
-     
-         \subsection{Modelo Entidade-Relacionamento (MER) }
-
-        O modelo conceitual do sistema foi projetado para registrar o histórico de telemetria e o mapeamento de coordenadas do robô de forma eficiente. O domínio do problema foi abstraído nas seguintes entidades, atributos e relacionamentos:
-
-        \subsubsection{Entidades e Atributos}
-
-        \begin{itemize}
-            \item \textbf{Entidade: Labirinto} \\
-            Representa os diferentes mapas físicos onde as corridas ocorrem.
-            \begin{itemize}
-                \item \textbf{id\_labirinto}: Identificador único do mapa (Chave Primária).
-                \item \textbf{tipo\_matriz}: Classificação da dimensão da grade (Ex: 4x4, 8x8, 16x16).
-                \item \textbf{tamanho\_celula\_cm}: Medida física do lado de cada célula para auxiliar a renderização.
-            \end{itemize}
-
-            \item \textbf{Entidade: Desafio} \\
-            Representa o evento de uma tentativa ou corrida específica realizada pelo micromouse. Consolida as métricas finais de hardware e desempenho.
-            \begin{itemize}
-                \item \textbf{id\_desafio}: Identificador único da corrida (Chave Primária).
-                \item \textbf{data\_hora\_execucao}: Registro cronológico (timestamp) de quando a corrida foi iniciada.
-                \item \textbf{consumo\_bateria}: Métrica de energia gasta pelo robô durante o trajeto.
-                \item \textbf{velocidade\_media}: Métrica de desempenho cinemático do robô.
-                \item \textbf{tempo\_conclusao}: Tempo total gasto do início ao fim da corrida.
-                \item \textbf{desafio\_cumprido}: Indicador booleano (Verdadeiro/Falso) que define se o robô alcançou o centro do labirinto com sucesso.
-            \end{itemize}
-
-            \item \textbf{Entidade: Trajeto} \\
-            Representa a unidade de coordenada percorrida. Armazena o passo a passo do robô para permitir a reconstrução visual do caminho no front-end.
-            \begin{itemize}
-                \item \textbf{id\_trajeto}: Identificador único da coordenada registrada (Chave Primária).
-                \item \textbf{ordem\_movimento}: Valor sequencial numérico para garantir a ordenação cronológica do caminho traçado.
-                \item \textbf{posicao\_x}: Coordenada horizontal correspondente à matriz do labirinto.
-                \item \textbf{posicao\_y}: Coordenada vertical correspondente à matriz do labirinto.
-            \end{itemize}
-        \end{itemize}
-        \item \textcolor{red}{ Diagrama de alto nível: representação esquemática dos componentes da arquitetura, suas responsabilidades e comunicações, esclarecendo a composição do \textit{front-end} e do \textit{back-end}.}
+        \item \textcolor{red}{ Descrever os requisitos não-funcionais de forma objetiva;}
+        \item \textcolor{red}{ Mais facilmente, mais rapidamente, são descrições subjetivas não-válidas. Um exemplo de requisito não-funcional de desempenho: ``a página deve carregar em até 5s quando em conexão 4G''. }
     \end{itemize}
+    \item \textcolor{red}{ \textbf{Diagrama de casos de uso,} contendo os atores do sistema, os requisitos com os quais eles interagem e os tipos de relacionamentos entre requisitos realizados por um mesmo ator (ex.: \textit{include}, \textit{extend}). Obs.: este é um diagrama sobre requisitos funcionais.}
+    \item \textbf{Descrição da arquitetura da solução de \textit{software} proposta:}
+    
+    O \textit{software} atua como o núcleo de inteligência e monitoramento do sistema (Mission Control). Sua função é processar a telemetria enviada pelo robô em tempo real, gerenciar a construção dinâmica do mapa do labirinto, executar algoritmos de \textit{pathfinding} para determinar a rota otimizada e fornecer uma interface gráfica para visualização de métricas de energia e desempenho.
+    
+    \item \textbf{Estilo arquitetural contendo:}
+    
+    Arquitetura Orientada a Eventos (\textit{Event-Driven Architecture}) com Monólito Modular no \textit{backend}. Este padrão permite lidar com a natureza assíncrona dos dados de sensores, garantindo que o sistema reaja a eventos instantâneos sem latência perceptível. Como stack principal tem-se como:
+
+    \begin{itemize}
+            \item \textbf{Linguagens de programação:} JavaScript (ES6+) e C++.
+            \item \textbf{\textit{Frameworks}, bibliotecas e protocolos:} 
+            No \textit{front-end}, utiliza-se \textbf{React (Vite)} com \textbf{Tailwind CSS}. No \textit{back-end}, \textbf{Node.js}, \textbf{Express} e \textbf{Socket.io}. Para o \textit{firmware}, o \textit{framework} \textbf{Arduino} via \textbf{PlatformIO}. 
+            % Adicionando a lista de protocolos aqui:
+            A comunicação é regida pelos protocolos \textbf{MQTT} (entre ESP32 e Broker) para telemetria leve e \textbf{WebSockets} (entre Backend e Frontend) para atualização em tempo real.
+            
+            \item \textbf{Banco de dados:} Relacional \textbf{PostgreSQL} via Docker.
+        \end{itemize}
+
+        \item \textbf{Diagrama de alto nível:} 
+        A arquitetura segue um fluxo de dados linear e reativo, conforme descrito abaixo:
+        
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=0.9\textwidth]{figuras/diagrama_arquitetura.png}
+            \caption{Fluxo de dados e arquitetura da solução.}
+            \label{fig:arquitetura}
+        \end{figure}
+
+    \begin{enumerate}
+        \item \textbf{ESP32:} Coleta dados de sensores e publica pacotes JSON via \textbf{MQTT} no tópico \texttt{rato/telemetria}.
+        \item \textbf{Broker Mosquitto:} Recebe as mensagens e as encaminha para os assinantes ativos.
+        \item \textbf{Node.js (\textit{Back-end}):} Atua como assinante (\textit{subscriber}) do broker, processa os dados recebidos, realiza a persistência no \textbf{PostgreSQL} e emite eventos via \textbf{WebSockets}.
+        \item \textbf{React (\textit{Front-end}):} Escuta os eventos emitidos pelo servidor e renderiza instantaneamente o labirinto e os gráficos de consumo energético.
+    \end{enumerate}
+    
     \item \textcolor{red}{ \textbf{Persistência de dados:} diagrama de entidade relacionamento do banco de dados usado na solução proposta.}
     \item \textcolor{red}{ \textbf{Análise de dados:} as variáveis definidas nos requisitos do projeto em abordagem numérica e gráfica.}
     \item \textcolor{red}{ \textbf{Diagrama de estados} esclarecendo os estados assumidos pelo \textit{software} e os eventos que causam as mudanças de estado do \textit{software}.}
     \item \textcolor{red}{ \textbf{Protótipo funcional do \textit{software}, navegável.}}
-    
     \item {\textbf{ Roteiro de testes funcionais:} }
     \subsubsection*{CT01 – Exibição do tipo do labirinto}
 \begin{itemize}
