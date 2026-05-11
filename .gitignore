@@ -3,7 +3,10 @@
 .vscode
 
 # Adicione outros arquivos a serem ignorados aqui
-# ...
+
+# node
+node_modules/
+
 
 # LaTeX
 
@@ -330,3 +333,14 @@ TSWLatexianTemp*
 
 # xwatermark package
 *.xwm
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.iws
+*.ipr
+
+
+# Sistema operacional
+.DS_Store
+Thumbs.db

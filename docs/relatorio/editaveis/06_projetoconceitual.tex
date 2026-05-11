@@ -2,10 +2,17 @@
 
 \section{Características gerais}
 
-\textcolor{red}{Descrever produto de forma geral. Apresentar itens teóricos sobre o projeto a serem aprofundados ou detalhados oportunamente.}
-
-\textcolor{red}{Apresentar e explicar a Estrutura Analítica do Projeto (EAP), tomando cuidado com a legibilidade da imagem. Se necessário, coloque a EAP dentro do comando ``\textsf{\textbackslash begin\{landscape\} \textbackslash end\{landscape\}}'' para que ela seja apresentada em uma página deitada.}
-
+O projeto consiste no desenvolvimento de um \textit{micromouse}, capaz de percorrer um labirinto de forma autônoma e armazenar os dados do percurso em tempo real. O sistema utiliza sensores e algoritmos de navegação para tomada de decisão durante a exploração do ambiente.
+Para a gestão do projeto, foi utilizada a Estrutura Analítica do Projeto (EAP), com o objetivo de organizar as atividades e definir as responsabilidades de cada integrante da equipe.
+A equipe foi dividida em quatro áreas principais: eletrônica, software, estrutura e energia. Em cada uma dessas áreas, foi estabelecida uma hierarquia de atividades a serem desenvolvidas, permitindo uma melhor organização das tarefas e acompanhamento do progresso do projeto.
+\begin{landscape}
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=\linewidth]{figuras/EAP.png}
+    \caption{Estrutura Analítica do Projeto (EAP) do sistema Ratobô}
+    \label{fig:eap}
+\end{figure}
+\end{landscape}
 \section{Estrutura}
 
 \textcolor{red}{Apresentar desenho em CAD, indicar dimensões por lado/aresta/cota, indicar materiais utilizados e explicar o desenho e as decisões de projeto.}
@@ -49,30 +56,101 @@
 
 \section{Descrição de \textit{software}}
 
-\textcolor{red}{Itens fundamentais:}
-
 \begin{itemize}
-    \item \textcolor{red}{ \textbf{Diagrama BPMN para entender o \textit{software} proposto:} deve deixar claro os principais atores do sistema, suas atividades (de negócios), insumos e resultados.}
-    \item \textcolor{red}{\textbf{\textit{Backlog} funcional do \textit{software}:}}
+    \item \textbf{Diagrama Atividades UML:}  O seguinte diagrama de atividades UML representa o fluxo de comportamento entre o micromouse e site.
+    
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=\textwidth]{figuras/UML.png}
+        \caption{UML de atividade}
+        \label{fig:UML-de-atividade}
+    \end{figure}
+      
+    
+    \item Sensores:
     \begin{itemize}
-        \item \textcolor{red}{ Escrito no formato de histórias de usuário ou casos de uso (decisão da equipe);}
-        \item \textcolor{red}{ Ao declarar o \textit{backlog} de requisitos funcionais, usar a  classificação de MoSCoW (\textit{Must have}, \textit{Should have} e \textit{Could have}),  para um melhor entendimento do próprio \textit{backlog}.}
-    \end{itemize}
-    \item \textcolor{red}{\textbf{ \textit{Backlog} não-funcional do \textit{software}:}}
+        \item Sensores ultrassônico;
+        \item Sensor de tensão;
+        \item Encoders dos motores;
+        \item Cronômetro da ESP32.
+    \end{itemize} 
+    
+    \item Telemetria:
     \begin{itemize}
-        \item \textcolor{red}{ Descrever os requisitos não-funcionais de forma objetiva;}
-        \item \textcolor{red}{ Mais facilmente, mais rapidamente, são descrições subjetivas não-válidas. Um exemplo de requisito não-funcional de desempenho: ``a página deve carregar em até 5s quando em conexão 4G''. }
-    \end{itemize}
-    \item \textcolor{red}{ \textbf{Diagrama de casos de uso,} contendo os atores do sistema, os requisitos com os quais eles interagem e os tipos de relacionamentos entre requisitos realizados por um mesmo ator (ex.: \textit{include}, \textit{extend}). Obs.: este é um diagrama sobre requisitos funcionais.}
+        \item Ultimo movimento;
+        \item RPM dos motores;
+        \item Tensão e corrente;
+        \item Modo do micromouse atual;
+        \item Status de conclusão;
+        \item Tempo atual.
+    \end{itemize} 
+    
+    \item Modos do micromouse: 
+    \begin{itemize}
+        \item Procura DFS: Utiliza o algoritmo de busca em profundidade (DFS) até chegar na área de conclusão;
+        \item Retorno: Utiliza o algoritmo de \textit{Floofill} para voltar ao início;
+        \item Percurso otimizado: Escolhe a melhor rota a partir dos dados coletados nos outros modos e vai até a área de conclusão.
+    \end{itemize} 
+
+    \item \textcolor{red}{\textbf{\textit{Backlog} do Produto}}
+    \begin{itemize}
+        \item \textcolor{red}{ Descrever os   requisitos funcionais (RF) com a técnica de documentação e especificação de história de usuário (HU);}
+        \item \textcolor{red}{ Descrever os requisitos não-funcionais (RNF) de forma objetiva; Mais facilmente, mais rapidamente, mais responsivo, de fácil uso, são descrições subjetivas não-válidas. Um exemplo de requisito não-funcional de desempenho: ``a página deve carregar em até 5s quando em conexão 4G''. }
+        \item \textcolor{red}{ Ao descrever os requisitos (RF e RNF), usar a  classificação MoSCoW (\textit{Must have}, \textit{Should have} e \textit{Could have}),  para auxiliar a priorização dos itens do backlog.}
+        \item \textcolor{red}{ Protótipos de interfafe gráfica do \textit{software} em alta fidelidade.}
+        \begin{itemize}
+            \item \textcolor{red}{\textbf{ Todas HUs devem conter sua descrição (Eu-Como-Para), critérios de aceitação e protótipos de interface, documentadas no github. }}
+            \end{itemize} 
+
+        \end{itemize}
+
     \item \textcolor{red}{ \textbf{Descrição da arquitetura da solução de \textit{software} proposta:}}
     \begin{itemize}
+    
+        \item \textcolor{red}{ Esta subseção deve contemplar o documento de arquitetura do sistema e deve ser estruturado segundo as visões (4+1) previstas no processo unificado (UP): lógica, de processos;  implementação, implantação e dados (substuirá a visão de casos de uso).}
+        
         \item \textcolor{red}{ Propósito do \textit{software} (qual o seu papel no sistema);}
-        \item \textcolor{red}{ Estilo arquitetural contendo:}
-        \begin{itemize}
-            \item \textcolor{red}{ Padrão adotado: MVC, MVP, Microsserviços, Monolítico, etc (Justificar);}
-            \item \textcolor{red}{ Linguagens de programação: Java, Python, C\#, JavaScript, etc.}
-            \item \textcolor{red}{ \textit{Frameworks} e bibliotecas: Spring Boot, .NET Core, React, Angular, Django, etc.}
+        \item \textcolor{red}{ Padrão adotado: MVC, MVP, Microsserviços, Monolítico, etc (Justificar);}
+        \item \textcolor{red}{ Linguagens de programação: Java, Python, C\#, JavaScript, etc.}
+        \item \textcolor{red}{ \textit{Frameworks} e bibliotecas: Spring Boot, .NET Core, React, Angular, Django, etc.}
             \item \textcolor{red}{ Banco de dados: Relacional (PostgreSQL, MySQL, etc) X NãoSQL (MongoDB,etc). }
+        \item \textcolor{red}{Persistência de dados: Modelo Entidade‑Relacionamento (MER) e seu respectivo Diagrama Entidade‑Relacionamento (DER), aplicáveis quando a solução utiliza banco de dados relacional; alternativamente, diagrama de estrutura de documentos, empregado nos casos em que a arquitetura adota banco de dados não relacional.}
+         \end{itemize}     
+     
+         \subsection{Modelo Entidade-Relacionamento (MER) }
+
+        O modelo conceitual do sistema foi projetado para registrar o histórico de telemetria e o mapeamento de coordenadas do robô de forma eficiente. O domínio do problema foi abstraído nas seguintes entidades, atributos e relacionamentos:
+
+        \subsubsection{Entidades e Atributos}
+
+        \begin{itemize}
+            \item \textbf{Entidade: Labirinto} \\
+            Representa os diferentes mapas físicos onde as corridas ocorrem.
+            \begin{itemize}
+                \item \textbf{id\_labirinto}: Identificador único do mapa (Chave Primária).
+                \item \textbf{tipo\_matriz}: Classificação da dimensão da grade (Ex: 4x4, 8x8, 16x16).
+                \item \textbf{tamanho\_celula\_cm}: Medida física do lado de cada célula para auxiliar a renderização.
+            \end{itemize}
+
+            \item \textbf{Entidade: Desafio} \\
+            Representa o evento de uma tentativa ou corrida específica realizada pelo micromouse. Consolida as métricas finais de hardware e desempenho.
+            \begin{itemize}
+                \item \textbf{id\_desafio}: Identificador único da corrida (Chave Primária).
+                \item \textbf{data\_hora\_execucao}: Registro cronológico (timestamp) de quando a corrida foi iniciada.
+                \item \textbf{consumo\_bateria}: Métrica de energia gasta pelo robô durante o trajeto.
+                \item \textbf{velocidade\_media}: Métrica de desempenho cinemático do robô.
+                \item \textbf{tempo\_conclusao}: Tempo total gasto do início ao fim da corrida.
+                \item \textbf{desafio\_cumprido}: Indicador booleano (Verdadeiro/Falso) que define se o robô alcançou o centro do labirinto com sucesso.
+            \end{itemize}
+
+            \item \textbf{Entidade: Trajeto} \\
+            Representa a unidade de coordenada percorrida. Armazena o passo a passo do robô para permitir a reconstrução visual do caminho no front-end.
+            \begin{itemize}
+                \item \textbf{id\_trajeto}: Identificador único da coordenada registrada (Chave Primária).
+                \item \textbf{ordem\_movimento}: Valor sequencial numérico para garantir a ordenação cronológica do caminho traçado.
+                \item \textbf{posicao\_x}: Coordenada horizontal correspondente à matriz do labirinto.
+                \item \textbf{posicao\_y}: Coordenada vertical correspondente à matriz do labirinto.
+            \end{itemize}
         \end{itemize}
         \item \textcolor{red}{ Diagrama de alto nível: representação esquemática dos componentes da arquitetura, suas responsabilidades e comunicações, esclarecendo a composição do \textit{front-end} e do \textit{back-end}.}
     \end{itemize}
@@ -80,6 +158,7 @@
     \item \textcolor{red}{ \textbf{Análise de dados:} as variáveis definidas nos requisitos do projeto em abordagem numérica e gráfica.}
     \item \textcolor{red}{ \textbf{Diagrama de estados} esclarecendo os estados assumidos pelo \textit{software} e os eventos que causam as mudanças de estado do \textit{software}.}
     \item \textcolor{red}{ \textbf{Protótipo funcional do \textit{software}, navegável.}}
+    
     \item {\textbf{ Roteiro de testes funcionais:} }
     \subsubsection*{CT01 – Exibição do tipo do labirinto}
 \begin{itemize}
@@ -205,13 +284,6 @@
     \item \textbf{Resultado esperado:} Os dados são atualizados automaticamente, não sendo necessário recarregar a página.
     \item \textbf{Especificação do reparo a ser executado:} \textit Corrigir mecanismo de atualização
     \item \textbf{Resultado após reparo:} \textit Dados atualizados corretamente
-
-    % ============================================================
-%  ROTEIRO DE TESTES — ALGORITMO PRINCIPAL DO MICROMOUSE
-%  Formato idêntico ao dos testes funcionais do sistema web
-%  Cole abaixo da seção de testes do sistema web
-% ============================================================
-
 \item \textbf{Roteiro de testes do algoritmo principal:}
 
 \subsubsection*{CT01 – Inicialização do mapa interno}
@@ -373,3 +445,39 @@
 % \end{enumerate}
 % }
 %\textcolor{red}{Com relação ao \textit{software}, será necessário apresentar pacotes de componentes de \textit{software}, suas funções e características, e explicar as decisões de projeto.}
+
+        \subsubsection{Relacionamentos e Cardinalidades}
+
+        O comportamento do sistema é regido pelas seguintes regras de negócio entre as entidades:
+
+        \begin{itemize}
+            \item \textbf{Relacionamento: Labirinto possui Desafio}
+            \begin{itemize}
+                \item \textbf{Descrição:} Define o local onde uma tentativa ocorreu.
+                \item \textbf{Cardinalidade (1:N):} Um \textbf{Labirinto} físico pode ser palco de \textit{N} (vários) \textbf{Desafios} ao longo do tempo (1,n). Em contrapartida, um \textbf{Desafio} específico deve ocorrer em exatamente \textit{1} único \textbf{Labirinto} (1,1).
+            \end{itemize}
+
+            \item \textbf{Relacionamento: Desafio contém Trajeto}
+            \begin{itemize}
+                \item \textbf{Descrição:} Vincula as coordenadas capturadas à sua respectiva corrida.
+                \item \textbf{Cardinalidade (1:N):} Um \textbf{Desafio} completo registra \textit{N} (vários) pontos de \textbf{Trajeto} para compor seu caminho final (1,n). Por outro lado, uma coordenada de \textbf{Trajeto} armazenada pertence estritamente a \textit{1} único \textbf{Desafio} (1,1).
+            \end{itemize}
+        \end{itemize}
+
+        \begin{figure}[ht]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figuras/DER.png}
+    \caption{Diagrama Lógico de Dados (DER) do sistema de telemetria.}
+    \label{fig:der_logico}
+    \end{figure}
+
+    \item \textcolor{red}{\textbf{ Roteiro de testes funcionais:} }
+    \begin{itemize}
+        \item \textcolor{red}{Código do caso de teste;}
+        \item \textcolor{red}{Nome do caso de teste;}
+        \item \textcolor{red}{ Objetivo do caso de teste;}
+        \item \textcolor{red}{ Pré-condições do sistema para o teste ser realizado, quando se aplicar;}
+        \item \textcolor{red}{ Descrição dos procedimentos a serem executados para o teste;}
+        \item \textcolor{red}{ Resultado esperado para o teste ser aprovado (pós-condição após realizado o teste);}
+    \end{itemize}
+\end{itemize}
