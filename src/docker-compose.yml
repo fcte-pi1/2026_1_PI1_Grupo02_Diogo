@@ -1,0 +1,44 @@
+services:
+  backend:
+    build: ./backend # Ajustado: removido o 'software/'
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    ports:
+      - "3000:3000"
+    # Se você ainda não criou o .env no backend, o Docker vai avisar
+    env_file: ./backend/.env 
+    depends_on:
+      - db
+      - broker
+
+  frontend:
+    build: ./frontend # Ajustado: removido o 'software/'
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports:
+      - "5173:5173"
+    env_file: ./frontend/.env
+
+  broker:
+    image: eclipse-mosquitto:latest
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./mosquitto.conf:/mosquitto/config/mosquitto.conf
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: rato_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
