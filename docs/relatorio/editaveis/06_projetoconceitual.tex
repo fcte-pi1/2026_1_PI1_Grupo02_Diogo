@@ -214,14 +214,7 @@ Abaixo, apresenta-se o detalhamento do consumo energético do sistema, considera
         \item Percurso otimizado: Escolhe a melhor rota a partir dos dados coletados nos outros modos e vai até a área de conclusão.
     \end{itemize} 
 
-    \item \textcolor{red}{\textbf{\textit{Backlog} do Produto}}
-    \begin{itemize}
-        \item \textcolor{red}{ Descrever os requisitos não-funcionais de forma objetiva;}
-        \item \textcolor{red}{ Mais facilmente, mais rapidamente, são descrições subjetivas não-válidas. Um exemplo de requisito não-funcional de desempenho: ``a página deve carregar em até 5s quando em conexão 4G''. }
-    \end{itemize}
-    \item \textcolor{red}{ \textbf{Diagrama de casos de uso,} contendo os atores do sistema, os requisitos com os quais eles interagem e os tipos de relacionamentos entre requisitos realizados por um mesmo ator (ex.: \textit{include}, \textit{extend}). Obs.: este é um diagrama sobre requisitos funcionais.}
-    \item \textbf{Descrição da arquitetura da solução de \textit{software} proposta:}
-    
+     
     O \textit{software} atua como o núcleo de inteligência e monitoramento do sistema (Mission Control). Sua função é processar a telemetria enviada pelo robô em tempo real, gerenciar a construção dinâmica do mapa do labirinto, executar algoritmos de \textit{pathfinding} para determinar a rota otimizada e fornecer uma interface gráfica para visualização de métricas de energia e desempenho.
     
     \item \textbf{Estilo arquitetural contendo:}
@@ -284,11 +277,20 @@ Abaixo, apresenta-se o detalhamento do consumo energético do sistema, considera
         \item \textbf{Node.js (\textit{Back-end}):} Atua como assinante (\textit{subscriber}) do broker, processa os dados recebidos, realiza a persistência no \textbf{PostgreSQL} e emite eventos via \textbf{WebSockets}.
         \item \textbf{React (\textit{Front-end}):} Escuta os eventos emitidos pelo servidor e renderiza instantaneamente o labirinto e os gráficos de consumo energético.
     \end{enumerate}
+
+   \item \textbf{Protótipo da Interface de Monitoramento:}
+    \begin{itemize}
+        \item \textbf{Link do Protótipo (Figma):} \href{https://www.figma.com/design/XJGha6pemQS4kD2XydKeLr/Robozin?m=auto&t=tc0JBodUJ4Lv3OWG-6}{Dashboard de Telemetria - Grupo 2}
+        \item \textbf{Descrição das Funcionalidades:} 
+        A interface foi projetada seguindo a estética \textit{Mission Control}, priorizando a visualização de dados críticos em tempo real. O dashboard é composto por:
+        \begin{itemize}
+            \item \textbf{Grid Dinâmico (16x16):} Renderização central do labirinto com atualização de trajeto conforme o mapeamento do robô.
+            \item \textbf{Fluxo de Eventos (Logs):} Painel lateral dedicado ao rastreio de decisões do algoritmo e status de conexão.
+            \item \textbf{Widgets de Telemetria:} Monitoramento de consumo de bateria (tensão/corrente), velocidade média e sensores de distância (ToF).
+            \item \textbf{Status da Missão:} Indicadores de tempo de conclusão e validação do desafio cumprido.
+        \end{itemize}
+    \end{itemize}
     
-    \item \textcolor{red}{ \textbf{Persistência de dados:} diagrama de entidade relacionamento do banco de dados usado na solução proposta.}
-    \item \textcolor{red}{ \textbf{Análise de dados:} as variáveis definidas nos requisitos do projeto em abordagem numérica e gráfica.}
-    \item \textcolor{red}{ \textbf{Diagrama de estados} esclarecendo os estados assumidos pelo \textit{software} e os eventos que causam as mudanças de estado do \textit{software}.}
-    \item \textcolor{red}{ \textbf{Protótipo funcional do \textit{software}, navegável.}}
     \item {\textbf{ Roteiro de testes funcionais:} }
     \subsubsection*{CT01 – Exibição do tipo do labirinto}
 \begin{itemize}
@@ -602,13 +604,8 @@ Abaixo, apresenta-se o detalhamento do consumo energético do sistema, considera
     \label{fig:der_logico}
     \end{figure}
 
+
+
     \textbf{Roteiro de testes funcionais:}
-    \begin{itemize}
-        \item \textcolor{red}{Código do caso de teste;}
-        \item \textcolor{red}{Nome do caso de teste;}
-        \item \textcolor{red}{ Objetivo do caso de teste;}
-        \item \textcolor{red}{ Pré-condições do sistema para o teste ser realizado, quando se aplicar;}
-        \item \textcolor{red}{ Descrição dos procedimentos a serem executados para o teste;}
-        \item \textcolor{red}{ Resultado esperado para o teste ser aprovado (pós-condição após realizado o teste);}
-    \end{itemize}
+   
 \end{itemize}
