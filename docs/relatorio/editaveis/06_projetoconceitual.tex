@@ -21,38 +21,40 @@ Os modelos e a montagem do projeto foram feitos no Fusion 360. A escolha dos loc
 
 As Figuras~\ref{fig:desenhos_carrinho_1} e~\ref{fig:desenhos_carrinho_2} apresentam as vistas lateral, superior, frontal e isométrica do carrinho, além da vista explodida com os componentes.
 
-\begin{figure}[H]
+\begin{figure}[!ht]
     \centering
-    \includegraphics[page=1,width=0.9\linewidth]{figuras/desenhos-carrinho.pdf}
+    \includegraphics[page=1,width=0.65\textwidth]{figuras/desenhos-carrinho.pdf}
     \caption{Desenhos técnicos do carrinho — página 1.}
     \label{fig:desenhos_carrinho_1}
 \end{figure}
 
-\begin{figure}[H]
+\begin{figure}[!ht]
     \centering
-    \includegraphics[page=2,width=0.9\linewidth]{figuras/desenhos-carrinho.pdf}
+    \includegraphics[page=2,width=0.65\textwidth]{figuras/desenhos-carrinho.pdf}
     \caption{Desenhos técnicos do carrinho — página 2.}
     \label{fig:desenhos_carrinho_2}
 \end{figure}
 
+\FloatBarrier
+
+\subsection{Desenho do labirinto}
+
+
+O modelo e a montagem do labirinto foram feitos no Fusion 360. A escolha do MDF buscou garantir leveza, resistência e facilidade de montagem da estrutura, além de proporcionar baixo custo e boa estabilidade para o percurso. A Figura~\ref{fig:desenho-tecnico-labirinto} apresenta as vistas lateral, superior, frontal e isométrica do labirinto, além das dimensões utilizadas na estrutura.
+
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{figuras/Labirinto-Desenho.pdf}
+    \caption{Desenho técnico com cotas da peça do labirinto.}
+    \label{fig:desenho-tecnico-labirinto}
+\end{figure}
+
 \subsection{Decisões de projeto}
 
-\subsubsection{Motor}
+O motor escolhido foi o OEM N20 750 RPM, pois é um motor versátil e atende à tensão necessária para o projeto. A roda foi escolhida por ter adaptação direta com o motor e tamanho adequado para garantir conforto no manuseio do carrinho. Além disso, a parte de borracha permite boa aderência mesmo em superfícies não ideais. Com o objetivo de alocar todos os componentes e facilitar o manuseio das diferentes partes, foi integrado um segundo andar com o uso de parafusos espaçadores de 25 mm. Essa estrutura serve para apoiar a bateria e permitir a presença de componentes na parte inferior. Como o projeto não requer sensor na parte inferior para reconhecer as cores do labirinto, foi escolhida uma roda dianteira com maior liberdade de movimento. O labirinto foi projetado em MDF por ser um material leve, resistente e de fácil corte e montagem, além de apresentar baixo custo e boa estabilidade para a estrutura do percurso.
 
-O motor escolhido foi o OEM N20 750 RPM, pois é um motor versátil e atende à tensão necessária para o projeto.
-
-\subsubsection{Roda}
-
-A roda foi escolhida por ter adaptação direta com o motor e tamanho adequado para garantir conforto no manuseio do carrinho. Além disso, a parte de borracha permite boa aderência mesmo em superfícies não ideais.
-
-\subsubsection{Placa de apoio}
-
-Com o objetivo de alocar todos os componentes e facilitar o manuseio das diferentes partes, foi integrado um segundo andar com o uso de parafusos espaçadores de 25 mm. Essa estrutura serve para apoiar a bateria e permitir a presença de componentes na parte inferior.
-
-\subsubsection{Roda da frente}
-
-Como o projeto não requer sensor na parte inferior para reconhecer as cores do labirinto, foi escolhida uma roda dianteira com maior liberdade de movimento.
-
+\FloatBarrier
 \section{Descrição de \textit{hardware}}
 
 O \textit{hardware} do robô MicroMouse foi projetado com o objetivo de oferecer um sistema autônomo ágil, de baixo custo e com capacidade de processamento suficiente para a execução de 
@@ -187,17 +189,19 @@ Abaixo, apresenta-se o detalhamento do consumo energético do sistema, considera
     \end{figure}
       
     
-    \item Sensores:
+    \item Entradas:
     \begin{itemize}
         \item Sensores ultrassônico;
         \item Sensor de tensão;
         \item Encoders dos motores;
-        \item Cronômetro da ESP32.
+        \item Cronômetro da ESP32;
+        \item Chaves seletoras.
     \end{itemize} 
     
     \item Telemetria:
     \begin{itemize}
         \item Ultimo movimento;
+        \item Distância dos sensores ultrassônicos;
         \item RPM dos motores;
         \item Tensão e corrente;
         \item Modo do micromouse atual;
@@ -212,14 +216,7 @@ Abaixo, apresenta-se o detalhamento do consumo energético do sistema, considera
         \item Percurso otimizado: Escolhe a melhor rota a partir dos dados coletados nos outros modos e vai até a área de conclusão.
     \end{itemize} 
 
-    \item \textcolor{red}{\textbf{\textit{Backlog} do Produto}}
-    \begin{itemize}
-        \item \textcolor{red}{ Descrever os requisitos não-funcionais de forma objetiva;}
-        \item \textcolor{red}{ Mais facilmente, mais rapidamente, são descrições subjetivas não-válidas. Um exemplo de requisito não-funcional de desempenho: ``a página deve carregar em até 5s quando em conexão 4G''. }
-    \end{itemize}
-    \item \textcolor{red}{ \textbf{Diagrama de casos de uso,} contendo os atores do sistema, os requisitos com os quais eles interagem e os tipos de relacionamentos entre requisitos realizados por um mesmo ator (ex.: \textit{include}, \textit{extend}). Obs.: este é um diagrama sobre requisitos funcionais.}
-    \item \textbf{Descrição da arquitetura da solução de \textit{software} proposta:}
-    
+     
     O \textit{software} atua como o núcleo de inteligência e monitoramento do sistema (Mission Control). Sua função é processar a telemetria enviada pelo robô em tempo real, gerenciar a construção dinâmica do mapa do labirinto, executar algoritmos de \textit{pathfinding} para determinar a rota otimizada e fornecer uma interface gráfica para visualização de métricas de energia e desempenho.
     
     \item \textbf{Estilo arquitetural contendo:}
@@ -282,11 +279,20 @@ Abaixo, apresenta-se o detalhamento do consumo energético do sistema, considera
         \item \textbf{Node.js (\textit{Back-end}):} Atua como assinante (\textit{subscriber}) do broker, processa os dados recebidos, realiza a persistência no \textbf{PostgreSQL} e emite eventos via \textbf{WebSockets}.
         \item \textbf{React (\textit{Front-end}):} Escuta os eventos emitidos pelo servidor e renderiza instantaneamente o labirinto e os gráficos de consumo energético.
     \end{enumerate}
+
+   \item \textbf{Protótipo da Interface de Monitoramento:}
+    \begin{itemize}
+        \item \textbf{Link do Protótipo (Figma):} \href{https://www.figma.com/design/XJGha6pemQS4kD2XydKeLr/Robozin?m=auto&t=tc0JBodUJ4Lv3OWG-6}{Dashboard de Telemetria - Grupo 2}
+        \item \textbf{Descrição das Funcionalidades:} 
+        A interface foi projetada seguindo a estética \textit{Mission Control}, priorizando a visualização de dados críticos em tempo real. O dashboard é composto por:
+        \begin{itemize}
+            \item \textbf{Grid Dinâmico (16x16):} Renderização central do labirinto com atualização de trajeto conforme o mapeamento do robô.
+            \item \textbf{Fluxo de Eventos (Logs):} Painel lateral dedicado ao rastreio de decisões do algoritmo e status de conexão.
+            \item \textbf{Widgets de Telemetria:} Monitoramento de consumo de bateria (tensão/corrente), velocidade média e sensores de distância (ToF).
+            \item \textbf{Status da Missão:} Indicadores de tempo de conclusão e validação do desafio cumprido.
+        \end{itemize}
+    \end{itemize}
     
-    \item \textcolor{red}{ \textbf{Persistência de dados:} diagrama de entidade relacionamento do banco de dados usado na solução proposta.}
-    \item \textcolor{red}{ \textbf{Análise de dados:} as variáveis definidas nos requisitos do projeto em abordagem numérica e gráfica.}
-    \item \textcolor{red}{ \textbf{Diagrama de estados} esclarecendo os estados assumidos pelo \textit{software} e os eventos que causam as mudanças de estado do \textit{software}.}
-    \item \textcolor{red}{ \textbf{Protótipo funcional do \textit{software}, navegável.}}
     \item {\textbf{ Roteiro de testes funcionais:} }
     \subsubsection*{CT01 – Exibição do tipo do labirinto}
 \begin{itemize}
@@ -600,13 +606,8 @@ Abaixo, apresenta-se o detalhamento do consumo energético do sistema, considera
     \label{fig:der_logico}
     \end{figure}
 
+
+
     \textbf{Roteiro de testes funcionais:}
-    \begin{itemize}
-        \item \textcolor{red}{Código do caso de teste;}
-        \item \textcolor{red}{Nome do caso de teste;}
-        \item \textcolor{red}{ Objetivo do caso de teste;}
-        \item \textcolor{red}{ Pré-condições do sistema para o teste ser realizado, quando se aplicar;}
-        \item \textcolor{red}{ Descrição dos procedimentos a serem executados para o teste;}
-        \item \textcolor{red}{ Resultado esperado para o teste ser aprovado (pós-condição após realizado o teste);}
-    \end{itemize}
+   
 \end{itemize}
