@@ -1,11 +1,17 @@
 \begin{resumo}
-\textcolor{red}{O resumo é um item obrigatório. Essa parte do relatório será uma visão rápida e clara do projeto desenvolvido. O leitor terá informações como: descrição breve do projeto, principais requisitos, tecnologias necessárias e outras informações relevantes para apresentação. O resumo terá no máximo meia (1/2) página.}
 
-\textcolor{red}{Ao longo deste texto, as descrições em \textbf{cor vermelha} são meras instruções, não devendo aparecer na versão final do texto. \textbf{Utilize o comentário \% ao invés de apagar estas descrições, para não perder as orientações apresentadas.}}
+Este documento apresenta o desenvolvimento do Ratobô, um robô da categoria Micromouse projetado com o objetivo de mapear e resolver 
+fisicamente labirintos de dimensões 4x4, 8x8 e 16x16 de maneira autônoma, integrado a uma aplicação web para armazenamento e exibição de telemetria em tempo real. 
+A metodologia aplicada engloba a gestão baseada na estrutura analítica do projeto e a divisão técnica nas áreas de eletrônica, software, estrutura e energia. 
+O hardware é centralizado em um microcontrolador ESP32, utilizando locomoção diferencial com motores DC N20 equipados com encoders, ponte H MX1508, e três sensores 
+ultrassônicos HC-SR04, sendo alimentado por uma bateria de 12V regulada e monitorada pelo módulo INA219. No software, a navegação autônoma emprega a busca em 
+profundidade para exploração e o algoritmo Floodfill para o retorno ,enquanto a interface web foi desenvolvida com React, Node.js e PostgreSQL, comunicando-se 
+via MQTT e WebSockets. Como resultados esperados a partir da validação planejada, o sistema deve garantir que o robô conclua os percursos respeitando rigorosas restrições 
+físicas, permitindo que a aplicação exiba instantaneamente métricas de desempenho como consumo, velocidade e o trajeto em um mapa dinâmico.
 
 \vspace{\onelineskip}
 \noindent
-\textbf{Palavras-chaves}: \textcolor{red}{ \imprimirpalavrachaveum, \imprimirpalavrachavedois}
+\textbf{Palavras-chaves}:  \imprimirpalavrachaveum, \imprimirpalavrachavedois
 \end{resumo}
 
 % \begin{resumo}
