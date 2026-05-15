@@ -61,9 +61,37 @@ void AdicionaCarrinho(char mapa[16][16], Rato *rato){
 
 }
 
+char& LocalizacaoRato(char mapa[16][16], Rato *rato){
+
+    return mapa[rato->x][rato->y];
+
+}
+
+char Baixo(char mapa[16][16], Rato *rato){
+
+    return mapa[rato->x][rato->y + 1];
+
+}
+
+char Direita(char mapa[16][16], Rato *rato){
+
+    return mapa[rato->x + 1][rato->y];
+
+}
+
+char Cima(char mapa[16][16], Rato *rato){
+
+    return mapa[rato->x][rato->y - 1];
+}
+
+char Esquerda(char mapa[16][16], Rato *rato){
+
+    return mapa[rato->x - 1][rato->y];
+}
+
 int VerificaObjetivo(char mapa[16][16], Rato *rato){
 
-    if(mapa[rato->x+1][rato->y] == '+' && mapa[rato->x][rato->y + 1] == '+' && mapa[rato->x][rato->y - 1] == '+'){
+    if(Baixo(mapa, rato) == '+' && Direita(mapa,rato) == '+' && Cima(mapa,rato) == '+'){
         printf("achou!!!!");
         return 1;
         
@@ -75,20 +103,20 @@ int VerificaObjetivo(char mapa[16][16], Rato *rato){
 void AndaRato(char mapa[16][16], Rato *rato){
 
 while(VerificaObjetivo(mapa, rato) == 0){
-    if(mapa[rato->x + 1][rato->y] == '.' && mapa[rato->x + 1][rato->y] != 'v'){
-        mapa[rato->x][rato->y] = 'v';
+    if(Direita(mapa,rato) == '.' && Direita(mapa,rato) != 'v'){
+        LocalizacaoRato(mapa,rato) = 'v';
         rato->x++;
         rato->y;
-        mapa[rato->x][rato->y] = 'R';
+        LocalizacaoRato(mapa,rato) = 'R';
         PrintaMapa(mapa);
         printf("\n\n");
         
     }
-    else if(mapa[rato->x][rato->y+1] == '.' && mapa[rato->x][rato->y+1] != 'v'){
-        mapa[rato->x][rato->y] = 'v';
+    else if(Baixo(mapa,rato) == '.' && Baixo(mapa,rato) != 'v'){
+        LocalizacaoRato(mapa,rato) = 'v';
         rato->x;
         rato->y++;
-        mapa[rato->x][rato->y] = 'R';
+        LocalizacaoRato(mapa,rato) = 'R';
         PrintaMapa(mapa);
         printf("\n\n");
     }
