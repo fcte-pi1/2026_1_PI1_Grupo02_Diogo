@@ -15,7 +15,7 @@ app.use(
 );
 app.use(express.json({ limit: "1mb" }));
 
-app.use("/health", healthRouter);uuid
+app.use("/health", healthRouter);
 app.use("/api/telemetry", telemetryRouter);
 
 app.use((error: unknown, _req: Request, res: Response, _next: NextFunction) => {

@@ -1,4 +1,4 @@
-import type { Telemetry } from "@prisma/client";
+import type { Prisma, Telemetry } from "@prisma/client";
 import { emitTelemetry } from "../websocket/socket";
 import {
   createTelemetry,
@@ -7,19 +7,24 @@ import {
 } from "../repositories/telemetry.repository";
 
 type ParsedTelemetry = {
-  payload: unknown;
+  payload: Prisma.InputJsonValue;
   robotId?: string;
 };
 
 const parsePayload = (buffer: Buffer): ParsedTelemetry => {
   const raw = buffer.toString("utf-8");
   try {
-    const parsed = JSON.parse(raw) as { robotId?: unknown };
+    const parsed = JSON.parse(raw) as unknown;
     const robotId =
-      typeof parsed?.robotId === "string" ? parsed.robotId : undefined;
-    return { payload: parsed, robotId };
+      typeof parsed === "object" &&
+      parsed !== null &&
+      "robotId" in parsed &&
+      typeof (parsed as { robotId?: unknown }).robotId === "string"
+        ? (parsed as { robotId: string }).robotId
+        : undefined;
+    return { payload: parsed as Prisma.InputJsonValue, robotId };
   } catch {
-    return { payload: { raw } };
+    return { payload: { raw } as Prisma.InputJsonValue };
   }
 };
 
