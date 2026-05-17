@@ -1,11 +1,10 @@
 interface BatteryProps {
   voltage: number;
   percentage: number;
-  temperature: number; // Adicionado baseado no seu rascunho
   isCritical: boolean;
 }
 
-export default function BatteryWidget({ voltage, percentage, temperature, isCritical }: BatteryProps) {
+export default function BatteryWidget({ voltage, percentage, isCritical }: BatteryProps) {
   return (
     <div className="bg-surface-container-low/60 border border-outline-variant/30 backdrop-blur-md p-stack-md flex flex-col gap-stack-md rounded-none w-full">
       

@@ -26,7 +26,6 @@ export default function DashboardView({ activeSession, viewTerminal }: Dashboard
   });
 
   const [isRaceActive, setIsRaceActive] = useState(false);
-  const [status, setStatus] = useState(false);
   const [raceStartTime, setRaceStartTime] = useState<string | null>(null);
 
   useEffect(() => {

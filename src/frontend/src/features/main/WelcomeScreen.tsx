@@ -26,7 +26,7 @@ export default function WelcomeScreen({ onStart, appState }: SetupProps) {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_10%,#111317_85%)] pointer-events-none z-0" />
 
       {/* 1. Navbar fixa no topo herdando o contexto de Setup do percurso */}
-      <Navbar sessionName="Modo de Configuração Inicial" terminal={false} setViewTerminal={(v) => {}} appState={appState}/>
+      <Navbar sessionName="Modo de Configuração Inicial" terminal={false} setViewTerminal={() => {}} appState={appState}/>
 
       {/* 2. Área útil centralizada para o Card (Ocupa o resto do espaço disponível) */}
       <div className="flex-1 w-full flex items-center justify-center p-container-padding relative z-10">

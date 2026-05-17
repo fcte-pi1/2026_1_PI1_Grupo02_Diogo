@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Timer, Zap } from 'lucide-react';
+import { Timer } from 'lucide-react';
 
 interface RaceTimerProps {
   startTime: string | null; // ISO Timestamp enviado pelo backend quando a corrida inicia
