@@ -1,0 +1,50 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Telemetry {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  topic     String
+  robotId   String?
+  payload   Json
+
+  @@index([createdAt])
+  @@index([robotId])
+}
+
+model Labirinto {
+  id              Int       @id @default(autoincrement())
+  tipoMatriz      String
+  tamanhoCelulaCm Float
+  desafios        Desafio[]
+}
+
+model Desafio {
+  id               Int       @id @default(autoincrement())
+  dataHoraExecucao DateTime
+  consumoBateria   Float
+  velocidadeMedia Float
+  tempoConclusao   Int
+  desafioCumprido  Boolean
+  labirintoId      Int
+  labirinto        Labirinto @relation(fields: [labirintoId], references: [id])
+  trajetos         Trajeto[]
+
+  @@index([labirintoId])
+}
+
+model Trajeto {
+  id             Int     @id @default(autoincrement())
+  ordemMovimento Int
+  posicaoX       Int
+  posicaoY       Int
+  desafioId      Int
+  desafio        Desafio @relation(fields: [desafioId], references: [id])
+
+  @@index([desafioId])
+}

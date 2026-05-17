@@ -39,9 +39,8 @@ Qual área é mais impactada?
 
 Descreva claramente o problema ou a tarefa.
 
-Exemplos:
 
-* "ESP32 reiniciando ao acionar motores"
+* Exemplos: "ESP32 reiniciando ao acionar motores"
 * "Criar endpoint de telemetria"
 * "Implementar leitura do encoder"
 
@@ -51,9 +50,7 @@ Exemplos:
 
 O que deve estar funcionando ao final?
 
-Exemplo:
-
-> O robô deve conseguir ler corretamente os sensores ultrassônicos sem interferência dos motores.
+> Exemplo: O robô deve conseguir ler corretamente os sensores ultrassônicos sem interferência dos motores.
 
 ---
 
@@ -65,15 +62,7 @@ Exemplo:
 
 ---
 
-## 📊 6. Prioridade
-
-* [ ] Alta (resolver nesta semana)
-* [ ] Média
-* [ ] Baixa
-
----
-
-## 🛠️ 7. Detalhes técnicos / evidências
+## 🛠️ 6. Detalhes técnicos / evidências
 
 * **Logs / erros:**
 * **Arquivo / módulo afetado:**
@@ -82,31 +71,18 @@ Exemplo:
 
 ---
 
-## 🔗 8. Dependências
+## 🔗 7. Dependências
 
 Depende de outra issue ou área?
 
-Exemplo:
+marque a issue com #numéro
 
-* Backend depende do firmware enviar dados
-* Teste depende do hardware montado
+#
 
----
-
-## 🔄 9. Áreas impactadas
-
-Marque TODAS que sofrem impacto:
-
-* [ ] Software embarcado
-* [ ] Backend
-* [ ] Frontend
-* [ ] Eletrônica
-* [ ] Estrutura
-* [ ] Energia
 
 ---
 
-## 🧪 10. Como validar (critério de aceitação)
+## 🧪 8. Como validar (critério de aceitação)
 
 Explique como saber que está pronto:
 
@@ -123,29 +99,13 @@ Descreva o teste:
 
 ---
 
-## 📷 11. Evidências (se aplicável)
+## 📷 9. Evidências (se aplicável)
+Print, Vídeo, Foto do hardware, Log etc.
 
-* [ ] Print
-* [ ] Vídeo
-* [ ] Foto do hardware
-* [ ] Log
 
 ---
 
-## 📅 12. Prazo
-
-Data limite:
-`DD/MM`
-
----
-
-## 👤 13. Responsável
-
-@nome-do-integrante
-
----
-
-## 📋 14. Checklist de conclusão
+## 📋 10. Checklist de conclusão
 
 * [ ] Problema reproduzido (se bug)
 * [ ] Solução implementada
@@ -157,14 +117,6 @@ Data limite:
 
 ---
 
-## 🔗 15. Referências
-
-* Issue relacionada: #
-* Pull Request: #
-* Documento: seção X.X
-
----
-
-## 💬 16. Observações
+## 💬 11. Observações
 
 Qualquer detalhe relevante:
