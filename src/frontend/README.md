@@ -13,6 +13,12 @@ Este diretório contém a interface de visualização do Rato Robótico.
 - `/src/hooks`: Lógica de conexão com WebSockets e estados globais.
 - `/src/assets`: Ícones futuristas e texturas de grid hexagonal.
 - `/src/styles`: Configurações do Tailwind e temas de cores.
+- `/src/tests`: Testes centralizados por tipo (components, hooks, utils, services, pages, integration) com mocks e fixtures reutilizáveis.
+
+## ✅ Testes
+- Rodar uma vez: `npm test`
+- Modo watch: `npm run test:watch`
+- Estrutura dos testes: `src/tests`
 
 ## 🚀 Como Inicializar
 1. Certifique-se de que o **Node.js** está instalado.

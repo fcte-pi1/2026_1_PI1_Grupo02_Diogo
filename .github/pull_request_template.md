@@ -5,14 +5,20 @@
 Descreva claramente o que foi feito neste PR.
 
 * Qual problema esta PR resolve?
+> 
+
 * Qual funcionalidade foi implementada?
+> 
+
 * Contexto geral da mudança
+> 
 
 ---
 
-## 🔗 Issue relacionada
+## 🔗 Issues relacionadas
 
-Closes #<número_da_issue>
+Closes #número_da_issue
+closes #número_da_issue
 
 ---
 
@@ -100,8 +106,7 @@ Adicione:
 
 ## 👥 Revisores sugeridos
 
-@nome-do-colega
-@nome-do-colega
+marque os membros que você acha que podem revisar este PR no canto superior direito da página do github em `Reviewers`.:
 
 ---
 
