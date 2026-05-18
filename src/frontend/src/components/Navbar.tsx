@@ -33,10 +33,7 @@ function Navbar({
             <button className='btn-green'>
               iniciar corrida
             </button>
-
-
-
-
+            
             <button 
               className="btn-secondary w-fit flex text-[10px]" 
               onClick={() => setViewTerminal(!terminal)}
