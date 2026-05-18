@@ -47,7 +47,7 @@ export default function DashboardView({ activeSession, viewTerminal }: Dashboard
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-gutter">
         
         <div className="flex flex-col gap-gutter lg:col-span-1">
-          <BatteryWidget voltage={robotData.voltage} percentage={robotData.percentage} temperature={robotData.temperature} isCritical={robotData.voltage < 3.4} />
+          <BatteryWidget voltage={robotData.voltage} percentage={robotData.percentage} isCritical={robotData.voltage < 3.4} />
           <EngineTelemetryWidget motorCurrent={robotData.motorCurrent} velocity={robotData.velocity} />
         </div>
         
