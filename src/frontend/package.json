@@ -8,6 +8,8 @@
     "build": "vite build",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
+    "test:coverage:watch": "vitest --coverage",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "preview": "vite preview"
