@@ -6,6 +6,7 @@ datasource db {
   provider = "postgresql"
 }
 
+// Telemetria em tempo real (payload MQTT bruto)
 model Telemetry {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
@@ -17,34 +18,66 @@ model Telemetry {
   @@index([robotId])
 }
 
-model Labirinto {
-  id              Int       @id @default(autoincrement())
-  tipoMatriz      String
-  tamanhoCelulaCm Float
-  desafios        Desafio[]
+// Labirintos (estrutura geométrica de testes)
+model Maze {
+  id        String    @id @default(uuid())
+  name      String
+  createdAt DateTime  @default(now())
+
+  cells    Cell[]
+  sessions Session[]
 }
 
-model Desafio {
-  id               Int       @id @default(autoincrement())
-  dataHoraExecucao DateTime
-  consumoBateria   Float
-  velocidadeMedia Float
-  tempoConclusao   Int
-  desafioCumprido  Boolean
-  labirintoId      Int
-  labirinto        Labirinto @relation(fields: [labirintoId], references: [id])
-  trajetos         Trajeto[]
+// Sessões / corridas (histórico geral do cockpit)
+model Session {
+  id          String   @id @default(uuid())
+  sessionName String
+  algorithm   String
+  mode        String
+  createdAt   DateTime @default(now())
 
-  @@index([labirintoId])
+  durationMs   Int?
+  avgSpeed     Float?
+  batteryDrain Float?
+  isCompleted  Boolean @default(false)
+
+  mazeId String
+  maze   Maze   @relation(fields: [mazeId], references: [id])
+
+  logs TelemetryLog[]
+
+  @@index([mazeId])
+  @@index([createdAt])
 }
 
-model Trajeto {
-  id             Int     @id @default(autoincrement())
-  ordemMovimento Int
-  posicaoX       Int
-  posicaoY       Int
-  desafioId      Int
-  desafio        Desafio @relation(fields: [desafioId], references: [id])
+// Células (mapeamento da matriz 16x16)
+model Cell {
+  id     String @id @default(uuid())
+  mazeId String
+  maze   Maze   @relation(fields: [mazeId], references: [id], onDelete: Cascade)
 
-  @@index([desafioId])
+  posX Int
+  posY Int
+
+  wallNorth Boolean @default(false)
+  wallSouth Boolean @default(false)
+  wallEast  Boolean @default(false)
+  wallWest  Boolean @default(false)
+  isVisited Boolean @default(false)
+
+  @@unique([mazeId, posX, posY])
+  @@index([mazeId])
+}
+
+// Logs de auditoria (aba de logs do sistema)
+model TelemetryLog {
+  id        String   @id @default(uuid())
+  sessionId String
+  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  timestamp DateTime @default(now())
+  logType   String
+  message   String   @db.Text
+
+  @@index([sessionId])
+  @@index([timestamp])
 }
