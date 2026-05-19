@@ -1,0 +1,24 @@
+{
+  "tempoMs": 0,
+  "modo": "DFS",
+  "ultimomovimento": "frente",
+  "direcao": "norte",
+  "posicao": {
+    "x": 0,
+    "y": 0
+  },
+  "motores": {
+    "RPMEsquerdo": 0,
+    "RPMDireito": 0
+  },
+  "sensores": {
+    "esquerda": 0.0,
+    "direita": 0.0,
+    "frente": 0.0
+  },
+  "energia": {
+    "tensao": 0.0,
+    "corrente": 0.0
+  },
+  "conclusao": false
+}
