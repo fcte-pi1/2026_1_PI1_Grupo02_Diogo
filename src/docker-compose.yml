@@ -1,13 +1,13 @@
 services:
   backend:
-    build: ./backend # Ajustado: removido o 'software/'
+    build: ./backend
     volumes:
       - ./backend:/app
       - /app/node_modules
     ports:
       - "3000:3000"
-    # Se você ainda não criou o .env no backend, o Docker vai avisar
-    env_file: ./backend/.env 
+    env_file: ./backend/.env
+    command: sh -c "npx prisma generate && npx prisma migrate deploy && npm run dev"
     depends_on:
       - db
       - broker
