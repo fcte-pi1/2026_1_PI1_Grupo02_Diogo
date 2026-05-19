@@ -345,3 +345,6 @@ TSWLatexianTemp*
 # Sistema operacional
 .DS_Store
 Thumbs.db
+
+# Arquivo de configuração do Unity
+src/firmware/.pio/
