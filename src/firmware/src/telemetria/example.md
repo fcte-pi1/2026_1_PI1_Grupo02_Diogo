@@ -14,8 +14,8 @@ Exemplo de formato JSON
     },
 
     "motores": {
-        "rpmEsquerdo": 0.0,           // Velocidade do motor esquerdo em RPM
-        "rpmDireito": 0.0             // Velocidade do motor direito em RPM
+        "pwmEsquerdo": 0,           // Contagem de pulsos
+        "pwmDireito": 0             // Contagem de pulsos
     },
 
     "sensores": {

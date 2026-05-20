@@ -8,8 +8,8 @@
     "y": 0
   },
   "motores": {
-    "RPMEsquerdo": 0,
-    "RPMDireito": 0
+    "pwmEsquerdo": 0,
+    "pwmDireito": 0
   },
   "sensores": {
     "esquerda": 0.0,
