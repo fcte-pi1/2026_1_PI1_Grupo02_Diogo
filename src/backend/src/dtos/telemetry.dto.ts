@@ -1,8 +1,8 @@
 import { z } from "zod";
 
 export const telemetryPayloadSchema = z.object({
-  step: z.number().finite(),
-  tempoMs: z.number().finite(),
+  step: z.number(),
+  tempoMs: z.number(),
   modo: z.enum(["DFS", "FLOOD FILL"]),
   estado: z.enum([
     "PARADO",
@@ -12,8 +12,8 @@ export const telemetryPayloadSchema = z.object({
     "FINALIZADO",
   ]),
   posicao: z.object({
-    x: z.number().finite(),
-    y: z.number().finite(),
+    x: z.number(),
+    y: z.number(),
   }),
   direcao: z.enum(["norte", "sul", "leste", "oeste"]),
   ultimoMovimento: z.enum([
@@ -29,17 +29,17 @@ export const telemetryPayloadSchema = z.object({
     oeste: z.boolean(),
   }),
   motores: z.object({
-    rpmEsquerdo: z.number().finite(),
-    rpmDireito: z.number().finite(),
+    pwmEsquerdo: z.number(),
+    pwmDireito: z.number(),
   }),
   sensores: z.object({
-    esquerdaCm: z.number().finite(),
-    frenteCm: z.number().finite(),
-    direitaCm: z.number().finite(),
+    esquerdaCm: z.number(),
+    frenteCm: z.number(),
+    direitaCm: z.number(),
   }),
   energia: z.object({
-    tensaoV: z.number().finite(),
-    correnteMa: z.number().finite(),
+    tensaoV: z.number(),
+    correnteMa: z.number(),
   }),
   conclusao: z.boolean(),
   robotId: z.string().min(1).optional(),
