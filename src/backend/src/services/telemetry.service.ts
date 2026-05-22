@@ -27,7 +27,7 @@ const parsePayload = (buffer: Buffer): ParsedTelemetry => {
     if (!validation.isValid) {
       return {
         payload: {
-          raw: parsed,
+          //raw: parsed,
           validationErrors: validation.errors,
         } as Prisma.InputJsonValue,
         robotId,

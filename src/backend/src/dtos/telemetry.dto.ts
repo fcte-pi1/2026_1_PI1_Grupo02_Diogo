@@ -21,7 +21,7 @@ export const telemetryPayloadSchema = z.object({
     "curva_a_esquerda",
     "curva_a_direita",
     "meia_volta",
-  ]),
+  ]).optional(),
   paredes: z.object({
     norte: z.boolean(),
     sul: z.boolean(),
