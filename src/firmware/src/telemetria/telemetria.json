@@ -1,0 +1,32 @@
+{
+  "step": 0,
+  "tempoMs": 0,
+  "modo": "DFS",
+  "estado": "EXPLORANDO",
+  "posicao": {
+    "x": 0,
+    "y": 0
+  },
+  "direcao": "norte",
+  "ultimomovimento": "frente",
+  "paredes":{
+    "norte": false,
+    "sul": false,
+    "leste": false,
+    "oeste": false
+  },
+  "motores": {
+    "pwmEsquerdo": 0,
+    "pwmDireito": 0
+  },
+  "sensores": {
+    "esquerdaCm": 0.0,
+    "direitaCm": 0.0,
+    "frenteCm": 0.0
+  },
+  "energia": {
+    "tensaoV": 0.0,
+    "correnteMa": 0.0
+  },
+  "conclusao": false
+}
