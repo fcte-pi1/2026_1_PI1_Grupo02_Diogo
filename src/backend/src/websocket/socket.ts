@@ -1,6 +1,6 @@
 import { Server } from "socket.io";
 import type http from "http";
-import type { Telemetry } from "@prisma/client";
+import type { TelemetryRaw } from "@prisma/client";
 import { env } from "../config/env";
 
 let io: Server | null = null;
@@ -15,7 +15,7 @@ export const initSocket = (server: http.Server): Server => {
   return io;
 };
 
-export const emitTelemetry = (telemetry: Telemetry): void => {
+export const emitTelemetry = (telemetry: TelemetryRaw): void => {
   if (!io) {
     return;
   }
