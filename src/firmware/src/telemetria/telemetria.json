@@ -1,24 +1,32 @@
 {
+  "step": 0,
   "tempoMs": 0,
   "modo": "DFS",
-  "ultimomovimento": "frente",
-  "direcao": "norte",
+  "estado": "EXPLORANDO",
   "posicao": {
     "x": 0,
     "y": 0
+  },
+  "direcao": "norte",
+  "ultimomovimento": "frente",
+  "paredes":{
+    "norte": false,
+    "sul": false,
+    "leste": false,
+    "oeste": false
   },
   "motores": {
     "pwmEsquerdo": 0,
     "pwmDireito": 0
   },
   "sensores": {
-    "esquerda": 0.0,
-    "direita": 0.0,
-    "frente": 0.0
+    "esquerdaCm": 0.0,
+    "direitaCm": 0.0,
+    "frenteCm": 0.0
   },
   "energia": {
-    "tensao": 0.0,
-    "corrente": 0.0
+    "tensaoV": 0.0,
+    "correnteMa": 0.0
   },
   "conclusao": false
 }
