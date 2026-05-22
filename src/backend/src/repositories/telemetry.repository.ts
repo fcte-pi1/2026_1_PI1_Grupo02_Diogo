@@ -1,19 +1,19 @@
-import type { Prisma, Telemetry } from "@prisma/client";
+import type { Prisma, TelemetryRaw } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 
 export const createTelemetry = async (
-  data: Prisma.TelemetryCreateInput
-): Promise<Telemetry> => prisma.telemetry.create({ data });
+  data: Prisma.TelemetryRawCreateInput
+): Promise<TelemetryRaw> => prisma.telemetryRaw.create({ data });
 
-export const listTelemetry = async (limit: number): Promise<Telemetry[]> =>
-  prisma.telemetry.findMany({
+export const listTelemetry = async (limit: number): Promise<TelemetryRaw[]> =>
+  prisma.telemetryRaw.findMany({
     orderBy: { createdAt: "desc" },
     take: limit,
   });
 
 export const getTelemetryById = async (
   id: string
-): Promise<Telemetry | null> =>
-  prisma.telemetry.findUnique({
+): Promise<TelemetryRaw | null> =>
+  prisma.telemetryRaw.findUnique({
     where: { id },
   });

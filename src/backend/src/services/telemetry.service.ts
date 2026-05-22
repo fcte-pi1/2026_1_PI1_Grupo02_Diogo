@@ -1,4 +1,4 @@
-import type { Prisma, Telemetry } from "@prisma/client";
+import type { Prisma, TelemetryRaw } from "@prisma/client";
 import { emitTelemetry } from "../websocket/socket";
 import {
   createTelemetry,
@@ -31,7 +31,7 @@ const parsePayload = (buffer: Buffer): ParsedTelemetry => {
 export const storeTelemetry = async (
   topic: string,
   payload: Buffer
-): Promise<Telemetry> => {
+): Promise<TelemetryRaw> => {
   const parsed = parsePayload(payload);
   const created = await createTelemetry({
     topic,
@@ -44,8 +44,8 @@ export const storeTelemetry = async (
 
 export const getRecentTelemetry = async (
   limit: number
-): Promise<Telemetry[]> => listTelemetry(limit);
+): Promise<TelemetryRaw[]> => listTelemetry(limit);
 
 export const getTelemetryByIdService = async (
   id: string
-): Promise<Telemetry | null> => getTelemetryById(id);
+): Promise<TelemetryRaw | null> => getTelemetryById(id);
