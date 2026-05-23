@@ -58,7 +58,7 @@ export default function DashboardView({ activeSession, viewTerminal }: Dashboard
         </div>
 
         <div className="flex flex-col gap-gutter lg:col-span-1">
-          <RaceTimer startTime={raceStartTime} isActive={isRaceActive} />
+          <RaceTimer timeMs={0} isActive={isRaceActive} />
           <SensorGrid sensorData={robotData.sensors} />
         </div>
 
