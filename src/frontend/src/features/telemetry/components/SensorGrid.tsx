@@ -24,7 +24,7 @@ export default function SensorGrid({ sensorData }: SensorGridProps) {
       
       {/* Cabeçalho */}
       <div className="border-b border-outline-variant/20">
-        <h2 className="text-label-caps text-xs font-bold text-on-surface-variant tracking-widest uppercase flex items-center gap-stack-sm">
+        <h2 className="text-label-caps text-xs mb-3 font-bold text-on-surface-variant tracking-widest uppercase flex items-center gap-stack-sm">
           <ShieldAlert className="w-3.5 h-3.5 text-tertiary-container" strokeWidth={2} />
           Sensores de proximidade
         </h2>

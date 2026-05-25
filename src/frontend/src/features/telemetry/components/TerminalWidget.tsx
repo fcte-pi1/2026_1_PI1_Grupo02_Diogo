@@ -5,7 +5,7 @@ interface TerminalProps {
 
 export default function TerminalWidget({ activeSession, status }: TerminalProps) {
   return (
-    <div className="h-40 bg-surface-container-low/60 border border-outline-variant/30 flex flex-col rounded-none shrink-0 transition-all duration-300">
+    <div className="h-50 bg-surface-container-low/60 border border-outline-variant/30 flex flex-col rounded-none shrink-0 transition-all duration-300">
       
       {/* Cabeçalho do Terminal */}
       <div className="text-label-caps bg-surface-container-lowest/80 p-stack-md flex flex-row justify-between items-center text-on-surface-variant border-b border-outline-variant/20 h-10 select-none">
