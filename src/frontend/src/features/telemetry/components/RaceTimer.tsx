@@ -4,9 +4,10 @@ import { Timer } from 'lucide-react';
 interface RaceTimerProps {
   timeMs?: number;    // O tempo bruto em ms vindo do WebSocket (Opcional para permitir mock)
   isActive: boolean;  // Controla se o tempo está rodando ou parado
+  startTime: string | null;
 }
 
-export default function RaceTimer({ timeMs, isActive }: RaceTimerProps) {
+export default function RaceTimer({ timeMs, isActive, startTime }: RaceTimerProps) {
   const [mockTime, setMockTime] = useState(0);
 
   // 🔄 Efeito de Simulação (Mock): Só roda se o WebSocket NÃO estiver enviando dados reais
@@ -69,7 +70,7 @@ export default function RaceTimer({ timeMs, isActive }: RaceTimerProps) {
           </li>
           <li className="flex justify-between py-1">
             <span>MELHOR VOLTA:</span>
-            <span className="font-bold text-primary">00:00.05</span>
+            <span className="font-bold text-primary">{startTime}</span>
           </li>
         </ul>
       </div>
