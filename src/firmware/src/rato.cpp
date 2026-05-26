@@ -42,7 +42,7 @@ void AndaDireita(char mapa[16][16], Rato *rato){
 
         LocalizacaoRato(mapa,rato) = 'v';
         rato->x++;
-        rato->y;
+        // rato->y+0;
         LocalizacaoRato(mapa,rato) = 'R';
         PrintaMapa(mapa);
         printf("\n\n");
@@ -52,7 +52,7 @@ void AndaDireita(char mapa[16][16], Rato *rato){
 void AndaBaixo(char mapa[16][16], Rato *rato){
 
         LocalizacaoRato(mapa,rato) = 'v';
-        rato->x;
+        // rato->x+0;
         rato->y++;
         LocalizacaoRato(mapa,rato) = 'R';
         PrintaMapa(mapa);
@@ -64,7 +64,7 @@ void AndaEsquerda(char mapa[16][16], Rato *rato){
 
         LocalizacaoRato(mapa,rato) = 'v';
         rato->x--;
-        rato->y;
+        // rato->y-0;
         LocalizacaoRato(mapa,rato) = 'R';
         PrintaMapa(mapa);
         printf("\n\n");
@@ -74,7 +74,7 @@ void AndaEsquerda(char mapa[16][16], Rato *rato){
 
 void AndaCima(char mapa[16][16], Rato *rato){    
         LocalizacaoRato(mapa,rato) = 'v';
-        rato->x;
+        // rato->x-0;
         rato->y--;
         LocalizacaoRato(mapa,rato) = 'R';
         PrintaMapa(mapa);
