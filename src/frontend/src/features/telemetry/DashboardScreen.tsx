@@ -7,7 +7,11 @@ import { VisualizeDiv } from "../../components/VisualizeDiv";
 import { TelemetryData } from "../../hooks/useWebSocket";
 
 interface DashboardViewProps {
-  activeSession: any;
+  activeSession: {
+    sessionName: string;
+    algorithm: string;
+    mode: string;
+  } | null;
   currentView: string;
   connectionProps: { latency: string };
   // Recebe os dados em tempo real vindos do hook do pai

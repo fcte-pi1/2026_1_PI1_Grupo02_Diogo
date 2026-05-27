@@ -23,7 +23,7 @@ export default function Footer() {
         } else {
           setApiHealth("OFFLINE");
         }
-      } catch (error) {
+      } catch {
         // Se o servidor cair ou der erro de rede (CORS/Network), cai aqui
         setApiHealth("OFFLINE");
       }

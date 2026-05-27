@@ -22,7 +22,7 @@ function App() {
   const [activeSession, setActiveSession] = useState<SessionData | null>(null);
 
   // 🔌 O hook roda globalmente coletando a saúde do sistema desde o setup
-  const { isConnected, robotData, sendRaceAction, connect, disconnect } = useWebSocket();
+  const { isConnected } = useWebSocket();
 
   const handleStartSession = (data: SessionData) => {
     setActiveSession(data);
