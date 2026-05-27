@@ -1,15 +1,19 @@
-FROM node:20-slim
+FROM node:20.20.2-slim
+
+# Instala o OpenSSL exigido pelo motor do Prisma
+RUN apt-get update -y && apt-get install -y openssl
 
 WORKDIR /app
 
-# Instala dependências antes de copiar o código para aproveitar o cache do Docker
 COPY package*.json ./
+
+# Garante que novas libs (como o zod) sejam instaladas no build
 RUN npm install
 
-# Copia o restante do código
 COPY . .
 
-# Porta que o servidor Express utiliza
+RUN npx prisma generate
+
 EXPOSE 3000
 
 CMD ["npm", "run", "dev"]
