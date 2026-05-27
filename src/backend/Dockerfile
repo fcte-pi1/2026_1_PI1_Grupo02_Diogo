@@ -1,4 +1,4 @@
-FROM node:20.20.2-slim
+FROM node:22.12.0-slim
 
 # Instala o OpenSSL exigido pelo motor do Prisma
 RUN apt-get update -y && apt-get install -y openssl
