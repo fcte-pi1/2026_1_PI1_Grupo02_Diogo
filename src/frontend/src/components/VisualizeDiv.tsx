@@ -16,7 +16,6 @@ interface VisualizeDivProps {
 export function VisualizeDiv({
   activeSession,
   currentView,
-  connectionProps,
   isConnected,
 }: VisualizeDivProps) {
   
