@@ -3,6 +3,9 @@ import { env } from "../config/env";
 import { storeTelemetry } from "./telemetry.service";
 
 export const startMqtt = () => {
+  console.log("📡 [DEBUG ENV] URL do MQTT que o Back está lendo:", env.mqtt.url);
+  console.log("📡 [DEBUG ENV] Tópico do MQTT que o Back assinou:", env.mqtt.telemetryTopic);
+
   const options: IClientOptions = {
     clientId: env.mqtt.clientId,
   };
