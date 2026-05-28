@@ -23,16 +23,14 @@ const parsePayload = (buffer: Buffer): ParsedTelemetry => {
       typeof (parsed as { robotId?: unknown }).robotId === "string"
         ? (parsed as { robotId: string }).robotId
         : undefined;
-    const validation = validateTelemetryPayload(parsed);
-    if (!validation.isValid) {
-      return {
-        payload: {
-          //raw: parsed,
-          validationErrors: validation.errors,
-        } as Prisma.InputJsonValue,
-        robotId,
-      };
-    }
+      const validation = validateTelemetryPayload(parsed);
+      if (!validation.isValid) {
+        console.log("❌ ERRO DE VALIDAÇÃO DO DTO:", validation.errors);
+        return {
+          payload: { validationErrors: validation.errors },
+          robotId,
+        };
+      }
     return { payload: validation.payload as Prisma.InputJsonValue, robotId };
   } catch {
     return { payload: { raw } as Prisma.InputJsonValue };
@@ -48,7 +46,7 @@ export const storeTelemetry = async (
     topic,
     payload: parsed.payload,
     robotId: parsed.robotId,
-  });
+  })
   emitTelemetry(created);
   return created;
 };

@@ -18,19 +18,23 @@ const parseLimit = (value: unknown): number => {
   return Math.min(Math.max(parsed, 1), MAX_LIMIT);
 };
 
-export const listTelemetryHandler = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+export async function listTelemetryHandler(req: Request, res: Response) {
   try {
-    const limit = parseLimit(req.query.limit);
+    const limit = Number(req.query.limit) || 50;
+    
+    // 🔍 Chama o service para buscar os dados brutos salvos na tabela TelemetryRaw
     const items = await getRecentTelemetry(limit);
-    res.json({ items, count: items.length });
+
+    // Retorna no formato exato que o seu front/navegador está esperando!
+    return res.status(200).json({
+      items: items,
+      count: items.length
+    });
   } catch (error) {
-    next(error);
+    console.error("Erro no listTelemetryHandler:", error);
+    return res.status(500).json({ error: "internal_error" });
   }
-};
+}
 
 export const getTelemetryByIdHandler = async (
   req: Request,

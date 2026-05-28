@@ -1,5 +1,5 @@
-#include "../include/rato.h"
-#include "../include/mapa.h"
+#include "../lib/rato.h"
+#include "../lib/mapa.h"
 #include <stdio.h>
 
 void AdicionaCarrinho(char mapa[16][16], Rato *rato){
