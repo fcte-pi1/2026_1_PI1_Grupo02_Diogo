@@ -9,9 +9,12 @@ import { prisma } from "./lib/prisma";
 const server = http.createServer(app);
 const io = initSocket(server);
 
+// Camada de Regras de Negócio do WebSocket
 io.on("connection", (socket) => {
+  // Captura o IP apenas para garantir que os logs tenham o mesmo rastro
   const clientIp = socket.handshake.address || 'IP Desconhecido';
 
+  // Regra 1: O frontend pede para ver a telemetria do robô
   socket.on("telemetry:subscribe", async (options: { limit?: number } = {}) => {
     const limit = typeof options.limit === "number" ? options.limit : env.telemetry.historyLimit;
     
@@ -27,6 +30,7 @@ io.on("connection", (socket) => {
     socket.emit("telemetry:history", items);
   });
 
+  // Regra 2: O frontend avisa explicitamente que saiu da tela de telemetria
   socket.on("telemetry:unsubscribe", () => {
     logWebSocketEvent({
       socketId: socket.id,
@@ -44,6 +48,7 @@ server.listen(env.port, () => {
 
 const mqttClient = startMqtt();
 
+// Encerramento limpo e seguro do servidor
 const shutdown = async () => {
   console.log("Shutting down");
   mqttClient.end(true);

@@ -3,6 +3,7 @@ import type http from "http";
 import type { TelemetryRaw } from "@prisma/client";
 import { env } from "../config/env";
 
+// Contrato de dados padronizado para garantir integração segura.
 export interface IWebSocketLog {
   socketId: string;
   ip: string;
@@ -11,6 +12,7 @@ export interface IWebSocketLog {
   timestamp: Date;
 }
 
+// Função centralizadora de observabilidade.
 export const logWebSocketEvent = (logData: IWebSocketLog, detalhes: string) => {
   const time = logData.timestamp.toISOString();
   console.log(`[WS] [${time}] [${logData.event}] - ${detalhes}`);
@@ -27,6 +29,7 @@ export const initSocket = (server: http.Server): Server => {
     },
   });
 
+  // Mapeamento nativo do ciclo de vida do WebSocket
   io.on("connection", (socket) => {
     const clientIp = socket.handshake.address || 'IP Desconhecido';
 
@@ -47,6 +50,7 @@ export const initSocket = (server: http.Server): Server => {
       }, `⚠️ Erro interno: ${err.message}`);
     });
 
+    // Captura os dados instantes antes da conexão cair (mantém acesso ao cache de salas/rooms)
     socket.on('disconnecting', (reason) => {
       logWebSocketEvent({
         socketId: socket.id,
@@ -57,6 +61,7 @@ export const initSocket = (server: http.Server): Server => {
       }, `⏳ Cliente saindo (pré-desconexão). Razão <${reason}>`);
     });
 
+    // Queda definitiva da conexão (transport close, ping timeout, etc)
     socket.on('disconnect', (reason) => {
       logWebSocketEvent({
         socketId: socket.id,
