@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"; // 🚀 1. IMPORTANTE: Adicionado useEffect aqui
+import { useState, useEffect } from "react";
 import { AppState } from "../../App";
 import Navbar from "../../components/Navbar";
 import Sidebar from "../../components/Sidebar";
@@ -18,13 +18,11 @@ interface MainLayoutProps {
     algorithm: string;
     mode: string;
   } | null;
-  setCurrentState: React.Dispatch<React.SetStateAction<AppState>>;
   appState: AppState;
 }
 
 export default function MainLayout({
   activeSession,
-  setCurrentState,
 }: MainLayoutProps) {
   const [currentView, setCurrentView] = useState("dashboard");
   const [viewTerminal, setViewTerminal] = useState(true);
