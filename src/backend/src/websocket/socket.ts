@@ -1,6 +1,7 @@
 import { Server } from "socket.io";
 import type http from "http";
 import type { TelemetryRaw } from "@prisma/client";
+import { prisma } from '../lib/prisma'
 import { env } from "../config/env";
 
 // Contrato de dados padronizado para garantir integração segura.
@@ -13,11 +14,28 @@ export interface IWebSocketLog {
 }
 
 // Função centralizadora de observabilidade.
-export const logWebSocketEvent = (logData: IWebSocketLog, detalhes: string) => {
+export const logWebSocketEvent = async (
+  logData: IWebSocketLog, 
+  detalhes: string, 
+  activeSessionId?: string
+) => {
   const time = logData.timestamp.toISOString();
   console.log(`[WS] [${time}] [${logData.event}] - ${detalhes}`);
   
-  // TO-DO: @Szervinsk - Inserir chamada de banco de dados aqui
+  if (activeSessionId) {
+    try {
+      await prisma.telemetryLog.create({
+        data: {
+          sessionId: activeSessionId,
+          timestamp: logData.timestamp,
+          logType: logData.event,
+          message: detalhes
+        }
+      });
+    } catch (error) {
+      console.error(`[WS_ERROR] Falha ao salvar log no PostgreSQL:`, error);
+    }
+  }
 };
 
 let io: Server | null = null;

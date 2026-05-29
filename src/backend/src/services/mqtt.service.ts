@@ -1,47 +1,95 @@
-import mqtt, { IClientOptions } from "mqtt";
-import { env } from "../config/env";
-import { storeTelemetry } from "./telemetry.service";
+import { prisma } from "../lib/prisma";
+import { getSocket } from "../websocket/socket";
 
-export const startMqtt = () => {
-  console.log("📡 [DEBUG ENV] URL do MQTT que o Back está lendo:", env.mqtt.url);
-  console.log("📡 [DEBUG ENV] Tópico do MQTT que o Back assinou:", env.mqtt.telemetryTopic);
+export const storeTelemetry = async (topic: string, rawPayload: Buffer): Promise<void> => {
+  try {
+    // converte o buffer binário do MQTT em Objeto JSON do TypeScript
+    const payload = JSON.parse(rawPayload.toString());
+    const robotId = payload.robotId || "UAV-MOUSE-01";
 
-  const options: IClientOptions = {
-    clientId: env.mqtt.clientId,
-  };
-
-  if (env.mqtt.username) {
-    options.username = env.mqtt.username;
-  }
-  if (env.mqtt.password) {
-    options.password = env.mqtt.password;
-  }
-
-  const client = mqtt.connect(env.mqtt.url, options);
-
-  client.on("connect", () => {
-    console.log("MQTT connected");
-    client.subscribe(env.mqtt.telemetryTopic, { qos: 0 }, (error) => {
-      if (error) {
-        console.error("MQTT subscribe error", error);
+    // guarda o registro bruto na tabela TelemetryRaw (Histórico/Auditoria)
+    await prisma.telemetryRaw.create({
+      data: {
+        topic: topic,
+        robotId: robotId,
+        payload: payload // json, prisma aceito o obj
       }
     });
-  });
 
-  client.on("message", async (topic, payload) => {
-    if (topic !== env.mqtt.telemetryTopic) {
-      return;
+    // busca se há alguma sessão ativa (corrida que ainda não foi concluída)
+    let session = await prisma.session.findFirst({
+      where: { 
+        isCompleted: false 
+      },
+      orderBy: { createdAt: 'desc' } // Pega a mais recente se houver alguma anomalia
+    });
+
+    // Se a ESP32 mandou o step 0 e não existe nenhuma sessão aberta, cria uma na hora!
+    if (!session && payload.step === 0) {
+      // Busca um labirinto padrão existente para não quebrar a chave estrangeira (mazeId)
+      let maze = await prisma.maze.findFirst();
+      if (!maze) {
+        // Se a tabela de mapas estiver vazia na primeira execução, cria um mapa padrão
+        maze = await prisma.maze.create({
+          data: { name: "Labirinto Padrão UnB", width: 16, height: 16 }
+        });
+      }
+
+      session = await prisma.session.create({
+        data: {
+          sessionName: `Corrida Automática - ${new Date().toLocaleTimeString()}`,
+          algorithm: payload.modo || "DFS",
+          mode: payload.estado || "Exploração",
+          mazeId: maze.id,
+          startPosX: payload.posicao?.x || 0,
+          startPosY: payload.posicao?.y || 0,
+          initialVoltage: payload.energia?.tensaoV || 0
+        }
+      });
+      console.log(`[AUTO-START] 🏁 Nova sessão criada de forma automatizada: ID [${session.id}]`);
     }
-    try {
-      await storeTelemetry(topic, payload);
-    } catch (error) {
-      console.error("Telemetry processing failed", error);
+
+    // Se uma sessão ativa existe (ou acabou de ser autocriada), grava o Passo Atual (Step)
+    if (session) {
+      // Busca o último stepOrder salvo para garantir a consistência de incrementos (opcional)
+      const stepRecord = await prisma.sessionStep.create({
+        data: {
+          sessionId: session.id,
+          stepOrder: payload.step,
+          posX: payload.posicao?.x || 0,
+          posY: payload.posicao?.y || 0,
+          voltage: payload.energia?.tensaoV || 0,
+          current: payload.energia?.correnteMa || 0
+        }
+      });
+
+      try {
+        const io = getSocket();
+        io.emit("telemetry:step", stepRecord); 
+      } catch (wsError) {
+        // Evita que uma falha no WS derrube o salvamento do banco de dados
+        console.error("[WS_STREAM_ERROR] Servidor WS não inicializado ou falhou ao emitir:", wsError);
+      }
+
+      // Se o robô bater a flag de conclusão, consolida e encerra a sessão
+      if (payload.conclusao === true) {
+        // Calcula a duração aproximada da corrida
+        const durationMs = Date.now() - session.createdAt.getTime();
+
+        await prisma.session.update({
+          where: { id: session.id },
+          data: { 
+            isCompleted: true,
+            durationMs: durationMs,
+            finalVoltage: payload.energia?.tensaoV || 0
+          }
+        });
+        console.log(`[AUTO-STOP] 🏁 Robô concluiu o labirinto. Sessão [${session.id}] fechada com sucesso.`);
+      }
     }
-  });
 
-  client.on("error", (error) => {
-    console.error("MQTT error", error);
-  });
-
-  return client;
+  } catch (error) {
+    console.error("Erro crítico dentro do storeTelemetry service:", error);
+    throw error; // Repassa para o client.on("message") capturar no bloco catch dele
+  }
 };
