@@ -36,7 +36,7 @@ export default function BatteryWidget({ voltage, percentage, isCritical }: Batte
       <ul className="flex flex-col gap-unit font-mono text-[12px] text-on-surface-variant">
         <li className="flex justify-between border-b border-outline-variant/10 py-1">
           <span>VOLTAGEM:</span>
-          <span className="font-telemetry text-on-surface font-bold">{voltage.toFixed(2)}V</span>
+          <span className="font-telemetry text-on-surface font-bold">{voltage}V</span>
         </li>
         <li className="flex justify-between py-1">
           <span>TENSÃO:</span>

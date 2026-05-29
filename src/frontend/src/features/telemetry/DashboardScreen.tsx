@@ -14,7 +14,6 @@ interface DashboardViewProps {
   } | null;
   currentView: string;
   connectionProps: { latency: string };
-  // Recebe os dados em tempo real vindos do hook do pai
   robotData: TelemetryData | null; 
 }
 
@@ -25,15 +24,22 @@ export default function DashboardView({
   robotData,
 }: DashboardViewProps) {
   
-  // Cria um estado de fallback caso o robô ainda não tenha enviado dados
-  const data = robotData || {
+  // Se o robô não mandou dados ainda, zeramos usando a estrutura nova plana
+  const currentStep = robotData || {
+    stepOrder: 0,
+    posX: 0,
+    posY: 0,
     voltage: 0,
-    percentage: 0,
-    temperature: 0,
-    motorCurrent: 0,
-    velocity: 0,
-    sensors: { front: 0, left: 0, right: 0 },
-    coordinates: { x: 0, y: 0 }
+    current: 0,
+  };
+
+  // Faz uma matemática simples para o BatteryWidget não ficar zerado na porcentagem
+  const calculatePercentage = (v: number) => {
+    if (v === 0) return 0;
+    const maxV = 12.6;
+    const minV = 9.9;
+    const pct = ((v - minV) / (maxV - minV)) * 100;
+    return Math.max(0, Math.min(100, Math.round(pct))); // Trava entre 0% e 100%
   };
 
   return (
@@ -42,28 +48,33 @@ export default function DashboardView({
         
         <div className="flex flex-col gap-gutter lg:col-span-1">
           <BatteryWidget
-            voltage={data.voltage}
-            percentage={data.percentage}
-            isCritical={data.voltage < 3.4}
+            voltage={currentStep.voltage}
+            percentage={calculatePercentage(currentStep.voltage)}
+            isCritical={currentStep.voltage > 0 && currentStep.voltage < 10.2} // Alerta para LiPo 3S descarregando
           />
           <EngineTelemetryWidget
-            motorCurrent={data.motorCurrent}
-            velocity={data.velocity}
+            motorCurrent={currentStep.current} // mpeado para o current (mA) do INA219
+            velocity={0} // TO-DO: @matheus-06 precisa expor a velocidade calculada no payload futuramente
           />
         </div>
 
-        {/* Passa o activeSession e os dados para mapear o labirinto */}
+        {/* Mapeamento gráfico do Labirinto (Usa as coordenadas planas do Prisma) */}
         <VisualizeDiv
           activeSession={activeSession}
           currentView={currentView}
           connectionProps={connectionProps}
-          isConnected={robotData !== null} // 🚀 Ativo se o robotData estiver injetando pacotes na tela!
+          isConnected={robotData !== null}
+          // Se o VisualizeDiv precisar plotar o rastro do robô, você passa os eixos planos:
+          posX={currentStep.posX}
+          posY={currentStep.posY}
         />
 
         <div className="flex flex-col gap-gutter lg:col-span-1">
-          {/* RaceTimer pode ser ativado se a velocidade for maior que zero ou por um status */}
-          <RaceTimer startTime={null} isActive={data.velocity > 0} />
-          <SensorGrid sensorData={data.sensors} />
+          {/* O timer ativa se a corrida começou (passos avançando) */}
+          <RaceTimer startTime={null} isActive={currentStep.stepOrder > 0} />
+          
+          {/* O SensorGrid precisará ser alimentado pelo histórico bruto ou expandido na tabela se virar crítico */}
+          <SensorGrid sensorData={{ front: 0, left: 0, right: 0 }} />
         </div>
       </div>
     </main>
