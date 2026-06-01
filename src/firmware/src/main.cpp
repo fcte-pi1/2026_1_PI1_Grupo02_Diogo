@@ -101,7 +101,6 @@ void IRAM_ATTR encoderRightISR(){
 // -------------------------------------------------------------------------------
 //  TELEMETRIA
 // -------------------------------------------------------------------------------
-const char* estadoStr() {}
 
 void publishTelemetry() {}
 
@@ -178,22 +177,12 @@ void loop() {
 
     atualizaSensores();
 
-    // Cada chamada executa 1 passo
+    // Cada chamada executa 1 passo, dentro de cada passo vai ter a parte de preencher a matriz com explorado / visitado
     // switch (estado) {
     //     case EXPLORANDO: if(modo == DFS) passoDFS(); else passoFF(); break;
     //     case CORRIDA:  passoOtimizado(); break;
     //     case CONCLUIDO / parado:  ()     break;
     // }
-}
-
-const char* estadoStr() {
-    switch (estado) {
-        case PARADO: return "PARADO";
-        case EXPLORANDO: return "EXPLORANDO";
-        case CORRIDA:  return "CORRIDA";
-        case CONCLUIDO:  return "CONCLUIDO";
-        default:         return "?";
-    }
 }
 
 void publishTelemetry() {
