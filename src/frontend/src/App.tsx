@@ -52,7 +52,6 @@ function App() {
       {currentState === AppState.RUNNING && (
         <MainLayout 
           activeSession={activeSession} 
-          setCurrentState={setCurrentState} 
           appState={currentState} 
         />
       )}

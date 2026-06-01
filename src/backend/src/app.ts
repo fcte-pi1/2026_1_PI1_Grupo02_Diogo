@@ -4,6 +4,7 @@ import helmet from "helmet";
 import { env } from "./config/env";
 import { healthRouter } from "./routes/health.routes";
 import { telemetryRouter } from "./routes/telemetry.routes";
+import "./lib/mqtt"; 
 
 const app = express();
 

@@ -1,10 +1,9 @@
 import { Server } from "socket.io";
 import type http from "http";
 import type { TelemetryRaw } from "@prisma/client";
-import { prisma } from '../lib/prisma'
+import { prisma } from '../lib/prisma';
 import { env } from "../config/env";
 
-// Contrato de dados padronizado para garantir integração segura.
 export interface IWebSocketLog {
   socketId: string;
   ip: string;
@@ -13,7 +12,6 @@ export interface IWebSocketLog {
   timestamp: Date;
 }
 
-// Função centralizadora de observabilidade.
 export const logWebSocketEvent = async (
   logData: IWebSocketLog, 
   detalhes: string, 
@@ -47,7 +45,7 @@ export const initSocket = (server: http.Server): Server => {
     },
   });
 
-  // Mapeamento nativo do ciclo de vida do WebSocket
+  // Centralização absoluta do ciclo de vida e das regras do WebSocket
   io.on("connection", (socket) => {
     const clientIp = socket.handshake.address || 'IP Desconhecido';
 
@@ -57,6 +55,51 @@ export const initSocket = (server: http.Server): Server => {
       event: 'CONNECTION',
       timestamp: new Date()
     }, `🔌 Cliente conectado: ID ${socket.id}`);
+
+    // 🚀 REGRA INTEGRADA: Escuta a subscrição que o Frontend dispara ao abrir a tela
+    socket.on("telemetry:subscribe", async (options: { limit?: number } = {}) => {
+      const limit = typeof options.limit === "number" ? options.limit : env.telemetry.historyLimit;
+      
+      await logWebSocketEvent({
+        socketId: socket.id,
+        ip: clientIp,
+        event: 'SUBSCRIBE',
+        payload: options,
+        timestamp: new Date()
+      }, `📡 Subscrição de canal: telemetry:subscribe (Limite: ${limit})`);
+
+      try {
+        // Recupera o histórico de passos da sessão que ainda está rolando
+        const activeSession = await prisma.session.findFirst({
+          where: { isCompleted: false },
+          include: {
+            telemetrySteps: {
+              orderBy: { stepOrder: "asc" },
+              take: limit
+            }
+          }
+        });
+
+        if (activeSession) {
+          // Envia o rastro para o front desenhar o labirinto de onde parou
+          socket.emit("telemetry:history", activeSession.telemetrySteps);
+        } else {
+          socket.emit("telemetry:history", []);
+        }
+      } catch (error) {
+        console.error("[WS_SERVER_ERROR] Falha ao recuperar histórico ativo:", error);
+      }
+    });
+
+    socket.on("telemetry:unsubscribe", () => {
+      logWebSocketEvent({
+        socketId: socket.id,
+        ip: clientIp,
+        event: 'UNSUBSCRIBE',
+        payload: { action: 'leave' },
+        timestamp: new Date()
+      }, `📡 Cancelamento de canal: telemetry:unsubscribe`);
+    });
 
     socket.on('error', (err) => {
       logWebSocketEvent({
@@ -68,7 +111,6 @@ export const initSocket = (server: http.Server): Server => {
       }, `⚠️ Erro interno: ${err.message}`);
     });
 
-    // Captura os dados instantes antes da conexão cair (mantém acesso ao cache de salas/rooms)
     socket.on('disconnecting', (reason) => {
       logWebSocketEvent({
         socketId: socket.id,
@@ -79,7 +121,6 @@ export const initSocket = (server: http.Server): Server => {
       }, `⏳ Cliente saindo (pré-desconexão). Razão <${reason}>`);
     });
 
-    // Queda definitiva da conexão (transport close, ping timeout, etc)
     socket.on('disconnect', (reason) => {
       logWebSocketEvent({
         socketId: socket.id,
@@ -95,9 +136,7 @@ export const initSocket = (server: http.Server): Server => {
 };
 
 export const emitTelemetry = (telemetry: TelemetryRaw): void => {
-  if (!io) {
-    return;
-  }
+  if (!io) return;
   io.emit("telemetry:new", telemetry);
 };
 
