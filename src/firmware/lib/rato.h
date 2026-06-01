@@ -1,9 +1,10 @@
 #pragma once
 #include <Arduino.h>
 
-typedef struct Rato {
-    int x, y;       // Posição no labirinto
-    char direcao;   // 'N', 'S', 'L', 'O'
+typedef struct Rato
+{
+    int x, y;     // Posição no labirinto
+    char direcao; // 'N', 'S', 'L', 'O'
 
     // Leituras dos sensores (cm)
     float distancia_frente;
