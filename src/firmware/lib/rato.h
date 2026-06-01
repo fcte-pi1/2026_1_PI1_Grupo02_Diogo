@@ -1,27 +1,22 @@
-#ifndef RATO_H
-#define RATO_H
+#pragma once
+#include <Arduino.h>
 
 typedef struct Rato {
-    int x;
-    int y;
-    char direcao;
+    int x, y;       // Posição no labirinto
+    char direcao;   // 'N', 'S', 'L', 'O'
+
+    // Leituras dos sensores (cm)
+    float distancia_frente;
+    float distancia_esquerda;
+    float distancia_direita;
+
+    // Controle dos motores
+    int pwm_motor_esquerdo;
+    int pwm_motor_direito;
+
+    // Contagem dos encoders
+    long encoder_esquerdo;
+    long encoder_direito;
 } Rato;
 
-void AdicionaCarrinho(char mapa[16][16], Rato *rato);
-
-char& LocalizacaoRato(char mapa[16][16], Rato *rato);
-
-char Baixo(char mapa[16][16], Rato *rato);
-char Direita(char mapa[16][16], Rato *rato);
-char Cima(char mapa[16][16], Rato *rato);
-char Esquerda(char mapa[16][16], Rato *rato);
-
-void AndaDireita(char mapa[16][16], Rato *rato);
-void AndaBaixo(char mapa[16][16], Rato *rato);
-void AndaEsquerda(char mapa[16][16], Rato *rato);
-void AndaCima(char mapa[16][16], Rato *rato);
-
-int VerificaObjetivo(char mapa[16][16], Rato *rato);
-void AndaRato(char mapa[16][16], Rato *rato);
-
-#endif
+void inicializaRato(Rato *rato);
