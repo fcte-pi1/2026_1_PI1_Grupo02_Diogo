@@ -1,6 +1,6 @@
 #pragma once
 #include <Arduino.h>
-#include "rato.h"
+#include "../../utils/rato/rato.h"
 
 // -- Calibração (tem que alterar) -----------------------------------
 #define PULSOS_POR_CELULA 200 // pulsos de encoder para avançar uma célula

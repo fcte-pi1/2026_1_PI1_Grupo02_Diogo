@@ -1,4 +1,4 @@
-#include "../lib/sensores.h"
+#include "./sensores.h"
 
 // -- Pinos (preenchidos em inicializaSensores) --------------------------------
 static uint8_t _trigF, _echoF;

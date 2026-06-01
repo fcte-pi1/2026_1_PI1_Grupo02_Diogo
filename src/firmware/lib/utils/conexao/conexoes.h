@@ -1,7 +1,6 @@
 #pragma once
 #include <Arduino.h>
 
-#include "../lib/telemetria.h"
 #include <WiFi.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>

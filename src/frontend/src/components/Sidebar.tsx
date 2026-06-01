@@ -1,19 +1,17 @@
 import { useState } from 'react';
-import { LayoutDashboard, Settings, ScrollText, WifiSync, LogOut, ArrowLeftToLine, CircleFadingPlus } from 'lucide-react';
-import { AppState } from '../App';
+import { LayoutDashboard, Settings, ScrollText, WifiSync, CircleFadingPlus, ArrowLeftToLine } from 'lucide-react';
 
 interface SidebarProps {
   currentView?: string;
   activeSession?: string;
-  setCurrentState: React.Dispatch<React.SetStateAction<AppState>>; 
   onNavigate?: (view: string) => void;
 }
 
-export default function Sidebar({ currentView = 'dashboard', onNavigate, setCurrentState }: SidebarProps) {
+export default function Sidebar({ currentView = 'dashboard', onNavigate }: SidebarProps) {
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'network', label: 'Conexão', icon: WifiSync },
-    { id: 'logs', label: 'Logs do Sistema', icon: ScrollText },
+    { id: 'logs', label: 'Histórico de sessões', icon: ScrollText },
     { id: 'config', label: 'Configurações', icon: Settings },
   ];
 
@@ -23,7 +21,7 @@ export default function Sidebar({ currentView = 'dashboard', onNavigate, setCurr
   return (
     <aside
       className={`h-full bg-surface-container-low/60 border-r border-outline-variant/30 backdrop-blur-md flex flex-col justify-between transition-all duration-300 ease-in-out select-none shrink-0 z-30 ${
-        isNavOpen ? 'w-16 p-stack-md' : 'w-64 p-container-padding'
+        isNavOpen ? 'w-16 p-3' : 'w-64 p-container-padding'
       }`}
     >
       {/* Bloco Superior: Logo + Navegação */}
@@ -91,24 +89,19 @@ export default function Sidebar({ currentView = 'dashboard', onNavigate, setCurr
         </nav>
       </div>
 
-      {/* Bloco Inferior: Status Crítico + Ação de Sair */}
+      {/* Bloco Inferior: Ações Dinâmicas baseadas no redimensionamento */}
       <div className="flex flex-col gap-stack-md border-t border-outline-variant/20 pt-stack-md">
         
-        <button className='btn-primary text-xs gap-stack-md'>< CircleFadingPlus className="w-3.5 h-3.5 shrink-0"/>Criar labirinto</button>
-
-        {/* Botão de Desconexão / Encerrar Sessão */}
         <button 
-          onClick={() => { if (confirm("Deseja encerrar a sessão?")) setCurrentState(AppState.WELCOME); }}
-          title={isNavOpen ? "Encerrar Ensaio" : undefined}
-          className={`w-full flex items-center text-error hover:text-on-error hover:bg-error-container/40 font-space uppercase tracking-wider rounded-none border border-transparent hover:border-error-container transition-all cursor-pointer ${
-            isNavOpen ? 'justify-center py-2.5 px-0' : 'gap-stack-sm px-stack-md py-2.5 text-[12px] font-bold'
+          title={isNavOpen ? "Criar labirinto" : undefined}
+          className={`btn-primary text-xs flex items-center justify-center gap-stack-md ${
+            isNavOpen ? 'w-full p-3' : 'w-full'
           }`}
         >
-          <LogOut className="w-3.5 h-3.5 shrink-0" strokeWidth={2} />
-          
-          {/* Texto do botão de deslogar some se colapsado */}
-          {!isNavOpen && <span className="truncate">Encerrar Ensaio</span>}
+          <CircleFadingPlus className="w-3.5 h-3.5 shrink-0" />
+          {!isNavOpen && <span>Criar labirinto</span>}
         </button>
+
       </div>
 
     </aside>

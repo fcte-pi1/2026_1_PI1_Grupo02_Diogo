@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AppState } from "../../App";
 import Navbar from "../../components/Navbar";
 import Sidebar from "../../components/Sidebar";
@@ -18,28 +18,38 @@ interface MainLayoutProps {
     algorithm: string;
     mode: string;
   } | null;
-  setCurrentState: React.Dispatch<React.SetStateAction<AppState>>;
   appState: AppState;
 }
 
 export default function MainLayout({
   activeSession,
-  setCurrentState,
 }: MainLayoutProps) {
   const [currentView, setCurrentView] = useState("dashboard");
   const [viewTerminal, setViewTerminal] = useState(true);
+  const [terminalLogs, setTerminalLogs] = useState<string[]>([]);
 
   // Chamada unificada do coração de dados do WebSocket
   const { robotData, isConnected, sendRaceAction, connect, disconnect } =
     useWebSocket();
 
+  // Toda vez que o hook receber um dado novo do robô,
+  useEffect(() => {
+    if (robotData) {
+      const horaAtual = new Date().toLocaleTimeString();
+      
+      const novaLinhaLog = `[${horaAtual}] [PASSO #${robotData.stepOrder}] 📍 X:${robotData.posX} Y:${robotData.posY} | ⚡ ${robotData.voltage}V | 🔌 ${robotData.current}mA`;
+      
+      // Adiciona o novo log na lista (mantendo apenas os últimos 25 logs para não estourar a memória)
+      setTerminalLogs((logsAnteriores) => [...logsAnteriores.slice(-25), novaLinhaLog]);
+    }
+  }, [robotData]); // ◄ Executa esse bloco SEMPRE que robotData mudar
+
   const currentSessionName = activeSession?.sessionName || "Sessão Ativa";
 
   // Lógica de renderização do miolo da tela baseada na Sidebar
   const renderContentView = () => {
-    // ✅ Gerado localmente com base nos dados dinâmicos do robô
     const connectionProps = {
-      latency: robotData ? String(robotData.temperature) : "0",
+      latency: robotData ? String(robotData.voltage) : "0",
     };
 
     switch (currentView) {
@@ -57,7 +67,7 @@ export default function MainLayout({
           <ConnectView 
             currentView={currentView} 
             connectionProps={connectionProps}
-            isConnected={isConnected} // 🚀 ESTA É A INJEÇÃO CRÍTICA DA PROP REAL DO HOOK!
+            isConnected={isConnected}
           />
         );
       default:
@@ -73,7 +83,6 @@ export default function MainLayout({
     <div className="h-screen w-full bg-background bg-grid flex flex-col overflow-hidden text-on-background relative">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_20%,#111317_100%)] pointer-events-none z-0" />
 
-      {/* Navbar configurada com as ações do WebSocket */}
       <Navbar
         sessionName={currentSessionName}
         appState={AppState.RUNNING}
@@ -81,7 +90,6 @@ export default function MainLayout({
         setViewTerminal={setViewTerminal}
         currentView={currentView}
         onRaceAction={sendRaceAction}
-        // Novas propriedades mapeadas:
         isSocketConnected={isConnected}
         onConnect={connect}
         onDisconnect={disconnect}
@@ -91,20 +99,21 @@ export default function MainLayout({
         <Sidebar
           currentView={currentView}
           onNavigate={setCurrentView}
-          setCurrentState={setCurrentState}
         />
 
         <div className="flex flex-1 flex-col justify-between h-full">
           <div className="flex-1 overflow-hidden">{renderContentView()}</div>
 
-          {viewTerminal && (
-            <div className="p-6 pt-0">
-              <TerminalWidget
-                activeSession={activeSession}
-                status={isConnected}
-              />
-            </div>
-          )}
+         {viewTerminal && (
+          <div className="p-6 pt-0">
+            <TerminalWidget
+              activeSession={activeSession}
+              status={isConnected}
+              logs={terminalLogs} 
+              onClearLogs={() => setTerminalLogs([])}
+            />
+          </div>
+        )}
         </div>
       </div>
 

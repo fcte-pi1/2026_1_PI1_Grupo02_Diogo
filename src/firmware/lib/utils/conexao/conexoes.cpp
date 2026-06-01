@@ -1,4 +1,4 @@
-#include "../lib/telemetria.h"
+#include "./conexoes.h"
 
 void connectWiFi()
 {

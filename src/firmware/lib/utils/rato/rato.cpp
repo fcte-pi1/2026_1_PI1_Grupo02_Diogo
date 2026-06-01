@@ -1,4 +1,4 @@
-#include "../lib/rato.h"
+#include "./rato.h"
 
 void inicializaRato(Rato *rato)
 {

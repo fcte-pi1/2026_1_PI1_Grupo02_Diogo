@@ -218,5 +218,5 @@ html, body {
 }
 
 @utility animate-rat-running {
-  animation: rat-run 2.5s infinite linear;
+  animation: rat-run 2s infinite linear;
 }

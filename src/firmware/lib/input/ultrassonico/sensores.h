@@ -1,6 +1,6 @@
 #pragma once
 #include <Arduino.h>
-#include "rato.h"
+#include "../../utils/rato/rato.h"
 
 // -- Constantes ---------------------------------------------------------------
 #define DISTANCIA_LIVRE_CM 400.0f // quando não ve nada

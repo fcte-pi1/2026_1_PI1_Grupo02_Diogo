@@ -1,4 +1,4 @@
-#include "../lib/movimentos.h"
+#include "./motor.h"
 
 // -- Pinos e encoders (registrados em inicializaMotors) -----------------------
 static uint8_t _in1L, _in2L;
