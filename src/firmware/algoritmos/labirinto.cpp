@@ -28,7 +28,7 @@ void inicializaLabirinto(Labirinto *lab) {
 
 
 // // -------------------------------------------------------------------------------
-// //  marcar parede encontrada
+// //  marcar parede encontrada (a parte de "visitado" e "explorado" tem que ser feita dentro do algoritmo de movimento)
 // // -------------------------------------------------------------------------------
 
 void registrarParede(Labirinto *lab, int x, int y, char direcao) {
