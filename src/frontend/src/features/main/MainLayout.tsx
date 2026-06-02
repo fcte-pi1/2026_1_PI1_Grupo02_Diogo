@@ -10,6 +10,7 @@ import { useWebSocket } from "../../hooks/useWebSocket";
 // Importação das suas visualizações modulares
 import Dashboard from "../telemetry/DashboardScreen";
 import ConnectView from "../network/ConnectView";
+import HistoryScreen from "../history/HistoryScreen";
 import TerminalWidget from "../telemetry/components/TerminalWidget";
 
 interface MainLayoutProps {
@@ -70,6 +71,8 @@ export default function MainLayout({
             isConnected={isConnected}
           />
         );
+      case "logs":
+        return <HistoryScreen />;
       default:
         return (
           <div className="p-6 font-mono text-xs text-outline">

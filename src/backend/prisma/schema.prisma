@@ -22,7 +22,7 @@ model TelemetryRaw {
 model Maze {
   id        String   @id @default(uuid())
   name      String
-  width     Int      @default(16) // Suporta adaptações de chaves físicas: 4, 8 ou 16
+  width     Int      @default(16)
   height    Int      @default(16)
   createdAt DateTime @default(now())
 
@@ -52,25 +52,22 @@ model Cell {
 model Session {
   id          String   @id @default(uuid())
   sessionName String
-  algorithm   String   // "DFS" para exploração ou "Flood Fill" para corrida rápida
-  mode        String   // "Exploração" ou "Corrida" (Dip switch configurado)
+  algorithm   String
+  mode        String
   createdAt   DateTime @default(now())
 
   durationMs   Int?
   avgSpeed     Float?
   isCompleted  Boolean @default(false)
 
-  // Registro do ponto inicial sorteado para a corrida
   startPosX    Int?
   startPosY    Int?
 
-  // Métricas consolidadas da bateria ao fim da sessão
   initialVoltage Float?
   finalVoltage   Float?
   totalDrainMah  Float?
 
-  // Solução para o caminho mais rápido encontrado (Array JSON de coordenadas: [{"x": 0, "y": 0}])
-  fastestPath  Json?
+  fastestPath Json?
 
   mazeId String
   maze   Maze   @relation(fields: [mazeId], references: [id])
@@ -82,23 +79,21 @@ model Session {
   @@index([createdAt])
 }
 
-// Rastreamento temporal passo a passo (O Trajeto Feito + Telemetria Elétrica Síncrona)
+// Rastreamento temporal passo a passo
 model SessionStep {
   id        String   @id @default(uuid())
-  sessionId String
-  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  
-  timestamp DateTime @default(now())
-  stepOrder Int      // Garante a ordenação sequencial exata do trajeto percorrido
+  sessionId String?
+  session   Session? @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
-  // Posição em tempo real do robô (Coordenadas do trajeto feito)
+  timestamp DateTime @default(now())
+  stepOrder Int
+
   posX Int
   posY Int
 
-  // Dados coletados pelo sensor INA219 para alimentar os gráficos do frontend
-  voltage      Float    // Tensão instantânea em Volts (ex: 11.1)
-  current      Float    // Corrente instantânea em Miliampères (ex: 250.5)
-  consumption  Float?   // Consumo acumulado calculados no backend/firmware
+  voltage     Float
+  current     Float
+  consumption Float?
 
   @@index([sessionId])
   @@index([stepOrder])

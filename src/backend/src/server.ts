@@ -2,7 +2,8 @@ import http from "http";
 import { app } from "./app";
 import { env } from "./config/env";
 import { initSocket, logWebSocketEvent } from "./websocket/socket";
-import { prisma } from "./lib/prisma"; // 🚀 Mantém o prisma para alimentar o cockpit no F5
+import { prisma } from "./lib/prisma";
+import { getOrphanStepsForReplay } from "./services/telemetry.service";
 import { getSocket } from "./websocket/socket";
 
 const server = http.createServer(app);
@@ -25,24 +26,8 @@ io.on("connection", (socket) => {
     }, `📡 Subscrição de canal: telemetry:subscribe (Limite: ${limit})`);
 
     try {
-      // Procura se existe uma corrida acontecendo agora no PostgreSQL
-      const activeSession = await prisma.session.findFirst({
-        where: { isCompleted: false },
-        include: {
-          telemetrySteps: {
-            orderBy: { stepOrder: "asc" }, // Traz o trajeto ordenado do passo 0 até o atual
-            take: limit
-          }
-        }
-      });
-
-      if (activeSession) {
-        // Envia os passos salvos para o front recuperar o mapa onde o robô parou
-        socket.emit("telemetry:history", activeSession.telemetrySteps);
-      } else {
-        // Se não tiver corrida ativa, manda uma lista vazia
-        socket.emit("telemetry:history", []);
-      }
+      const orphanSteps = await getOrphanStepsForReplay(limit);
+      socket.emit("telemetry:history", orphanSteps);
     } catch (error) {
       console.error("[WS_SERVER_ERROR] Falha ao recuperar histórico da sessão ativa:", error);
     }
