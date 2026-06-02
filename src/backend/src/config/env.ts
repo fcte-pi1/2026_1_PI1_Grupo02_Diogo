@@ -7,6 +7,13 @@ const parseNumber = (value: string | undefined, fallback: number): number => {
   return Number.isNaN(parsed) ? fallback : parsed;
 };
 
+const parseBoolean = (value: string | undefined, fallback = false): boolean => {
+  if (value === undefined) {
+    return fallback;
+  }
+  return ["1", "true", "yes", "on"].includes(value.toLowerCase());
+};
+
 const requireEnv = (name: string): string => {
   const value = process.env[name];
   if (!value) {
@@ -27,6 +34,7 @@ export const env = {
   },
   telemetry: {
     historyLimit: parseNumber(process.env.TELEMETRY_HISTORY_LIMIT, 100),
+    mockEnabled: parseBoolean(process.env.TELEMETRY_MOCK_ENABLED, false),
   },
   mqtt: {
     url: requireEnv("MQTT_URL"),

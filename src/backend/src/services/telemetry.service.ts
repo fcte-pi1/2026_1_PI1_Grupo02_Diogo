@@ -43,10 +43,10 @@ export const storeTelemetry = async (
   topic: string,
   payload: Buffer
 ): Promise<TelemetryRaw> => {
-  // faz o parse e a validação do DTO que vocês já tinham criado
+  
   const parsed = parsePayload(payload);
   
-  // salva o histórico bruto na tabela TelemetryRaw (Mantém o comportamento antigo seguro)
+  // salva o histórico bruto na tabela TelemetryRaw 
   const created = await createTelemetry({
     topic,
     payload: parsed.payload as Prisma.InputJsonValue,
@@ -61,13 +61,13 @@ export const storeTelemetry = async (
       const espData = parsed.payload; // Dados validados vindos da ESP32
       const currentRobotId = parsed.robotId || "UAV-MOUSE-01";
 
-      // Busca se existe uma corrida ativa rolando no PostgreSQL (Estratégia 1)
+      // Busca se existe uma corrida ativa rolando no PostgreSQL
       let session = await prisma.session.findFirst({
         where: { isCompleted: false },
         orderBy: { createdAt: 'desc' }
       });
 
-      // se o robô mandou o step 0 e não tem sessão aberta, cria uma na hora
+      // se o robô mandou o step 0 e não tem sessão aberta, cria uma nova
       if (!session && espData.step === 0) {
         let maze = await prisma.maze.findFirst();
         if (!maze) {
@@ -121,6 +121,12 @@ export const storeTelemetry = async (
               isCompleted: true,
               durationMs: durationMs,
               finalVoltage: espData.energia?.tensaoV || 0
+              // TODO: TotalDrain Calc...
+              // TODO: Fastest Path...
+              // TODO: AvgSpeed...
+              // TODO: Calcular o tamanho do labirinto e as coordenadas do final do DFS (linha de chagada)
+              // Nos processos de cálculo acima será necessário consultar o baco de dados 
+              // nos Steps da sessão.
             }
           });
           console.log(`[AUTO-STOP] 🏁 Robô concluiu o labirinto. Sessão [${session.id}] encerrada.`);
