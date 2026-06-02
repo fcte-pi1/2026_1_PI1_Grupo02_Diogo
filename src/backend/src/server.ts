@@ -1,10 +1,10 @@
 import http from "http";
 import { app } from "./app";
 import { env } from "./config/env";
-import { initSocket, logWebSocketEvent } from "./websocket/socket";
 import { prisma } from "./lib/prisma";
 import { getOrphanStepsForReplay } from "./services/telemetry.service";
-import { getSocket } from "./websocket/socket";
+import { getSocket, initSocket, logWebSocketEvent } from "./websocket/socket";
+import { startMqtt } from "./services/mqtt.service";
 
 const server = http.createServer(app);
 const io = initSocket(server);
@@ -45,35 +45,69 @@ io.on("connection", (socket) => {
   });
 });
 
-// teste simulado para envio de dados sem a esp...
-let passoFake = 0;
-setInterval(() => {
-  try {
-    const io = getSocket();
-    
-    // Finge que a ESP32 mandou um pacote e envia pro seu hook useWebSocket
-    io.emit("telemetry:step", {
-      stepOrder: passoFake,
-      posX: Math.floor(Math.random() * 16),
-      posY: Math.floor(Math.random() * 16),
-      voltage: (11.1 - (passoFake * 0.02)).toFixed(2), // Bateria caindo devagar
-      current: Math.floor(Math.random() * 50) + 200     // Consumo oscilando entre 200mA e 250mA
-    });
+// SIMULADORES WEBSOCKET 
+// para envio de dados sem a esp... Descomente para ativar o envio automático de passos falsos a cada 3 segundos, 
+// simulando a ESP32 em ação. Útil para desenvolvimento do frontend sem precisar da parte física do robô.
 
-    console.log(`[TEST_TRIGGER] Disparado passo fake #${passoFake} via WS para o Frontend.`);
-    passoFake++;
-  } catch (e) {
-    // Ignora se o socket ainda não tiver subido
-  }
-}, 3000); // dspara a cada 3 segundos sozinho!
+// SIMULADOR WEBSOCKET (1.5s)
+// Envia telemetrias novas em intervalos de 1,5 segundos para testes do frontend
+// quando a ESP32 nao estiver disponivel.
+if (env.telemetry.mockEnabled) {
+  let telemetryFake = 0;
+  setInterval(() => {
+    try {
+      const io = getSocket();
+
+      io.emit("telemetry:new", {
+        stepOrder: telemetryFake,
+        posX: Math.floor(Math.random() * 16),
+        posY: Math.floor(Math.random() * 16),
+        voltage: Number((11.1 - telemetryFake * 0.015).toFixed(2)),
+        current: Math.floor(Math.random() * 50) + 200,
+      });
+
+      console.log(
+        `[TEST_TRIGGER] Nova telemetria fake #${telemetryFake} via WS.`,
+      );
+      telemetryFake++;
+    } catch (e) {
+      // Ignora se o socket ainda nao tiver subido
+    }
+  }, 1500);
+  // SIMULADOR WEBSOCKET (3s) para steps
+  // let passoFake = 0;
+  // setInterval(() => {
+  //   try {
+  //     const io = getSocket();
+
+  //     // Finge que a ESP32 mandou um pacote e envia pro seu hook useWebSocket
+  //     io.emit("telemetry:step", {
+  //       stepOrder: passoFake,
+  //       posX: Math.floor(Math.random() * 16),
+  //       posY: Math.floor(Math.random() * 16),
+  //       voltage: (11.1 - (passoFake * 0.02)).toFixed(2), // Bateria caindo devagar
+  //       current: Math.floor(Math.random() * 50) + 200     // Consumo oscilando entre 200mA e 250mA
+  //     });
+
+  //     console.log(`[TEST_TRIGGER] Disparado passo fake #${passoFake} via WS para o Frontend.`);
+  //     passoFake++;
+  //   } catch (e) {
+  //     // Ignora se o socket ainda não tiver subido
+  //   }
+  // }, 3000); // dspara a cada 3 segundos sozinho!
+}
+
 
 server.listen(env.port, () => {
   console.log(`API listening on :${env.port}`);
 });
 
+const mqttClient = startMqtt();
+
 // Encerramento limpo e seguro do servidor
 const shutdown = async () => {
   console.log("Shutting down");
+  mqttClient.end(true);
   await prisma.$disconnect();
   server.close(() => {
     process.exit(0);
