@@ -1,53 +1,25 @@
-import type { Prisma } from "@prisma/client";
 import {
   toSessionMetadataDto,
   toSessionStepDto,
   type SessionDetailDto,
   type SessionMetadataDto,
 } from "../dtos/session.dto";
-import { prisma } from "../lib/prisma";
-
-const sessionMetadataSelect = {
-  id: true,
-  sessionName: true,
-  algorithm: true,
-  createdAt: true,
-  isCompleted: true,
-  durationMs: true,
-  initialVoltage: true,
-  finalVoltage: true,
-} satisfies Prisma.SessionSelect;
+import {
+  deleteSessionById,
+  findManySessionMetadata,
+  findSessionDetailWithSteps,
+  sessionExists,
+} from "../repositories/session.repository";
 
 export const listSessionMetadata = async (): Promise<SessionMetadataDto[]> => {
-  const sessions = await prisma.session.findMany({
-    select: sessionMetadataSelect,
-    orderBy: { createdAt: "desc" },
-  });
-
+  const sessions = await findManySessionMetadata();
   return sessions.map(toSessionMetadataDto);
 };
 
 export const getSessionDetail = async (
   id: string
 ): Promise<SessionDetailDto | null> => {
-  const session = await prisma.session.findUnique({
-    where: { id },
-    select: {
-      ...sessionMetadataSelect,
-      telemetrySteps: {
-        orderBy: { stepOrder: "asc" },
-        select: {
-          id: true,
-          stepOrder: true,
-          posX: true,
-          posY: true,
-          voltage: true,
-          current: true,
-          timestamp: true,
-        },
-      },
-    },
-  });
+  const session = await findSessionDetailWithSteps(id);
 
   if (!session) {
     return null;
@@ -62,15 +34,11 @@ export const getSessionDetail = async (
 };
 
 export const deleteSession = async (id: string): Promise<boolean> => {
-  const existing = await prisma.session.findUnique({
-    where: { id },
-    select: { id: true },
-  });
-
-  if (!existing) {
+  const exists = await sessionExists(id);
+  if (!exists) {
     return false;
   }
 
-  await prisma.session.delete({ where: { id } });
+  await deleteSessionById(id);
   return true;
 };

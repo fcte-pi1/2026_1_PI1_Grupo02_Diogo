@@ -1,79 +1,92 @@
 import http from "http";
 import { app } from "./app";
 import { env } from "./config/env";
-import { initSocket, logWebSocketEvent } from "./websocket/socket";
+import { getSocket, initSocket, logWebSocketEvent } from "./websocket/socket";
 import { prisma } from "./lib/prisma";
 import { getOrphanStepsForReplay } from "./services/telemetry.service";
-import { getSocket } from "./websocket/socket";
+import { startMqtt } from "./services/mqtt.service";
 
 const server = http.createServer(app);
 const io = initSocket(server);
 
-// Camada de Regras de Negócio do WebSocket
 io.on("connection", (socket) => {
-  const clientIp = socket.handshake.address || 'IP Desconhecido';
+  const clientIp = socket.handshake.address || "IP Desconhecido";
 
-  // Regra 1: O frontend pede para ver a telemetria do robô (Cockpit Passivo)
   socket.on("telemetry:subscribe", async (options: { limit?: number } = {}) => {
-    const limit = typeof options.limit === "number" ? options.limit : env.telemetry.historyLimit;
-    
-    logWebSocketEvent({
-      socketId: socket.id,
-      ip: clientIp,
-      event: 'SUBSCRIBE',
-      payload: options,
-      timestamp: new Date()
-    }, `📡 Subscrição de canal: telemetry:subscribe (Limite: ${limit})`);
+    const limit =
+      typeof options.limit === "number"
+        ? options.limit
+        : env.telemetry.historyLimit;
+
+    logWebSocketEvent(
+      {
+        socketId: socket.id,
+        ip: clientIp,
+        event: "SUBSCRIBE",
+        payload: options,
+        timestamp: new Date(),
+      },
+      `📡 Subscrição de canal: telemetry:subscribe (Limite: ${limit})`
+    );
 
     try {
       const orphanSteps = await getOrphanStepsForReplay(limit);
       socket.emit("telemetry:history", orphanSteps);
     } catch (error) {
-      console.error("[WS_SERVER_ERROR] Falha ao recuperar histórico da sessão ativa:", error);
+      console.error(
+        "[WS_SERVER_ERROR] Falha ao recuperar histórico da sessão ativa:",
+        error
+      );
     }
   });
 
-  // Regra 2: O frontend avisa explicitamente que saiu da tela de telemetria
   socket.on("telemetry:unsubscribe", () => {
-    logWebSocketEvent({
-      socketId: socket.id,
-      ip: clientIp,
-      event: 'UNSUBSCRIBE',
-      payload: { action: 'leave' },
-      timestamp: new Date()
-    }, `📡 Cancelamento de canal: telemetry:unsubscribe`);
+    logWebSocketEvent(
+      {
+        socketId: socket.id,
+        ip: clientIp,
+        event: "UNSUBSCRIBE",
+        payload: { action: "leave" },
+        timestamp: new Date(),
+      },
+      `📡 Cancelamento de canal: telemetry:unsubscribe`
+    );
   });
 });
 
-// teste simulado para envio de dados sem a esp...
-let passoFake = 0;
-setInterval(() => {
-  try {
-    const io = getSocket();
-    
-    // Finge que a ESP32 mandou um pacote e envia pro seu hook useWebSocket
-    io.emit("telemetry:step", {
-      stepOrder: passoFake,
-      posX: Math.floor(Math.random() * 16),
-      posY: Math.floor(Math.random() * 16),
-      voltage: (11.1 - (passoFake * 0.02)).toFixed(2), // Bateria caindo devagar
-      current: Math.floor(Math.random() * 50) + 200     // Consumo oscilando entre 200mA e 250mA
-    });
+if (env.telemetry.mockEnabled) {
+  let telemetryFake = 0;
+  setInterval(() => {
+    try {
+      const socketIo = getSocket();
 
-    console.log(`[TEST_TRIGGER] Disparado passo fake #${passoFake} via WS para o Frontend.`);
-    passoFake++;
-  } catch (e) {
-    // Ignora se o socket ainda não tiver subido
-  }
-}, 3000); // dspara a cada 3 segundos sozinho!
+      socketIo.emit("telemetry:new", {
+        stepOrder: telemetryFake,
+        posX: Math.floor(Math.random() * 16),
+        posY: Math.floor(Math.random() * 16),
+        voltage: Number((11.1 - telemetryFake * 0.015).toFixed(2)),
+        current: Math.floor(Math.random() * 50) + 200,
+      });
+
+      console.log(
+        `[TEST_TRIGGER] Nova telemetria fake #${telemetryFake} via WS.`
+      );
+      telemetryFake += 1;
+    } catch {
+      // socket ainda não inicializado
+    }
+  }, 1500);
+}
 
 server.listen(env.port, () => {
   console.log(`API listening on :${env.port}`);
 });
 
-// Encerramento limpo e seguro do servidor
+const mqttClient = startMqtt();
+
 const shutdown = async () => {
   console.log("Shutting down");
+  mqttClient.end(true);
   await prisma.$disconnect();
   server.close(() => {
     process.exit(0);

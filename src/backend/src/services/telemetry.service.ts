@@ -2,6 +2,16 @@ import type { Prisma, TelemetryRaw } from "@prisma/client";
 import type { TelemetryPayloadDto } from "../dtos/telemetry.dto";
 import { validateTelemetryPayload } from "../dtos/telemetry.dto";
 import { prisma } from "../lib/prisma";
+import { findOrCreateDefaultMaze } from "../repositories/maze.repository";
+import {
+  createConsolidatedSession,
+} from "../repositories/session.repository";
+import {
+  createOrphanSessionStep,
+  findOrphanSteps,
+  findOrphanStepsLimited,
+  linkOrphanStepsToSession,
+} from "../repositories/session-step.repository";
 import {
   createTelemetry,
   getTelemetryById,
@@ -48,16 +58,6 @@ const parsePayload = (buffer: Buffer): ParsedTelemetry => {
   }
 };
 
-const ensureDefaultMaze = async (): Promise<string> => {
-  let maze = await prisma.maze.findFirst();
-  if (!maze) {
-    maze = await prisma.maze.create({
-      data: { name: "Labirinto padrão", width: 16, height: 16 },
-    });
-  }
-  return maze.id;
-};
-
 const ensureActiveRunContext = async (
   espData: TelemetryPayloadDto
 ): Promise<ActiveRunContext> => {
@@ -65,11 +65,11 @@ const ensureActiveRunContext = async (
     return activeRunContext;
   }
 
-  const mazeId = await ensureDefaultMaze();
+  const maze = await findOrCreateDefaultMaze();
   activeRunContext = {
     algorithm: espData.modo,
     mode: espData.estado,
-    mazeId,
+    mazeId: maze.id,
   };
 
   return activeRunContext;
@@ -80,15 +80,12 @@ export const recordOrphanTelemetryStep = async (
 ): Promise<void> => {
   await ensureActiveRunContext(espData);
 
-  const stepRecord = await prisma.sessionStep.create({
-    data: {
-      sessionId: null,
-      stepOrder: espData.step,
-      posX: espData.posicao.x,
-      posY: espData.posicao.y,
-      voltage: espData.energia.tensaoV,
-      current: espData.energia.correnteMa,
-    },
+  const stepRecord = await createOrphanSessionStep({
+    stepOrder: espData.step,
+    posX: espData.posicao.x,
+    posY: espData.posicao.y,
+    voltage: espData.energia.tensaoV,
+    current: espData.energia.correnteMa,
   });
 
   try {
@@ -108,10 +105,7 @@ export const consolidateSession = async (
   const runContext = await ensureActiveRunContext(espData);
 
   return prisma.$transaction(async (tx) => {
-    const orphanSteps = await tx.sessionStep.findMany({
-      where: { sessionId: null },
-      orderBy: { stepOrder: "asc" },
-    });
+    const orphanSteps = await findOrphanSteps(tx);
 
     if (orphanSteps.length === 0) {
       return null;
@@ -122,25 +116,22 @@ export const consolidateSession = async (
     const durationMs =
       lastStep.timestamp.getTime() - firstStep.timestamp.getTime();
 
-    const session = await tx.session.create({
-      data: {
+    const session = await createConsolidatedSession(
+      {
         sessionName: `Corrida - ${new Date().toLocaleString("pt-BR")}`,
         algorithm: runContext.algorithm,
         mode: runContext.mode,
         mazeId: runContext.mazeId,
-        isCompleted: true,
         durationMs,
         initialVoltage: firstStep.voltage,
         finalVoltage: lastStep.voltage,
         startPosX: firstStep.posX,
         startPosY: firstStep.posY,
       },
-    });
+      tx
+    );
 
-    await tx.sessionStep.updateMany({
-      where: { sessionId: null },
-      data: { sessionId: session.id },
-    });
+    await linkOrphanStepsToSession(session.id, tx);
 
     activeRunContext = null;
 
@@ -205,8 +196,4 @@ export const getTelemetryByIdService = async (
 ): Promise<TelemetryRaw | null> => getTelemetryById(id);
 
 export const getOrphanStepsForReplay = async (limit: number) =>
-  prisma.sessionStep.findMany({
-    where: { sessionId: null },
-    orderBy: { stepOrder: "asc" },
-    take: limit,
-  });
+  findOrphanStepsLimited(limit);
