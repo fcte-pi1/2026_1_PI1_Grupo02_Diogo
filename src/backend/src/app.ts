@@ -3,6 +3,7 @@ import cors from "cors";
 import helmet from "helmet";
 import { env } from "./config/env";
 import { healthRouter } from "./routes/health.routes";
+import { sessionRouter } from "./routes/session.routes";
 import { telemetryRouter } from "./routes/telemetry.routes";
 
 const app = express();
@@ -16,6 +17,7 @@ app.use(
 app.use(express.json({ limit: "1mb" }));
 
 app.use("/health", healthRouter);
+app.use("/api/sessions", sessionRouter);
 app.use("/api/telemetry", telemetryRouter);
 
 app.use((error: unknown, _req: Request, res: Response, _next: NextFunction) => {
