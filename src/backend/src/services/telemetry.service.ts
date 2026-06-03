@@ -1,4 +1,5 @@
-import type { Prisma, TelemetryRaw } from "@prisma/client";
+import type { TelemetryRaw } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import type { TelemetryPayloadDto } from "../dtos/telemetry.dto";
 import { validateTelemetryPayload } from "../dtos/telemetry.dto";
 import { prisma } from "../lib/prisma";
@@ -77,7 +78,7 @@ const ensureActiveRunContext = async (
 
 export const recordOrphanTelemetryStep = async (
   espData: TelemetryPayloadDto
-): Promise<void> => {
+): Promise<any> => {
   await ensureActiveRunContext(espData);
 
   const stepRecord = await createOrphanSessionStep({
@@ -91,12 +92,15 @@ export const recordOrphanTelemetryStep = async (
   try {
     const io = getSocket();
     io.emit("telemetry:step", stepRecord);
+    io.emit("telemetry:subscribe", stepRecord); 
   } catch (wsError) {
     console.error(
       "[WS_STREAM_ERROR] Servidor WS não inicializado ou falhou ao emitir:",
       wsError
     );
   }
+
+  return stepRecord;
 };
 
 export const consolidateSession = async (
@@ -113,8 +117,7 @@ export const consolidateSession = async (
 
     const firstStep = orphanSteps[0];
     const lastStep = orphanSteps[orphanSteps.length - 1];
-    const durationMs =
-      lastStep.timestamp.getTime() - firstStep.timestamp.getTime();
+    const durationMs = lastStep.timestamp.getTime() - firstStep.timestamp.getTime();
 
     const session = await createConsolidatedSession(
       {
@@ -136,7 +139,7 @@ export const consolidateSession = async (
     activeRunContext = null;
 
     console.log(
-      `[CONSOLIDATE] Sessão [${session.id}] criada com ${orphanSteps.length} passos.`
+      `[CONSOLIDATE] 🏁 Sessão [${session.id}] gerada em lote com ${orphanSteps.length} passos.`
     );
 
     return session.id;
@@ -157,22 +160,25 @@ export const storeTelemetry = async (
 
   emitTelemetry(created);
 
-  if (
-    parsed.payload &&
-    typeof parsed.payload === "object" &&
-    parsed.payload !== null &&
-    !("validationErrors" in parsed.payload)
-  ) {
+  let espData = parsed.payload as any;
+  if (espData && espData.validationErrors) {
     try {
-      const espData = parsed.payload as TelemetryPayloadDto;
+      espData = JSON.parse(payload.toString("utf-8"));
+    } catch {
+      console.error("❌ Falha crítica ao ler JSON de contingência da ESP32");
+      return created;
+    }
+  }
 
+  if (espData && !espData.validationErrors) {
+    try {
       await recordOrphanTelemetryStep(espData);
 
       if (espData.conclusao === true) {
         const sessionId = await consolidateSession(espData);
         if (sessionId) {
           console.log(
-            `[AUTO-STOP] Robô concluiu o labirinto. Sessão consolidada: [${sessionId}]`
+            `[AUTO-STOP] 🏁 Robô concluiu o labirinto. Métrica unificada na Session: [${sessionId}]`
           );
         }
       }

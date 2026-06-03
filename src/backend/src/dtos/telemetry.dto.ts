@@ -3,11 +3,10 @@ import { z } from "zod";
 export const telemetryPayloadSchema = z.object({
   step: z.number(),
   tempoMs: z.number(),
-  modo: z.enum(["DFS", "FLOOD FILL"]),
+  modo: z.enum(["DFS", "FLOOD FILL", "CORRIDA"]),
   estado: z.enum([
     "PARADO",
     "EXPLORANDO",
-    "CORRIDA_RAPIDA",
     "ERRO",
     "FINALIZADO",
   ]),
