@@ -28,7 +28,6 @@ export const env = {
   telemetry: {
     historyLimit: parseNumber(process.env.TELEMETRY_HISTORY_LIMIT, 100),
   },
-  defaultMazeId: process.env.DEFAULT_MAZE_ID,
   mqtt: {
     url: requireEnv("MQTT_URL"),
     telemetryTopic: process.env.MQTT_TOPIC_TELEMETRY ?? "rato/telemetria",

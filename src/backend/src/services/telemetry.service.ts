@@ -1,5 +1,5 @@
 import type { Prisma, TelemetryRaw } from "@prisma/client";
-import { emitTelemetry } from "../websocket/socket";
+import { emitTelemetry, getSocket } from "../websocket/socket";
 import { validateTelemetryPayload, type TelemetryPayloadDto } from "../dtos/telemetry.dto";
 import {
   createTelemetry,
@@ -70,6 +70,14 @@ export const storeTelemetry = async (
         console.log(
           `🏁 [Session] Session completed | id=${result.session.id}`
         );
+      }
+      if (result.step !== null) {
+        try {
+          const io = getSocket();
+          io.emit("telemetry:step", result.step);
+        } catch (wsError) {
+          console.error("[WS] Falha ao emitir step:", wsError);
+        }
       }
     } catch (error) {
       console.error("[Session Pipeline] Non-fatal error:", error);

@@ -1,39 +1,46 @@
 import type { Session, SessionStep } from "@prisma/client";
 import type { TelemetryPayloadDto } from "../dtos/telemetry.dto";
-import { env } from "../config/env";
 import { prisma } from "../lib/prisma";
 import {
   findActiveSession,
   createSession,
   closeSession,
   findSessionWithSteps,
-  findFirstStepOfSession,
 } from "../repositories/session.repository";
-import {
-  createSessionStep,
-  countStepsInSession,
-  findStepsBySession,
-} from "../repositories/session-step.repository";
+import { findStepsBySession } from "../repositories/session-step.repository";
+
+// ---------------------------------------------------------------------------
+// Tipos
+// ---------------------------------------------------------------------------
 
 type ProcessResult = {
   session: Session;
-  step: SessionStep;
+  step: SessionStep | null;
   isNewSession: boolean;
   isCompleted: boolean;
 };
 
+// ---------------------------------------------------------------------------
+// Buffer em memória: acumula payloads por robotId até conclusao=true
+// ---------------------------------------------------------------------------
+
+const stepBuffer = new Map<string, TelemetryPayloadDto[]>();
+
+// ---------------------------------------------------------------------------
+// Helpers privados
+// ---------------------------------------------------------------------------
+
 const resolveDefaultMazeId = async (): Promise<string> => {
-  if (env.defaultMazeId) {
-    return env.defaultMazeId;
-  }
   const maze = await prisma.maze.findFirst({ orderBy: { createdAt: "asc" } });
   if (!maze) {
-    throw new Error(
-      "No maze found in database and DEFAULT_MAZE_ID is not set"
-    );
+    throw new Error("Nenhum Maze encontrado no banco.");
   }
   return maze.id;
 };
+
+// ---------------------------------------------------------------------------
+// Funções exportadas
+// ---------------------------------------------------------------------------
 
 export const resolveActiveSession = async (
   robotId: string,
@@ -71,32 +78,42 @@ export const resolveActiveSession = async (
   return { session, isNew: true };
 };
 
+/**
+ * Persiste todos os steps acumulados de uma vez via createMany.
+ * stepOrder é determinado pela posição do payload no array do buffer.
+ */
 export const injectSessionStep = async (
   session: Session,
-  payload: TelemetryPayloadDto
-): Promise<SessionStep> => {
-  const stepOrder = await countStepsInSession(session.id);
-  return createSessionStep({
-    sessionId: session.id,
-    stepOrder,
-    posX: payload.posicao.x,
-    posY: payload.posicao.y,
-    voltage: payload.energia.tensaoV,
-    current: payload.energia.correnteMa,
-    consumption: null,
+  payloads: TelemetryPayloadDto[]
+): Promise<void> => {
+  if (payloads.length === 0) return;
+
+  await prisma.sessionStep.createMany({
+    data: payloads.map((p, index) => ({
+      sessionId: session.id,
+      stepOrder: index,
+      posX: p.posicao.x,
+      posY: p.posicao.y,
+      voltage: p.energia.tensaoV,
+      current: p.energia.correnteMa,
+      consumption: null,
+    })),
   });
 };
 
+/**
+ * Consolida as métricas da sessão usando os dados já disponíveis no buffer,
+ * sem consultas adicionais ao banco.
+ */
 export const finalizeSession = async (
   session: Session,
-  payload: TelemetryPayloadDto
+  payload: TelemetryPayloadDto,
+  totalSteps: number,
+  initialVoltage: number
 ): Promise<Session> => {
-  const totalSteps = await countStepsInSession(session.id);
   const durationMs = payload.tempoMs;
   const avgSpeed = durationMs > 0 ? totalSteps / (durationMs / 1000) : 0;
 
-  const firstStep = await findFirstStepOfSession(session.id);
-  const initialVoltage = firstStep?.voltage ?? payload.energia.tensaoV;
   const finalVoltage = payload.energia.tensaoV;
   const drain = initialVoltage - finalVoltage;
   const totalDrainMah = drain > 0 ? drain : 0;
@@ -115,6 +132,11 @@ export const finalizeSession = async (
   return closed;
 };
 
+/**
+ * Orquestra o ciclo de vida completo de uma sessão:
+ * - Acumula payloads em memória enquanto conclusao=false
+ * - Quando conclusao=true: flush em lote → finaliza sessão → limpa buffer
+ */
 export const processSessionStep = async (
   robotId: string,
   payload: TelemetryPayloadDto
@@ -124,15 +146,37 @@ export const processSessionStep = async (
     payload
   );
 
-  const step = await injectSessionStep(session, payload);
+  // Acumula sempre (inclusive o payload com conclusao=true)
+  const buffer = stepBuffer.get(robotId) ?? [];
+  buffer.push(payload);
+  stepBuffer.set(robotId, buffer);
 
-  if (payload.conclusao) {
-    const finalized = await finalizeSession(session, payload);
-    return { session: finalized, step, isNewSession, isCompleted: true };
+  if (!payload.conclusao) {
+    return { session, step: null, isNewSession, isCompleted: false };
   }
 
-  return { session, step, isNewSession, isCompleted: false };
+  // --- Flush ---
+  const buffered = stepBuffer.get(robotId) ?? [];
+  const totalSteps = buffered.length;
+  const initialVoltage = buffered[0]?.energia.tensaoV ?? payload.energia.tensaoV;
+
+  await injectSessionStep(session, buffered);
+
+  const finalized = await finalizeSession(
+    session,
+    payload,
+    totalSteps,
+    initialVoltage
+  );
+
+  stepBuffer.delete(robotId);
+
+  return { session: finalized, step: null, isNewSession, isCompleted: true };
 };
+
+// ---------------------------------------------------------------------------
+// Queries de replay
+// ---------------------------------------------------------------------------
 
 export const getSessionReplay = async (
   sessionId: string
