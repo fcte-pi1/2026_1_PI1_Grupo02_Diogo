@@ -1,5 +1,22 @@
-import type { Session, SessionStep } from "@prisma/client";
+import type { Prisma, Session, SessionStep } from "@prisma/client";
 import { prisma } from "../lib/prisma";
+
+type DbClient = Prisma.TransactionClient | typeof prisma;
+
+export const sessionMetadataSelect = {
+  id: true,
+  sessionName: true,
+  algorithm: true,
+  createdAt: true,
+  isCompleted: true,
+  durationMs: true,
+  initialVoltage: true,
+  finalVoltage: true,
+} satisfies Prisma.SessionSelect;
+
+export type SessionMetadataRecord = Prisma.SessionGetPayload<{
+  select: typeof sessionMetadataSelect;
+}>;
 
 type CreateSessionData = {
   sessionName: string;
@@ -18,6 +35,18 @@ type CloseSessionData = {
   totalDrainMah: number;
 };
 
+type CreateConsolidatedSessionData = {
+  sessionName: string;
+  algorithm: string;
+  mode: string;
+  mazeId: string;
+  durationMs: number;
+  initialVoltage: number;
+  finalVoltage: number;
+  startPosX: number;
+  startPosY: number;
+};
+
 export const findActiveSession = async (
   robotId: string
 ): Promise<Session | null> =>
@@ -29,8 +58,20 @@ export const findActiveSession = async (
   });
 
 export const createSession = async (
-  data: CreateSessionData
-): Promise<Session> => prisma.session.create({ data });
+  data: CreateSessionData,
+  client: DbClient = prisma
+): Promise<Session> => client.session.create({ data });
+
+export const createConsolidatedSession = async (
+  data: CreateConsolidatedSessionData,
+  client: DbClient = prisma
+): Promise<Session> =>
+  client.session.create({
+    data: {
+      ...data,
+      isCompleted: true,
+    },
+  });
 
 export const closeSession = async (
   sessionId: string,
@@ -39,6 +80,22 @@ export const closeSession = async (
   prisma.session.update({
     where: { id: sessionId },
     data: { ...data, isCompleted: true },
+  });
+
+export const findManySessionMetadata = async (): Promise<
+  SessionMetadataRecord[]
+> =>
+  prisma.session.findMany({
+    select: sessionMetadataSelect,
+    orderBy: { createdAt: "desc" },
+  });
+
+export const findSessionMetadataById = async (
+  id: string
+): Promise<SessionMetadataRecord | null> =>
+  prisma.session.findUnique({
+    where: { id },
+    select: sessionMetadataSelect,
   });
 
 export const findSessionWithSteps = async (
@@ -51,10 +108,53 @@ export const findSessionWithSteps = async (
     },
   });
 
+export const findSessionDetailWithSteps = async (id: string) =>
+  prisma.session.findUnique({
+    where: { id },
+    select: {
+      ...sessionMetadataSelect,
+      telemetrySteps: {
+        orderBy: { stepOrder: "asc" },
+        select: {
+          id: true,
+          stepOrder: true,
+          posX: true,
+          posY: true,
+          voltage: true,
+          current: true,
+          timestamp: true,
+        },
+      },
+    },
+  });
+
+export const sessionExists = async (id: string): Promise<boolean> => {
+  const session = await prisma.session.findUnique({
+    where: { id },
+    select: { id: true },
+  });
+  return session !== null;
+};
+
+export const deleteSessionById = async (id: string): Promise<void> => {
+  await prisma.session.delete({ where: { id } });
+};
+
 export const findFirstStepOfSession = async (
   sessionId: string
 ): Promise<SessionStep | null> =>
   prisma.sessionStep.findFirst({
     where: { sessionId },
     orderBy: { stepOrder: "asc" },
+  });
+
+export const findActiveSessionWithSteps = async (limit: number) =>
+  prisma.session.findFirst({
+    where: { isCompleted: false },
+    include: {
+      telemetrySteps: {
+        orderBy: { stepOrder: "asc" },
+        take: limit,
+      },
+    },
   });

@@ -11,25 +11,29 @@ interface VisualizeDivProps {
     latency: string;
   };
   isConnected: boolean; // Flag real do WebSocket
+  posX: number;         // posição X real do robô
+  posY: number;         // posição Y real do robô
 }
 
 export function VisualizeDiv({
   activeSession,
   currentView,
   isConnected,
+  posX,
+  posY,
+  connectionProps
 }: VisualizeDivProps) {
   
   const renderContentView = () => {
-    // O switch agora escuta diretamente o estado do painel principal
     switch (currentView) {
       case "dashboard":
         return (
-          <div className="bg-surface-container-low/60 border border-outline-variant/30 p-6 flex flex-col h-full min-h-\[350px] w-full relative">
-            {/* Header de Coordenadas Estático */}
+          <div className="bg-surface-container-low/60 border border-outline-variant/30 p-6 flex flex-col h-full min-h-\[350px\] w-full relative">
+            
             <div className="text-[10px] justify-between font-mono text-outline uppercase tracking-widest flex items-center gap-2 w-full mb-6">
               <span className="flex items-center gap-1">Mapeamento do labirinto</span>
-              <span className="text-[9px] px-2 py-0.5 border border-outline-variant/30 font-mono tracking-wider text-on-surface">
-                COORDSS: X-1, Y-1
+              <span className="text-[9px] px-2 py-0.5 border border-outline-variant/30 font-mono tracking-wider text-on-surface bg-surface-container-lowest">
+                COORDS: X-{posX}, Y-{posY}
               </span>
             </div>
             
@@ -45,7 +49,7 @@ export function VisualizeDiv({
       case "network":
       default:
         return (
-          <div className="bg-surface-container-low/60 border border-outline-variant/30 p-6 flex flex-col h-full min-h-\[350px] w-full min-w-\[280px] relative justify-between">
+          <div className="bg-surface-container-low/60 border border-outline-variant/30 p-6 flex flex-col h-full min-h-\[350px\] w-full min-w-\[280px\] relative justify-between">
             {/* Header de Rede Reativo */}
             <div className="text-[10px] justify-between font-mono text-outline uppercase tracking-widest flex items-center gap-2 w-full mb-6">
               <span className="flex items-center gap-1">Topologia rede ativa</span>
@@ -77,7 +81,7 @@ export function VisualizeDiv({
               </div>
 
               {/* Linha Conectora 1 */}
-              <div className="h-\[1px] bg-outline-variant/40 flex-1 max-w-\[60px]"></div>
+              <div className="h-\[1px\] bg-outline-variant/40 flex-1 max-w-\[60px\]"></div>
 
               {/* Robô MicroMouse (ESP32) */}
               <div className="flex flex-col items-center text-center font-mono relative">
@@ -93,12 +97,12 @@ export function VisualizeDiv({
                   UAV-MOUSE-01
                 </span>
                 <span className="text-[9px] text-outline">
-                  RSSI: {isConnected ? `-{connectionProps.latency}dBm` : '---'}
+                  RSSI: {isConnected ? `-${connectionProps.latency}dBm` : '---'}
                 </span>
               </div>
 
               {/* Linha Conectora 2 */}
-              <div className="h-\[1px] bg-outline-variant/40 flex-1 max-w-\[60px]"></div>
+              <div className="h-\[1px\] bg-outline-variant/40 flex-1 max-w-\[60px\]"></div>
 
               {/* Banco de Dados Postgres */}
               <div className="flex flex-col items-center text-center font-mono">
