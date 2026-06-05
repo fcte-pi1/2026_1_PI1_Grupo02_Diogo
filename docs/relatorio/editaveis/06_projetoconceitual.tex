@@ -220,17 +220,159 @@ Abaixo, apresenta-se o detalhamento do consumo energético do sistema, considera
         \item Retorno: Utiliza o algoritmo de \textit{Floofill} para voltar ao início;
         \item Percurso otimizado: Escolhe a melhor rota a partir dos dados coletados nos outros modos e vai até a área de conclusão.
     \end{itemize} 
-
-     
-    O \textit{software} atua como o núcleo de inteligência e monitoramento do sistema (Mission Control). Sua função é processar a telemetria enviada pelo robô em tempo real, gerenciar a construção dinâmica do mapa do labirinto, executar algoritmos de \textit{pathfinding} para determinar a rota otimizada e fornecer uma interface gráfica para visualização de métricas de energia e desempenho.
     
-    \item \textbf{Estilo arquitetural contendo:}
+    \item \textbf{Backlog do Produto:}
+    \begin{itemize}
+        \item \textbf{Histórias de Usuário}
+            \begin{table}[H]
+                \centering
+                \begin{tabularx}{\textwidth}{|l|X|X|X|}
+                    \hline
+                    \textbf{Título da HU} & \textbf{Eu-como-para} & \textbf{RF} & \textbf{RNF} \\
+                    \hline
+                    HU-01: Visualização do labirinto &
+                    Eu como XXX, quero YYY, para ZZZ &
+                    RF01, RF02 &
+                    RNF01 \\
+                    \hline
+                    HU-02: Visualização de telemetria &
+                    Eu como XXX, quero YYY, para ZZZ &
+                    RF03, RF04 &
+                    RNF02, RNF03 \\
+                    \hline
+                \end{tabularx}
+                \caption{Histórias de Usuário}
+                \label{tab:historias_usuario}
+            \end{table}
+
+
+\item \textbf{Requisitos Funcionais (RF):}
+
+\subsubsection*{RF-01 – Display de Telemetria}
+
+\begin{itemize}
+    \item \textbf{Descrição:}
+    O sistema deve XXX.
+
+    \item \textbf{Prioridade (MoSCoW):}
+    Must Have
+
+    \item \textbf{Critérios de Aceitação:}
+    \begin{enumerate}
+        \item ZZZ.
+        \item ZZZ.
+    \end{enumerate}
+\end{itemize}
+
+        \item \textbf{Requisitos Não Funcionais (RNF):}
+            \subsubsection*{RNF-01 – XXX}
+
+\begin{itemize}
+    \item \textbf{Descrição:}
+    YYY.
+
+    \item \textbf{Prioridade (MoSCoW):}
+    Must Have
+
+    \item \textbf{Critérios de Aceitação:}
+    \begin{enumerate}
+        \item ZZZ.
+        \item ZZZZ.
+    \end{enumerate}
+\end{itemize}
+
+    \end{itemize}
+
+
+    \item \textbf{Protótipo da Interface de Monitoramento:}
+        \begin{itemize}
+            \item \textbf{Link do Protótipo (Figma):} \href{https://www.figma.com/design/XJGha6pemQS4kD2XydKeLr/Robozin?m=auto&t=tc0JBodUJ4Lv3OWG-6}{Dashboard de Telemetria - Grupo 2}
+            \item \textbf{Descrição das Funcionalidades:} 
+            A interface foi projetada seguindo a estética \textit{Mission Control}, priorizando a visualização de dados críticos em tempo real. O dashboard é composto por:
+            \begin{itemize}
+                \item \textbf{Grid Dinâmico (16x16):} Renderização central do labirinto com atualização de trajeto conforme o mapeamento do robô.
+                \item \textbf{Fluxo de Eventos (Logs):} Painel lateral dedicado ao rastreio de decisões do algoritmo e status de conexão.
+                \item \textbf{Widgets de Telemetria:} Monitoramento de consumo de bateria (tensão/corrente), velocidade média e sensores de distância (ToF).
+                \item \textbf{Status da Missão:} Indicadores de tempo de conclusão e validação do desafio cumprido.
+            \end{itemize}
+        \end{itemize}
+
+    \item \textbf{Arquitetura do software:}
+    \begin{itemize}
+        \item \textbf{Propósito:}
+        O \textit{software} atua como o núcleo de inteligência e monitoramento do sistema (Mission Control). Sua função é processar a telemetria enviada pelo robô em tempo real, gerenciar a construção dinâmica do mapa do labirinto, executar algoritmos de \textit{pathfinding} para determinar a rota otimizada e fornecer uma interface gráfica para visualização de métricas de energia e desempenho.
     
-    Arquitetura Orientada a Eventos (\textit{Event-Driven Architecture}) com Monólito Modular no \textit{backend}. Este padrão permite lidar com a natureza assíncrona dos dados de sensores, garantindo que o sistema reaja a eventos instantâneos sem latência perceptível. Como stack principal tem-se como:
+        \item \textbf{Arquitetura:}
+        Arquitetura Orientada a Eventos (\textit{Event-Driven Architecture}) com Monólito Modular no \textit{backend}. Este padrão permite lidar com a natureza assíncrona dos dados de sensores, garantindo que o sistema reaja a eventos instantâneos sem latência perceptível. Como stack principal tem-se como:
+        \item \textbf{Diagrama de alto nível:} 
+        A arquitetura segue um fluxo de dados linear e reativo, conforme descrito abaixo:
+        
+        \begin{figure}[H]
+            \centering
+            \includegraphics[width=0.9\textwidth]{figuras/diagrama_arquitetura.png}
+            \caption{Fluxo de dados e arquitetura da solução.}
+            \label{fig:arquitetura}
+        \end{figure}
+    
+    \begin{enumerate}
+        \item \textbf{ESP32:} Coleta dados de sensores e publica pacotes JSON via \textbf{MQTT} no tópico \texttt{rato/telemetria}.
+        \item \textbf{Broker Mosquitto:} Recebe as mensagens e as encaminha para os assinantes ativos.
+        \item \textbf{Node.js (\textit{Back-end}):} Atua como assinante (\textit{subscriber}) do broker, processa os dados recebidos, realiza a persistência no \textbf{PostgreSQL} e emite eventos via \textbf{WebSockets}.
+        \item \textbf{React (\textit{Front-end}):} Escuta os eventos emitidos pelo servidor e renderiza instantaneamente o labirinto e os gráficos de consumo energético.
+    \end{enumerate}
 
-        O modelo conceitual do sistema foi projetado para registrar o histórico de telemetria e o mapeamento de coordenadas do robô de forma eficiente. O domínio do problema foi abstraído nas seguintes entidades, atributos e relacionamentos:
+        \item \textbf{Tecnologias:}
+            \begin{itemize}
+            \item \textbf{Linguagens de programação:} JavaScript (ES6+) e C++.
+            \item \textbf{\textit{Frameworks}, bibliotecas e protocolos:} No \textit{front-end}, utiliza-se \textbf{React (Vite)} com \textbf{Tailwind CSS}. No \textit{back-end}, \textbf{Node.js}, \textbf{Express} e \textbf{Socket.io}. Para o \textit{firmware}, o \textit{framework} \textbf{Arduino} via \textbf{PlatformIO}. A comunicação é regida pelos protocolos \textbf{MQTT} (entre ESP32 e Broker) para telemetria leve e \textbf{WebSockets} (entre Backend e Frontend) para atualização em tempo real.
+            \item \textbf{Banco de dados:} Relacional \textbf{PostgreSQL} via Docker.
+            \end{itemize}
 
-        \subsubsection{Entidades e Atributos}
+        \item \textbf{Persistência de dados:}
+            O modelo conceitual do sistema foi projetado para registrar o histórico de telemetria e o mapeamento de coordenadas do robô de forma eficiente. O domínio do problema foi abstraído nas seguintes entidades, atributos e relacionamentos:
+            \subsubsection{Entidades e Atributos}
+            \begin{itemize}
+            \item \textbf{Entidade: Labirinto} \\
+            Representa os diferentes mapas físicos onde as corridas ocorrem.
+            \begin{itemize}
+                \item \textbf{id\_labirinto}: Identificador único do mapa (Chave Primária).
+                \item \textbf{tipo\_matriz}: Classificação da dimensão da grade (Ex: 4x4, 8x8, 16x16).
+                \item \textbf{tamanho\_celula\_cm}: Medida física do lado de cada célula para auxiliar a renderização.
+            \end{itemize}
+
+            \item \textbf{Entidade: Desafio} \\
+            Representa o evento de uma tentativa ou corrida específica realizada pelo micromouse. Consolida as métricas finais de \textit{hardware} e desempenho.
+            \begin{itemize}
+                \item \textbf{id\_desafio}: Identificador único da corrida (Chave Primária).
+                \item \textbf{data\_hora\_execucao}: Registro cronológico (timestamp) de quando a corrida foi iniciada.
+                \item \textbf{consumo\_bateria}: Métrica de energia gasta pelo robô durante o trajeto.
+                \item \textbf{velocidade\_media}: Métrica de desempenho cinemático do robô.
+                \item \textbf{tempo\_conclusao}: Tempo total gasto do início ao fim da corrida.
+                \item \textbf{desafio\_cumprido}: Indicador booleano (Verdadeiro/Falso) que define se o robô alcançou o centro do labirinto com sucesso.
+            \end{itemize}
+
+            \item \textbf{Entidade: Trajeto} \\
+            Representa a unidade de coordenada percorrida. Armazena o passo a passo do robô para permitir a reconstrução visual do caminho no front-end.
+            \begin{itemize}
+                \item \textbf{id\_trajeto}: Identificador único da coordenada registrada (Chave Primária).
+                \item \textbf{ordem\_movimento}: Valor sequencial numérico para garantir a ordenação cronológica do caminho traçado.
+                \item \textbf{posicao\_x}: Coordenada horizontal correspondente à matriz do labirinto.
+                \item \textbf{posicao\_y}: Coordenada vertical correspondente à matriz do labirinto.
+            \end{itemize}
+        \end{itemize}
+
+
+    \end{itemize}
+
+    
+
+
+
+
+
+    
+    \subsubsection{Entidades e Atributos}
+    O modelo conceitual do sistema foi projetado para registrar o histórico de telemetria e o mapeamento de coordenadas do robô de forma eficiente. O domínio do problema foi abstraído nas seguintes entidades, atributos e relacionamentos:
 
         \begin{itemize}
             \item \textbf{Entidade: Labirinto} \\
@@ -260,43 +402,32 @@ Abaixo, apresenta-se o detalhamento do consumo energético do sistema, considera
                 \item \textbf{posicao\_x}: Coordenada horizontal correspondente à matriz do labirinto.
                 \item \textbf{posicao\_y}: Coordenada vertical correspondente à matriz do labirinto.
             \end{itemize}
+\subsubsection{Relacionamentos e Cardinalidades}
 
+        O comportamento do sistema é regido pelas seguintes regras de negócio entre as entidades:
+
+        \begin{itemize}
+            \item \textbf{Relacionamento: Labirinto possui Desafio}
             \begin{itemize}
-            \item \textbf{Linguagens de programação:} JavaScript (ES6+) e C++.
-            \item \textbf{\textit{Frameworks}, bibliotecas e protocolos:} No \textit{front-end}, utiliza-se \textbf{React (Vite)} com \textbf{Tailwind CSS}. No \textit{back-end}, \textbf{Node.js}, \textbf{Express} e \textbf{Socket.io}. Para o \textit{firmware}, o \textit{framework} \textbf{Arduino} via \textbf{PlatformIO}. A comunicação é regida pelos protocolos \textbf{MQTT} (entre ESP32 e Broker) para telemetria leve e \textbf{WebSockets} (entre Backend e Frontend) para atualização em tempo real.
-            \item \textbf{Banco de dados:} Relacional \textbf{PostgreSQL} via Docker.
+                \item \textbf{Descrição:} Define o local onde uma tentativa ocorreu.
+                \item \textbf{Cardinalidade (1:N):} Um \textbf{Labirinto} físico pode ser palco de \textit{N} (vários) \textbf{Desafios} ao longo do tempo (1,n). Em contrapartida, um \textbf{Desafio} específico deve ocorrer em exatamente \textit{1} único \textbf{Labirinto} (1,1).
+            \end{itemize}
+
+            \item \textbf{Relacionamento: Desafio contém Trajeto}
+            \begin{itemize}
+                \item \textbf{Descrição:} Vincula as coordenadas capturadas à sua respectiva corrida.
+                \item \textbf{Cardinalidade (1:N):} Um \textbf{Desafio} completo registra \textit{N} (vários) pontos de \textbf{Trajeto} para compor seu caminho final (1,n). Por outro lado, uma coordenada de \textbf{Trajeto} armazenada pertence estritamente a \textit{1} único \textbf{Desafio} (1,1).
             \end{itemize}
         \end{itemize}
 
-        \item \textbf{Diagrama de alto nível:} 
-        A arquitetura segue um fluxo de dados linear e reativo, conforme descrito abaixo:
-        
-        \begin{figure}[H]
+        \begin{figure}[ht]
             \centering
-            \includegraphics[width=0.9\textwidth]{figuras/diagrama_arquitetura.png}
-            \caption{Fluxo de dados e arquitetura da solução.}
-            \label{fig:arquitetura}
+            \includegraphics[width=0.8\textwidth]{figuras/DER.png}
+            \caption{Diagrama Lógico de Dados (DER) do sistema de telemetria.}
+            \label{fig:der_logico}
         \end{figure}
 
-    \begin{enumerate}
-        \item \textbf{ESP32:} Coleta dados de sensores e publica pacotes JSON via \textbf{MQTT} no tópico \texttt{rato/telemetria}.
-        \item \textbf{Broker Mosquitto:} Recebe as mensagens e as encaminha para os assinantes ativos.
-        \item \textbf{Node.js (\textit{Back-end}):} Atua como assinante (\textit{subscriber}) do broker, processa os dados recebidos, realiza a persistência no \textbf{PostgreSQL} e emite eventos via \textbf{WebSockets}.
-        \item \textbf{React (\textit{Front-end}):} Escuta os eventos emitidos pelo servidor e renderiza instantaneamente o labirinto e os gráficos de consumo energético.
-    \end{enumerate}
-
-   \item \textbf{Protótipo da Interface de Monitoramento:}
-    \begin{itemize}
-        \item \textbf{Link do Protótipo (Figma):} \href{https://www.figma.com/design/XJGha6pemQS4kD2XydKeLr/Robozin?m=auto&t=tc0JBodUJ4Lv3OWG-6}{Dashboard de Telemetria - Grupo 2}
-        \item \textbf{Descrição das Funcionalidades:} 
-        A interface foi projetada seguindo a estética \textit{Mission Control}, priorizando a visualização de dados críticos em tempo real. O dashboard é composto por:
-        \begin{itemize}
-            \item \textbf{Grid Dinâmico (16x16):} Renderização central do labirinto com atualização de trajeto conforme o mapeamento do robô.
-            \item \textbf{Fluxo de Eventos (Logs):} Painel lateral dedicado ao rastreio de decisões do algoritmo e status de conexão.
-            \item \textbf{Widgets de Telemetria:} Monitoramento de consumo de bateria (tensão/corrente), velocidade média e sensores de distância (ToF).
-            \item \textbf{Status da Missão:} Indicadores de tempo de conclusão e validação do desafio cumprido.
         \end{itemize}
-    \end{itemize}
     
     \item {\textbf{ Roteiro de testes funcionais:} }
     \subsubsection*{CT01 – Exibição do tipo do labirinto}
@@ -585,33 +716,6 @@ Abaixo, apresenta-se o detalhamento do consumo energético do sistema, considera
 % \end{enumerate}
 % }
 %\textcolor{red}{Com relação ao \textit{software}, será necessário apresentar pacotes de componentes de \textit{software}, suas funções e características, e explicar as decisões de projeto.}
-
-        \subsubsection{Relacionamentos e Cardinalidades}
-
-        O comportamento do sistema é regido pelas seguintes regras de negócio entre as entidades:
-
-        \begin{itemize}
-            \item \textbf{Relacionamento: Labirinto possui Desafio}
-            \begin{itemize}
-                \item \textbf{Descrição:} Define o local onde uma tentativa ocorreu.
-                \item \textbf{Cardinalidade (1:N):} Um \textbf{Labirinto} físico pode ser palco de \textit{N} (vários) \textbf{Desafios} ao longo do tempo (1,n). Em contrapartida, um \textbf{Desafio} específico deve ocorrer em exatamente \textit{1} único \textbf{Labirinto} (1,1).
-            \end{itemize}
-
-            \item \textbf{Relacionamento: Desafio contém Trajeto}
-            \begin{itemize}
-                \item \textbf{Descrição:} Vincula as coordenadas capturadas à sua respectiva corrida.
-                \item \textbf{Cardinalidade (1:N):} Um \textbf{Desafio} completo registra \textit{N} (vários) pontos de \textbf{Trajeto} para compor seu caminho final (1,n). Por outro lado, uma coordenada de \textbf{Trajeto} armazenada pertence estritamente a \textit{1} único \textbf{Desafio} (1,1).
-            \end{itemize}
-        \end{itemize}
-
-        \begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.8\textwidth]{figuras/DER.png}
-    \caption{Diagrama Lógico de Dados (DER) do sistema de telemetria.}
-    \label{fig:der_logico}
-    \end{figure}
-
-
 
     \textbf{Roteiro de testes funcionais:}
    
