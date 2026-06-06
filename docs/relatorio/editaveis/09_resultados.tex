@@ -2,6 +2,24 @@
 
 \section{Características Gerais}
 
+Este capítulo tem como objetivo apresentar a metodologia de testes de verificação e validação do sistema Ratobô, garantindo que o protótipo atenda aos requisitos funcionais e não funcionais estabelecidos no Termo de Abertura do Projeto. Essa fase de validação é um instrumento essencial para comprovar a eficácia da integração multidisciplinar entre as áreas de estrutura, hardware, energia e software.
+
+Para assegurar o rigor científico, a rastreabilidade e a plena repetibilidade dos experimentos, os ensaios realizados em cada subsistema adotarão uma documentação técnica padronizada. Cada bateria de testes apresentada nas seções subsequentes detalhará obrigatoriamente os seguintes parâmetros:
+
+\begin{itemize}
+    \item \textbf{Hipóteses levantadas:} Definição clara das premissas que o teste pretende provar ou validar. Como exemplos práticos no escopo do projeto, têm-se a hipótese de que o algoritmo de Busca em Profundidade (DFS) é capaz de mapear e solucionar um labirinto $4 \times 4$ de forma autônoma, ou a premissa de que o conversor LM2596 conseguirá rebaixar e fornecer uma tensão perfeitamente estável de 5V para o microcontrolador ESP32 e os sensores, mesmo sob o pico de demanda de corrente dos motores.
+    
+    \item \textbf{Condições de contorno:} Estabelecimento criterioso do ambiente e das restrições impostas durante a execução de cada ensaio. Isso engloba o mapeamento de variáveis físicas, lógicas e operacionais, tais como o estado inicial de carga da bateria de íons de Lítio, a garantia de pista limpa no labirinto construído em MDF com chão preto e paredes brancas, e a estabilidade da rede Wi-Fi local para sustentar as conexões MQTT.
+    
+    \item \textbf{Resultados esperados:} Critérios de sucesso pré-determinados, sejam eles quantitativos ou qualitativos, que atestam o comportamento ideal do sistema sob as condições testadas. Espera-se, por exemplo, que a malha de controle da locomoção diferencial realize curvas exatas de 90 graus, e que o \textit{dashboard} de telemetria seja capaz de plotar na tela as métricas instantâneas de velocidade, consumo e posição no mapa dinâmico de forma reativa e sem latência perceptível.
+    
+    \item \textbf{Materiais e métodos:} Descrição minuciosa dos instrumentos empregados e do roteiro passo a passo adotado. Envolve listar as ferramentas físicas e digitais --- como o uso do simulador MMS (Mackorone Micromouse Simulator) ou Wokwi para isolar e validar a lógica de código, o uso de multímetros para atestar parâmetros elétricos e a infraestrutura física de apoio --- bem como o sequenciamento exato para a execução de cada rotina de verificação.
+    
+    \item \textbf{Precisão e acurácia das medidas obtidas:} Análise crítica sobre a confiabilidade e tolerância dos dados coletados em relação às folhas de dados (\textit{datasheets}) dos componentes. Nesta etapa, reporta-se o comportamento das medidas vitais, como a resolução dos sensores ultrassônicos HC-SR04 em detectar paredes a curtas distâncias, a margem de erro na medição de corrente provida pelo módulo INA219, e a sensibilidade dos \textit{encoders} magnéticos acoplados aos motores DC N20.
+\end{itemize}
+
+Ao balizar o processo de validação por esta padronização metodológica, as próximas seções apresentarão os roteiros práticos das frentes de validação do projeto, dividindo-se entre as averiguações de Estrutura (7.2), Hardware (7.3), Consumo Energético (7.4), Software (7.5) e Integração Sistêmica (7.6), traçando um panorama completo acerca da viabilidade técnica do produto.
+
 \section{Testes da estrutura}
 
 \section{Testes de \textit{hardware}}
