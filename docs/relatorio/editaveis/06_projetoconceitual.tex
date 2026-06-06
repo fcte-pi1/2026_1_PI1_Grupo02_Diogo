@@ -248,19 +248,173 @@ Abaixo, apresenta-se o detalhamento do consumo energético do sistema, considera
 
 \item \textbf{Requisitos Funcionais (RF):}
 
-\subsubsection*{RF-01 – Display de Telemetria}
+\subsubsection*{RF-01 – Completar labirinto}
 
 \begin{itemize}
     \item \textbf{Descrição:}
-    O sistema deve XXX.
+    O micromousse deve conseguir chegar no destino final dos labirintos de tamanho 4x4, 8x8 e 16x16, o destino final é dado por um espaço 2x2 no mapa.
 
     \item \textbf{Prioridade (MoSCoW):}
     Must Have
 
     \item \textbf{Critérios de Aceitação:}
     \begin{enumerate}
-        \item ZZZ.
-        \item ZZZ.
+        \item O micromouse deve usar o algoritmo de busca em profundidade (DFS) para explorar o labirinto.
+        \item O micromouse deve conseguir identificar o destino final do labirinto.
+        \item O micromouse deve completar o labirinto de 4x4 sem erros.
+        \item O micromouse deve completar o labirinto de 8x8 sem erros.
+        \item O micromouse deve completar o labirinto de 16x16 sem erros.
+    \end{enumerate}
+\end{itemize}
+
+\subsubsection*{RF-02 – Mapear labirinto}
+
+\begin{itemize}
+    \item \textbf{Descrição:}
+    O micromousse deve conseguir mapear o labirinto através da coleta de dados dos sensores ultrassônicos.
+
+    \item \textbf{Prioridade (MoSCoW):}
+    Must Have
+
+    \item \textbf{Critérios de Aceitação:}
+    \begin{enumerate}
+        \item O micromouse deve coletar os dados dos sensores ultrassônicos.
+        \item O micromouse deve usar os dados coletados para atualizar a matriz interna que representa o labirinto.
+    \end{enumerate}
+\end{itemize}
+
+\subsubsection*{RF-03 – Completar volta}
+
+\begin{itemize}
+    \item \textbf{Descrição:}
+    O micromousse deve conseguir, a partir do destino final, voltar para a posição inicial do labirinto.
+
+    \item \textbf{Prioridade (MoSCoW):}
+    Should Have
+
+    \item \textbf{Critérios de Aceitação:}
+    \begin{enumerate}
+        \item O micromouse deve armazenar a posição incial e final no labirinto.
+        \item O micromouse deve usar o algoritmo de FloodFill para ir do final para o início do labirinto.
+        \item O micromouse deve atualizar os dados do mapa durante o caminho de volta
+    \end{enumerate}
+\end{itemize}
+
+\subsubsection*{RF-04 – Completar corrida}
+
+\begin{itemize}
+    \item \textbf{Descrição:}
+    O micromousse deve conseguir usar os percursos anteriores para otimizar a rota de corrida.
+
+    \item \textbf{Prioridade (MoSCoW):}
+    Should Have
+
+    \item \textbf{Critérios de Aceitação:}
+    \begin{enumerate}
+        \item O micromouse deve utilizar os dados coletados nos percursos anteriores e escolher sua rota ideal.
+        \item O micromouse deve percorrer o caminho otimizado do início até a posição final.
+    \end{enumerate}
+\end{itemize}
+
+\subsubsection*{RF-05 – Enviar telemetria}
+
+\begin{itemize}
+    \item \textbf{Descrição:}
+    O micromousse deve enviar seus dados para o broker MQTT.
+
+    \item \textbf{Prioridade (MoSCoW):}
+    Must Have
+
+    \item \textbf{Critérios de Aceitação:}
+    \begin{enumerate}
+        \item O micromouse deve enviar os dados coletados dos sensores ultrassônicos.
+        \item O micromouse deve enviar os dados dos seus motores com encoders e ponte H.
+        \item O micromouse deve enviar os dados da sua bateria como, tensão, corrente e nível atual.
+        \item O micromouse deve enviar os dados da sua posição e direção no mapa, além do seu modo atual.
+        \item O micromouse deve enviar os dados através do broker MQTT para que o backend do site possa receber.
+    \end{enumerate}
+\end{itemize}
+
+\subsubsection*{RF-06 – Receber dados}
+
+\begin{itemize}
+    \item \textbf{Descrição:}
+    O backend do site deve receber os dados enviados pelo micromouse através do broker MQTT.
+
+    \item \textbf{Prioridade (MoSCoW):}
+    Must Have
+
+    \item \textbf{Critérios de Aceitação:}
+    \begin{enumerate}
+      \item O backend do site se conecta com o broker MQTT.
+      \item O backend do site recebe os dados via MQTT.
+      \item O backend do site trata os dados recebidos.
+      \item O backend do site disponibiliza os dados tratados para o frontend.
+    \end{enumerate}
+\end{itemize}
+
+\subsubsection*{RF-07 – Armazenar histórico}
+
+\begin{itemize}
+    \item \textbf{Descrição:}
+    O backend do site deve armazenar os dados das corridas anteriores.
+
+    \item \textbf{Prioridade (MoSCoW):}
+    Must Have
+
+    \item \textbf{Critérios de Aceitação:}
+    \begin{enumerate}
+      \item O backend guarda os dados das corridas anteriores (telemetria, tempo, tipo do labirinto e percursos).
+      \item O backend do site disponibiliza os dados para o frontend.
+    \end{enumerate}
+\end{itemize}
+
+\subsubsection*{RF-08 – Exibir telemetria}
+
+\begin{itemize}
+    \item \textbf{Descrição:}
+    O frontend do site deve exibir os dados recebidos no backend em tempo real.
+
+    \item \textbf{Prioridade (MoSCoW):}
+    Must Have
+
+    \item \textbf{Critérios de Aceitação:}
+    \begin{enumerate}
+      \item O frontend do site deve pegar os dadaos do backend em tempo real via websocket.
+      \item O frontend do site deve exibir os dados da telemetria ao lado do mapa do labiriinto.
+    \end{enumerate}
+\end{itemize}
+
+\subsubsection*{RF-09 – Exibir labirinto}
+
+\begin{itemize}
+    \item \textbf{Descrição:}
+    O frontend do site deve exibir o labirinto e posição do micromouse.
+
+    \item \textbf{Prioridade (MoSCoW):}
+    Must Have
+
+    \item \textbf{Critérios de Aceitação:}
+    \begin{enumerate}
+      \item O frontend do site deve mostrar o mapa labirinto que o micromouse está percorrendo.
+      \item A posição do micromouse e preenchimento das paredes deve ser feito em tempo real.
+    \end{enumerate}
+\end{itemize}
+
+\subsubsection*{RF-10 – Exibir histórico}
+
+\begin{itemize}
+    \item \textbf{Descrição:}
+    O frontend do site deve exibir uma página com os histórico de labirintos anteriores.
+
+    \item \textbf{Prioridade (MoSCoW):}
+    Must Have
+
+    \item \textbf{Critérios de Aceitação:}
+    \begin{enumerate}
+      \item O frontend do site deve apresentar uma lista com o histórico de labirintos percorridos.
+      \item Cada item da lista deve ser clicável de forma a levar para um resumo do percurso realizado.
+      \item O resumo deve conter: tamanho do labirinto, mapa do labirinto, tempo de conclusão e percurso de cada modo.
     \end{enumerate}
 \end{itemize}
 
