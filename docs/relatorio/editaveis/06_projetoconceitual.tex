@@ -221,30 +221,62 @@ Abaixo, apresenta-se o detalhamento do consumo energético do sistema, considera
         \item Percurso otimizado: Escolhe a melhor rota a partir dos dados coletados nos outros modos e vai até a área de conclusão.
     \end{itemize} 
     
-    \item \textbf{Backlog do Produto:}
-    \begin{itemize}
-        \item \textbf{Histórias de Usuário}
-            \begin{table}[H]
-                \centering
-                \begin{tabularx}{\textwidth}{|l|X|X|X|}
-                    \hline
-                    \textbf{Título da HU} & \textbf{Eu-como-para} & \textbf{RF} & \textbf{RNF} \\
-                    \hline
-                    HU-01: Visualização do labirinto &
-                    Eu como XXX, quero YYY, para ZZZ &
-                    RF01, RF02 &
-                    RNF01 \\
-                    \hline
-                    HU-02: Visualização de telemetria &
-                    Eu como XXX, quero YYY, para ZZZ &
-                    RF03, RF04 &
-                    RNF02, RNF03 \\
-                    \hline
-                \end{tabularx}
-                \caption{Histórias de Usuário}
-                \label{tab:historias_usuario}
-            \end{table}
+\item \textbf{Backlog do Produto:}
+\begin{itemize}
+    \item \textbf{Histórias de Usuário}
+        \begin{landscape}
+        \begin{table}[H]
+            \centering
+            \renewcommand{\arraystretch}{1.2}
+            \begin{tabularx}{\linewidth}{|>{\raggedright\arraybackslash}p{0.18\linewidth}|>{\raggedright\arraybackslash}p{0.52\linewidth}|>{\raggedright\arraybackslash}p{0.12\linewidth}|>{\raggedright\arraybackslash}p{0.16\linewidth}|}
+                \hline
+                \textbf{Título da HU} & \textbf{Eu-como-para} & \textbf{RF} & \textbf{RNF} \\
+                \hline
 
+                HU-01: Visualização do labirinto &
+                Eu como aluno da disciplina, quero visualizar o mapa do labirinto em tempo real, para acompanhar a exploração realizada pelo micromouse &
+                RF-09 &
+                RNF-01, RNF-02 \\
+                \hline
+
+                HU-02: Visualização de telemetria &
+                Eu como aluno da disciplina, quero visualizar os dados de telemetria em tempo real, para monitorar o comportamento do robô durante a execução &
+                RF-08 &
+                RNF-01, RNF-03 \\
+                \hline
+
+                HU-03: Consulta ao histórico &
+                Eu como aluno da disciplina, quero acessar corridas anteriores, para comparar resultados e identificar oportunidades de melhoria &
+                RF-07, RF-10 &
+                RNF-04 \\
+                \hline
+
+                HU-04: Análise do desempenho do algoritmo &
+                Eu como aluno da disciplina, quero visualizar métricas de execução do robô, para avaliar a eficiência dos algoritmos implementados &
+                RF-04, RF-10 &
+                RNF-01, RNF-04 \\
+                \hline
+
+                HU-05: Avaliação do projeto &
+                Eu como professor da disciplina, quero consultar o histórico das execuções realizadas, para avaliar o desempenho e evolução da solução desenvolvida pela equipe &
+                RF-07, RF-10 &
+                RNF-04, RNF-05 \\
+                \hline
+
+                HU-06: Acompanhamento em tempo real &
+                Eu como professor da disciplina, quero acompanhar a execução do micromouse em tempo real, para verificar o funcionamento correto do sistema durante demonstrações e avaliações &
+                RF-08, RF-09 &
+                RNF-01, RNF-02 \\
+                \hline
+
+            \end{tabularx}
+            \caption{Histórias de Usuário}
+            \label{tab:historias_usuario}
+        \end{table}
+        \end{landscape}
+\end{itemize}
+
+            
 
 \item \textbf{Requisitos Funcionais (RF):}
 
@@ -418,25 +450,177 @@ Abaixo, apresenta-se o detalhamento do consumo energético do sistema, considera
     \end{enumerate}
 \end{itemize}
 
-        \item \textbf{Requisitos Não Funcionais (RNF):}
-            \subsubsection*{RNF-01 – XXX}
+\item \textbf{Requisitos Não Funcionais (RNF):}
+
+\subsubsection*{RNF-01 – Desempenho de Atualização em Tempo Real}
 
 \begin{itemize}
     \item \textbf{Descrição:}
-    YYY.
+    O sistema deve apresentar os dados de telemetria e atualização do mapa com baixa latência, permitindo o acompanhamento da execução do micromouse em tempo real.
 
     \item \textbf{Prioridade (MoSCoW):}
     Must Have
 
     \item \textbf{Critérios de Aceitação:}
     \begin{enumerate}
-        \item ZZZ.
-        \item ZZZZ.
+        \item O frontend deve receber atualizações via WebSocket.
+        \item O atraso entre o recebimento do dado pelo backend e sua exibição no frontend não deve exceder 1 segundo em condições normais de operação.
     \end{enumerate}
 \end{itemize}
 
-    \end{itemize}
+\subsubsection*{RNF-02 – Disponibilidade da Comunicação}
 
+\begin{itemize}
+    \item \textbf{Descrição:}
+    O sistema deve manter a comunicação entre micromouse, broker MQTT, backend e frontend durante toda a execução da corrida.
+
+    \item \textbf{Prioridade (MoSCoW):}
+    Must Have
+
+    \item \textbf{Critérios de Aceitação:}
+    \begin{enumerate}
+        \item O backend deve detectar falhas de conexão com o broker MQTT.
+        \item O frontend deve informar ao usuário quando não estiver recebendo atualizações em tempo real.
+    \end{enumerate}
+\end{itemize}
+
+\subsubsection*{RNF-03 – Compatibilidade}
+
+\begin{itemize}
+    \item \textbf{Descrição:}
+    O sistema web deve ser compatível com os principais navegadores modernos.
+
+    \item \textbf{Prioridade (MoSCoW):}
+    Should Have
+
+    \item \textbf{Critérios de Aceitação:}
+    \begin{enumerate}
+        \item A interface deve funcionar corretamente nos navegadores Google Chrome, Mozilla Firefox e Microsoft Edge.
+        \item Não devem ocorrer erros críticos de renderização ou navegação.
+    \end{enumerate}
+\end{itemize}
+
+\subsubsection*{RNF-04 – Persistência e Integridade dos Dados}
+
+\begin{itemize}
+    \item \textbf{Descrição:}
+    O sistema deve armazenar corretamente os dados das execuções realizadas pelo micromouse.
+
+    \item \textbf{Prioridade (MoSCoW):}
+    Must Have
+
+    \item \textbf{Critérios de Aceitação:}
+    \begin{enumerate}
+        \item As informações das corridas devem permanecer disponíveis após reinicialização do sistema.
+        \item Não devem ocorrer perdas de dados durante o armazenamento no banco de dados.
+    \end{enumerate}
+\end{itemize}
+
+\subsubsection*{RNF-05 – Usabilidade}
+
+\begin{itemize}
+    \item \textbf{Descrição:}
+    A interface deve permitir que alunos e professores interpretem facilmente os resultados das execuções do micromouse.
+
+    \item \textbf{Prioridade (MoSCoW):}
+    Should Have
+
+    \item \textbf{Critérios de Aceitação:}
+    \begin{enumerate}
+        \item O mapa do labirinto deve ser exibido de forma clara e legível.
+        \item Os dados de telemetria devem estar organizados e identificados adequadamente.
+        \item O histórico de corridas deve ser facilmente acessível através da interface.
+    \end{enumerate}
+\end{itemize}
+
+\subsubsection*{RNF-06 – Manutenibilidade}
+
+\begin{itemize}
+    \item \textbf{Descrição:}
+    O sistema deve ser desenvolvido de forma modular, facilitando futuras modificações e evolução do projeto.
+
+    \item \textbf{Prioridade (MoSCoW):}
+    Should Have
+
+    \item \textbf{Critérios de Aceitação:}
+    \begin{enumerate}
+        \item Backend, frontend e firmware devem possuir responsabilidades bem definidas.
+        \item O código-fonte deve seguir padrões de organização e documentação estabelecidos pela equipe.
+    \end{enumerate}
+\end{itemize}
+
+\subsubsection*{RNF-07 – Portabilidade}
+
+\begin{itemize}
+    \item \textbf{Descrição:}
+    O sistema deve poder ser executado em diferentes ambientes de desenvolvimento e implantação.
+
+    \item \textbf{Prioridade (MoSCoW):}
+    Could Have
+
+    \item \textbf{Critérios de Aceitação:}
+    \begin{enumerate}
+        \item O backend e frontend devem ser executáveis através de contêineres Docker.
+        \item A instalação do ambiente deve ser documentada e reproduzível por outros integrantes da equipe.
+    \end{enumerate}
+\end{itemize}
+
+\subsubsection*{RNF-08 – Frequência de Atualização dos Sensores}
+
+\begin{itemize}
+    \item \textbf{Descrição:}
+    O micromouse deve realizar a leitura periódica dos sensores necessários para navegação e tomada de decisão, garantindo que as informações do ambiente estejam atualizadas durante a execução dos algoritmos de exploração e corrida.
+
+    \item \textbf{Prioridade (MoSCoW):}
+    Must Have
+
+    \item \textbf{Critérios de Aceitação:}
+    \begin{enumerate}
+        \item Os sensores ultrassônicos devem ser atualizados continuamente durante a execução do sistema.
+        \item A frequência mínima de aquisição dos sensores deve ser de 10 Hz (uma leitura a cada 100 ms).
+        \item As leituras dos sensores não devem bloquear a execução dos algoritmos de navegação por períodos superiores a 80 ms.
+        \item As informações obtidas pelos sensores devem estar disponíveis para os módulos de navegação e telemetria imediatamente após sua aquisição.
+    \end{enumerate}
+\end{itemize}
+
+
+\subsubsection*{RNF-09 – Frequência de Envio de Telemetria}
+
+\begin{itemize}
+    \item \textbf{Descrição:}
+    O sistema deve transmitir periodicamente os dados de telemetria do micromouse para o broker MQTT, permitindo o monitoramento em tempo real do robô.
+
+    \item \textbf{Prioridade (MoSCoW):}
+    Must Have
+
+    \item \textbf{Critérios de Aceitação:}
+    \begin{enumerate}
+        \item O micromouse deve publicar dados de telemetria no broker MQTT durante toda a execução da corrida.
+        \item A frequência mínima de envio deve ser de 2 Hz (uma publicação a cada 500 ms).
+        \item Cada mensagem de telemetria deve conter informações de posição, sensores, estado dos motores e dados energéticos.
+        \item A perda de uma mensagem não deve interromper o envio das mensagens subsequentes.
+    \end{enumerate}
+\end{itemize}
+
+
+\subsubsection*{RNF-10 – Segurança Operacional em Caso de Falha de Comunicação}
+
+\begin{itemize}
+    \item \textbf{Descrição:}
+    O sistema deve adotar um comportamento seguro quando ocorrer perda de comunicação com a infraestrutura de telemetria, evitando que o robô continue operando sem supervisão.
+
+    \item \textbf{Prioridade (MoSCoW):}
+    Must Have
+
+    \item \textbf{Critérios de Aceitação:}
+    \begin{enumerate}
+        \item O micromouse deve monitorar continuamente o estado da conexão com o broker MQTT.
+        \item Caso a conexão com o broker MQTT permaneça indisponível por mais de 4 segundos consecutivos, o robô deve interromper sua movimentação.
+        \item Após a interrupção, o algoritmo de navegação deve ser colocado em estado de pausa.
+        \item O sistema somente poderá retomar a execução após o restabelecimento da comunicação e validação do estado operacional.
+        \item O evento de perda de comunicação deve ser registrado nos logs do sistema.
+    \end{enumerate}
+\end{itemize}
 
     \item \textbf{Protótipo da Interface de Monitoramento:}
         \begin{itemize}
