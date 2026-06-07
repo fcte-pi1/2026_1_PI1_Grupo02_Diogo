@@ -220,54 +220,428 @@ Abaixo, apresenta-se o detalhamento do consumo energético do sistema, considera
         \item Retorno: Utiliza o algoritmo de \textit{Floofill} para voltar ao início;
         \item Percurso otimizado: Escolhe a melhor rota a partir dos dados coletados nos outros modos e vai até a área de conclusão.
     \end{itemize} 
-
-     
-    O \textit{software} atua como o núcleo de inteligência e monitoramento do sistema (Mission Control). Sua função é processar a telemetria enviada pelo robô em tempo real, gerenciar a construção dinâmica do mapa do labirinto, executar algoritmos de \textit{pathfinding} para determinar a rota otimizada e fornecer uma interface gráfica para visualização de métricas de energia e desempenho.
     
-    \item \textbf{Estilo arquitetural contendo:}
-    
-    Arquitetura Orientada a Eventos (\textit{Event-Driven Architecture}) com Monólito Modular no \textit{backend}. Este padrão permite lidar com a natureza assíncrona dos dados de sensores, garantindo que o sistema reaja a eventos instantâneos sem latência perceptível. Como stack principal tem-se como:
+\item \textbf{Backlog do Produto:}
+\begin{itemize}
+    \item \textbf{Histórias de Usuário}
+        \begin{landscape}
+        \begin{table}[H]
+            \centering
+            \renewcommand{\arraystretch}{1.2}
+            \begin{tabularx}{\linewidth}{|>{\raggedright\arraybackslash}p{0.18\linewidth}|>{\raggedright\arraybackslash}p{0.52\linewidth}|>{\raggedright\arraybackslash}p{0.12\linewidth}|>{\raggedright\arraybackslash}p{0.16\linewidth}|}
+                \hline
+                \textbf{Título da HU} & \textbf{Eu-como-para} & \textbf{RF} & \textbf{RNF} \\
+                \hline
 
-        O modelo conceitual do sistema foi projetado para registrar o histórico de telemetria e o mapeamento de coordenadas do robô de forma eficiente. O domínio do problema foi abstraído nas seguintes entidades, atributos e relacionamentos:
+                HU-01: Visualização do labirinto &
+                Eu como aluno da disciplina, quero visualizar o mapa do labirinto em tempo real, para acompanhar a exploração realizada pelo micromouse &
+                RF-09 &
+                RNF-01, RNF-02 \\
+                \hline
 
-        \subsubsection{Entidades e Atributos}
+                HU-02: Visualização de telemetria &
+                Eu como aluno da disciplina, quero visualizar os dados de telemetria em tempo real, para monitorar o comportamento do robô durante a execução &
+                RF-08 &
+                RNF-01, RNF-03 \\
+                \hline
 
+                HU-03: Consulta ao histórico &
+                Eu como aluno da disciplina, quero acessar corridas anteriores, para comparar resultados e identificar oportunidades de melhoria &
+                RF-07, RF-10 &
+                RNF-04 \\
+                \hline
+
+                HU-04: Análise do desempenho do algoritmo &
+                Eu como aluno da disciplina, quero visualizar métricas de execução do robô, para avaliar a eficiência dos algoritmos implementados &
+                RF-04, RF-10 &
+                RNF-01, RNF-04 \\
+                \hline
+
+                HU-05: Avaliação do projeto &
+                Eu como professor da disciplina, quero consultar o histórico das execuções realizadas, para avaliar o desempenho e evolução da solução desenvolvida pela equipe &
+                RF-07, RF-10 &
+                RNF-04, RNF-05 \\
+                \hline
+
+                HU-06: Acompanhamento em tempo real &
+                Eu como professor da disciplina, quero acompanhar a execução do micromouse em tempo real, para verificar o funcionamento correto do sistema durante demonstrações e avaliações &
+                RF-08, RF-09 &
+                RNF-01, RNF-02 \\
+                \hline
+
+            \end{tabularx}
+            \caption{Histórias de Usuário}
+            \label{tab:historias_usuario}
+        \end{table}
+        \end{landscape}
+\end{itemize}
+
+            
+
+\item \textbf{Requisitos Funcionais (RF):}
+
+\subsubsection*{RF-01 – Completar labirinto}
+
+\begin{itemize}
+    \item \textbf{Descrição:}
+    O micromousse deve conseguir chegar no destino final dos labirintos de tamanho 4x4, 8x8 e 16x16, o destino final é dado por um espaço 2x2 no mapa.
+
+    \item \textbf{Prioridade (MoSCoW):}
+    Must Have
+
+    \item \textbf{Critérios de Aceitação:}
+    \begin{enumerate}
+        \item O micromouse deve usar o algoritmo de busca em profundidade (DFS) para explorar o labirinto.
+        \item O micromouse deve conseguir identificar o destino final do labirinto.
+        \item O micromouse deve completar o labirinto de 4x4.
+        \item O micromouse deve completar o labirinto de 8x8.
+        \item O micromouse deve completar o labirinto de 16x16.
+    \end{enumerate}
+\end{itemize}
+
+\subsubsection*{RF-02 – Mapear labirinto}
+
+\begin{itemize}
+    \item \textbf{Descrição:}
+    O micromousse deve conseguir mapear o labirinto através da coleta de dados dos sensores ultrassônicos.
+
+    \item \textbf{Prioridade (MoSCoW):}
+    Must Have
+
+    \item \textbf{Critérios de Aceitação:}
+    \begin{enumerate}
+        \item O micromouse deve coletar os dados dos sensores ultrassônicos.
+        \item O micromouse deve usar os dados coletados para atualizar a matriz interna que representa o labirinto, marcando se ja passou na celula e suas paredes.
+    \end{enumerate}
+\end{itemize}
+
+\subsubsection*{RF-03 – Completar volta}
+
+\begin{itemize}
+    \item \textbf{Descrição:}
+    O micromousse deve conseguir, a partir do destino final, voltar para a posição inicial do labirinto.
+
+    \item \textbf{Prioridade (MoSCoW):}
+    Should Have
+
+    \item \textbf{Critérios de Aceitação:}
+    \begin{enumerate}
+        \item O micromouse deve armazenar a posição incial e final no labirinto.
+        \item O micromouse deve usar o algoritmo de FloodFill para ir do final para o início do labirinto.
+        \item O micromouse deve atualizar os dados do mapa durante o caminho de volta
+    \end{enumerate}
+\end{itemize}
+
+\subsubsection*{RF-04 – Completar corrida}
+
+\begin{itemize}
+    \item \textbf{Descrição:}
+    O micromousse deve conseguir usar os percursos anteriores para otimizar a rota de corrida.
+
+    \item \textbf{Prioridade (MoSCoW):}
+    Should Have
+
+    \item \textbf{Critérios de Aceitação:}
+    \begin{enumerate}
+        \item O micromouse deve utilizar os dados coletados nos percursos anteriores e escolher sua rota ideal.
+        \item O micromouse deve percorrer o caminho otimizado do início até a posição final.
+    \end{enumerate}
+\end{itemize}
+
+\subsubsection*{RF-05 – Enviar telemetria}
+
+\begin{itemize}
+    \item \textbf{Descrição:}
+    O micromousse deve enviar seus dados para o broker MQTT.
+
+    \item \textbf{Prioridade (MoSCoW):}
+    Must Have
+
+    \item \textbf{Critérios de Aceitação:}
+    \begin{enumerate}
+        \item O micromouse deve enviar os dados coletados dos sensores ultrassônicos.
+        \item O micromouse deve enviar os dados dos seus motores com encoders e ponte H.
+        \item O micromouse deve enviar os dados da sua bateria como, tensão, corrente e nível atual.
+        \item O micromouse deve enviar os dados da sua posição e direção no mapa, além do seu modo atual.
+        \item O micromouse deve enviar os dados através do broker MQTT para que o backend do site possa receber.
+    \end{enumerate}
+\end{itemize}
+
+\subsubsection*{RF-06 – Receber dados}
+
+\begin{itemize}
+    \item \textbf{Descrição:}
+    O backend do site deve receber os dados enviados pelo micromouse através do broker MQTT.
+
+    \item \textbf{Prioridade (MoSCoW):}
+    Must Have
+
+    \item \textbf{Critérios de Aceitação:}
+    \begin{enumerate}
+      \item O backend do site se conecta com o broker MQTT.
+      \item O backend do site recebe os dados via MQTT.
+      \item O backend do site trata os dados recebidos.
+      \item O backend do site disponibiliza os dados tratados para o frontend.
+    \end{enumerate}
+\end{itemize}
+
+\subsubsection*{RF-07 – Armazenar histórico}
+
+\begin{itemize}
+    \item \textbf{Descrição:}
+    O backend do site deve armazenar os dados das corridas anteriores.
+
+    \item \textbf{Prioridade (MoSCoW):}
+    Must Have
+
+    \item \textbf{Critérios de Aceitação:}
+    \begin{enumerate}
+      \item O backend guarda os dados das corridas anteriores (telemetria, tempo, tipo do labirinto e percursos).
+      \item O backend do site disponibiliza os dados para o frontend.
+    \end{enumerate}
+\end{itemize}
+
+\subsubsection*{RF-08 – Exibir telemetria}
+
+\begin{itemize}
+    \item \textbf{Descrição:}
+    O frontend do site deve exibir os dados recebidos no backend em tempo real.
+
+    \item \textbf{Prioridade (MoSCoW):}
+    Must Have
+
+    \item \textbf{Critérios de Aceitação:}
+    \begin{enumerate}
+      \item O frontend do site deve pegar os dadaos do backend em tempo real via websocket.
+      \item O frontend do site deve exibir os dados da telemetria ao lado do mapa do labiriinto.
+    \end{enumerate}
+\end{itemize}
+
+\subsubsection*{RF-09 – Exibir labirinto}
+
+\begin{itemize}
+    \item \textbf{Descrição:}
+    O frontend do site deve exibir o labirinto e posição do micromouse.
+
+    \item \textbf{Prioridade (MoSCoW):}
+    Must Have
+
+    \item \textbf{Critérios de Aceitação:}
+    \begin{enumerate}
+      \item O frontend do site deve mostrar o mapa labirinto que o micromouse está percorrendo.
+      \item A posição do micromouse e preenchimento das paredes deve ser feito em tempo real.
+    \end{enumerate}
+\end{itemize}
+
+\subsubsection*{RF-10 – Exibir histórico}
+
+\begin{itemize}
+    \item \textbf{Descrição:}
+    O frontend do site deve exibir uma página com os histórico de labirintos anteriores.
+
+    \item \textbf{Prioridade (MoSCoW):}
+    Must Have
+
+    \item \textbf{Critérios de Aceitação:}
+    \begin{enumerate}
+      \item O frontend do site deve apresentar uma lista com o histórico de labirintos percorridos.
+      \item Cada item da lista deve ser clicável de forma a levar para um resumo do percurso realizado.
+      \item O resumo deve conter: tamanho do labirinto, mapa do labirinto, tempo de conclusão e percurso de cada modo.
+    \end{enumerate}
+\end{itemize}
+
+\item \textbf{Requisitos Não Funcionais (RNF):}
+
+\subsubsection*{RNF-01 – Desempenho de Atualização em Tempo Real}
+
+\begin{itemize}
+    \item \textbf{Descrição:}
+    O sistema deve apresentar os dados de telemetria e atualização do mapa com baixa latência, permitindo o acompanhamento da execução do micromouse em tempo real.
+
+    \item \textbf{Prioridade (MoSCoW):}
+    Must Have
+
+    \item \textbf{Critérios de Aceitação:}
+    \begin{enumerate}
+        \item O frontend deve receber atualizações via WebSocket.
+        \item O atraso entre o recebimento do dado pelo backend e sua exibição no frontend não deve exceder 1 segundo em condições normais de operação.
+    \end{enumerate}
+\end{itemize}
+
+\subsubsection*{RNF-02 – Disponibilidade da Comunicação}
+
+\begin{itemize}
+    \item \textbf{Descrição:}
+    O sistema deve manter a comunicação entre micromouse, broker MQTT, backend e frontend durante toda a execução da corrida.
+
+    \item \textbf{Prioridade (MoSCoW):}
+    Must Have
+
+    \item \textbf{Critérios de Aceitação:}
+    \begin{enumerate}
+        \item O backend deve detectar falhas de conexão com o broker MQTT.
+        \item O frontend deve informar ao usuário quando não estiver recebendo atualizações em tempo real.
+    \end{enumerate}
+\end{itemize}
+
+\subsubsection*{RNF-03 – Compatibilidade}
+
+\begin{itemize}
+    \item \textbf{Descrição:}
+    O sistema web deve ser compatível com os principais navegadores modernos.
+
+    \item \textbf{Prioridade (MoSCoW):}
+    Should Have
+
+    \item \textbf{Critérios de Aceitação:}
+    \begin{enumerate}
+        \item A interface deve funcionar corretamente nos navegadores Google Chrome, Mozilla Firefox e Microsoft Edge.
+        \item Não devem ocorrer erros críticos de renderização ou navegação.
+    \end{enumerate}
+\end{itemize}
+
+\subsubsection*{RNF-04 – Persistência e Integridade dos Dados}
+
+\begin{itemize}
+    \item \textbf{Descrição:}
+    O sistema deve armazenar corretamente os dados das execuções realizadas pelo micromouse.
+
+    \item \textbf{Prioridade (MoSCoW):}
+    Must Have
+
+    \item \textbf{Critérios de Aceitação:}
+    \begin{enumerate}
+        \item As informações das corridas devem permanecer disponíveis após reinicialização do sistema.
+        \item Não devem ocorrer perdas de dados durante o armazenamento no banco de dados.
+    \end{enumerate}
+\end{itemize}
+
+\subsubsection*{RNF-05 – Usabilidade}
+
+\begin{itemize}
+    \item \textbf{Descrição:}
+    A interface deve permitir que alunos e professores interpretem facilmente os resultados das execuções do micromouse.
+
+    \item \textbf{Prioridade (MoSCoW):}
+    Should Have
+
+    \item \textbf{Critérios de Aceitação:}
+    \begin{enumerate}
+        \item O mapa do labirinto deve ser exibido de forma clara e legível.
+        \item Os dados de telemetria devem estar organizados e identificados adequadamente.
+        \item O histórico de corridas deve ser facilmente acessível através da interface.
+    \end{enumerate}
+\end{itemize}
+
+\subsubsection*{RNF-06 – Manutenibilidade}
+
+\begin{itemize}
+    \item \textbf{Descrição:}
+    O sistema deve ser desenvolvido de forma modular, facilitando futuras modificações e evolução do projeto.
+
+    \item \textbf{Prioridade (MoSCoW):}
+    Should Have
+
+    \item \textbf{Critérios de Aceitação:}
+    \begin{enumerate}
+        \item Backend, frontend e firmware devem possuir responsabilidades bem definidas.
+        \item O código-fonte deve seguir padrões de organização e documentação estabelecidos pela equipe.
+    \end{enumerate}
+\end{itemize}
+
+\subsubsection*{RNF-07 – Portabilidade}
+
+\begin{itemize}
+    \item \textbf{Descrição:}
+    O sistema deve poder ser executado em diferentes ambientes de desenvolvimento e implantação.
+
+    \item \textbf{Prioridade (MoSCoW):}
+    Could Have
+
+    \item \textbf{Critérios de Aceitação:}
+    \begin{enumerate}
+        \item O backend e frontend devem ser executáveis através de contêineres Docker.
+        \item A instalação do ambiente deve ser documentada e reproduzível por outros integrantes da equipe.
+    \end{enumerate}
+\end{itemize}
+
+\subsubsection*{RNF-08 – Frequência de Atualização dos Sensores}
+
+\begin{itemize}
+    \item \textbf{Descrição:}
+    O micromouse deve realizar a leitura periódica dos sensores necessários para navegação e tomada de decisão, garantindo que as informações do ambiente estejam atualizadas durante a execução dos algoritmos de exploração e corrida.
+
+    \item \textbf{Prioridade (MoSCoW):}
+    Must Have
+
+    \item \textbf{Critérios de Aceitação:}
+    \begin{enumerate}
+        \item Os sensores ultrassônicos devem ser atualizados continuamente durante a execução do sistema.
+        \item A frequência mínima de aquisição dos sensores deve ser de 10 Hz (uma leitura a cada 100 ms).
+        \item As leituras dos sensores não devem bloquear a execução dos algoritmos de navegação por períodos superiores a 80 ms.
+        \item As informações obtidas pelos sensores devem estar disponíveis para os módulos de navegação e telemetria imediatamente após sua aquisição.
+    \end{enumerate}
+\end{itemize}
+
+
+\subsubsection*{RNF-09 – Frequência de Envio de Telemetria}
+
+\begin{itemize}
+    \item \textbf{Descrição:}
+    O sistema deve transmitir periodicamente os dados de telemetria do micromouse para o broker MQTT, permitindo o monitoramento em tempo real do robô.
+
+    \item \textbf{Prioridade (MoSCoW):}
+    Must Have
+
+    \item \textbf{Critérios de Aceitação:}
+    \begin{enumerate}
+        \item O micromouse deve publicar dados de telemetria no broker MQTT durante toda a execução da corrida.
+        \item A frequência mínima de envio deve ser de 2 Hz (uma publicação a cada 500 ms).
+        \item Cada mensagem de telemetria deve conter informações de posição, sensores, estado dos motores e dados energéticos.
+        \item A perda de uma mensagem não deve interromper o envio das mensagens subsequentes.
+    \end{enumerate}
+\end{itemize}
+
+
+\subsubsection*{RNF-10 – Segurança Operacional em Caso de Falha de Comunicação}
+
+\begin{itemize}
+    \item \textbf{Descrição:}
+    O sistema deve adotar um comportamento seguro quando ocorrer perda de comunicação com a infraestrutura de telemetria, evitando que o robô continue operando sem supervisão.
+
+    \item \textbf{Prioridade (MoSCoW):}
+    Must Have
+
+    \item \textbf{Critérios de Aceitação:}
+    \begin{enumerate}
+        \item O micromouse deve monitorar continuamente o estado da conexão com o broker MQTT.
+        \item Caso a conexão com o broker MQTT permaneça indisponível por mais de 4 segundos consecutivos, o robô deve interromper sua movimentação.
+        \item Após a interrupção, o algoritmo de navegação deve ser colocado em estado de pausa.
+        \item O sistema somente poderá retomar a execução após o restabelecimento da comunicação e validação do estado operacional.
+        \item O evento de perda de comunicação deve ser registrado nos logs do sistema.
+    \end{enumerate}
+\end{itemize}
+
+    \item \textbf{Protótipo da Interface de Monitoramento:}
         \begin{itemize}
-            \item \textbf{Entidade: Labirinto} \\
-            Representa os diferentes mapas físicos onde as corridas ocorrem.
+            \item \textbf{Link do Protótipo (Figma):} \href{https://www.figma.com/design/XJGha6pemQS4kD2XydKeLr/Robozin?m=auto&t=tc0JBodUJ4Lv3OWG-6}{Dashboard de Telemetria - Grupo 2}
+            \item \textbf{Descrição das Funcionalidades:} 
+            A interface foi projetada seguindo a estética \textit{Mission Control}, priorizando a visualização de dados críticos em tempo real. O dashboard é composto por:
             \begin{itemize}
-                \item \textbf{id\_labirinto}: Identificador único do mapa (Chave Primária).
-                \item \textbf{tipo\_matriz}: Classificação da dimensão da grade (Ex: 4x4, 8x8, 16x16).
-                \item \textbf{tamanho\_celula\_cm}: Medida física do lado de cada célula para auxiliar a renderização.
-            \end{itemize}
-
-            \item \textbf{Entidade: Desafio} \\
-            Representa o evento de uma tentativa ou corrida específica realizada pelo micromouse. Consolida as métricas finais de \textit{hardware} e desempenho.
-            \begin{itemize}
-                \item \textbf{id\_desafio}: Identificador único da corrida (Chave Primária).
-                \item \textbf{data\_hora\_execucao}: Registro cronológico (timestamp) de quando a corrida foi iniciada.
-                \item \textbf{consumo\_bateria}: Métrica de energia gasta pelo robô durante o trajeto.
-                \item \textbf{velocidade\_media}: Métrica de desempenho cinemático do robô.
-                \item \textbf{tempo\_conclusao}: Tempo total gasto do início ao fim da corrida.
-                \item \textbf{desafio\_cumprido}: Indicador booleano (Verdadeiro/Falso) que define se o robô alcançou o centro do labirinto com sucesso.
-            \end{itemize}
-
-            \item \textbf{Entidade: Trajeto} \\
-            Representa a unidade de coordenada percorrida. Armazena o passo a passo do robô para permitir a reconstrução visual do caminho no front-end.
-            \begin{itemize}
-                \item \textbf{id\_trajeto}: Identificador único da coordenada registrada (Chave Primária).
-                \item \textbf{ordem\_movimento}: Valor sequencial numérico para garantir a ordenação cronológica do caminho traçado.
-                \item \textbf{posicao\_x}: Coordenada horizontal correspondente à matriz do labirinto.
-                \item \textbf{posicao\_y}: Coordenada vertical correspondente à matriz do labirinto.
-            \end{itemize}
-
-            \begin{itemize}
-            \item \textbf{Linguagens de programação:} JavaScript (ES6+) e C++.
-            \item \textbf{\textit{Frameworks}, bibliotecas e protocolos:} No \textit{front-end}, utiliza-se \textbf{React (Vite)} com \textbf{Tailwind CSS}. No \textit{back-end}, \textbf{Node.js}, \textbf{Express} e \textbf{Socket.io}. Para o \textit{firmware}, o \textit{framework} \textbf{Arduino} via \textbf{PlatformIO}. A comunicação é regida pelos protocolos \textbf{MQTT} (entre ESP32 e Broker) para telemetria leve e \textbf{WebSockets} (entre Backend e Frontend) para atualização em tempo real.
-            \item \textbf{Banco de dados:} Relacional \textbf{PostgreSQL} via Docker.
+                \item \textbf{Grid Dinâmico (16x16):} Renderização central do labirinto com atualização de trajeto conforme o mapeamento do robô.
+                \item \textbf{Fluxo de Eventos (Logs):} Painel lateral dedicado ao rastreio de decisões do algoritmo e status de conexão.
+                \item \textbf{Widgets de Telemetria:} Monitoramento de consumo de bateria (tensão/corrente), velocidade média e sensores de distância (ToF).
+                \item \textbf{Status da Missão:} Indicadores de tempo de conclusão e validação do desafio cumprido.
             \end{itemize}
         \end{itemize}
 
+    \item \textbf{Arquitetura do software:}
+    \begin{itemize}
+        \item \textbf{Propósito:}
+        O \textit{software} atua como o núcleo de inteligência e monitoramento do sistema (Mission Control). Sua função é processar a telemetria enviada pelo robô em tempo real, gerenciar a construção dinâmica do mapa do labirinto, executar algoritmos de \textit{pathfinding} para determinar a rota otimizada e fornecer uma interface gráfica para visualização de métricas de energia e desempenho.
+    
+        \item \textbf{Arquitetura:}
+        Arquitetura Orientada a Eventos (\textit{Event-Driven Architecture}) com Monólito Modular no \textit{backend}. Este padrão permite lidar com a natureza assíncrona dos dados de sensores, garantindo que o sistema reaja a eventos instantâneos sem latência perceptível. Como stack principal tem-se como:
         \item \textbf{Diagrama de alto nível:} 
         A arquitetura segue um fluxo de dados linear e reativo, conforme descrito abaixo:
         
@@ -277,7 +651,7 @@ Abaixo, apresenta-se o detalhamento do consumo energético do sistema, considera
             \caption{Fluxo de dados e arquitetura da solução.}
             \label{fig:arquitetura}
         \end{figure}
-
+    
     \begin{enumerate}
         \item \textbf{ESP32:} Coleta dados de sensores e publica pacotes JSON via \textbf{MQTT} no tópico \texttt{rato/telemetria}.
         \item \textbf{Broker Mosquitto:} Recebe as mensagens e as encaminha para os assinantes ativos.
@@ -285,18 +659,162 @@ Abaixo, apresenta-se o detalhamento do consumo energético do sistema, considera
         \item \textbf{React (\textit{Front-end}):} Escuta os eventos emitidos pelo servidor e renderiza instantaneamente o labirinto e os gráficos de consumo energético.
     \end{enumerate}
 
-   \item \textbf{Protótipo da Interface de Monitoramento:}
-    \begin{itemize}
-        \item \textbf{Link do Protótipo (Figma):} \href{https://www.figma.com/design/XJGha6pemQS4kD2XydKeLr/Robozin?m=auto&t=tc0JBodUJ4Lv3OWG-6}{Dashboard de Telemetria - Grupo 2}
-        \item \textbf{Descrição das Funcionalidades:} 
-        A interface foi projetada seguindo a estética \textit{Mission Control}, priorizando a visualização de dados críticos em tempo real. O dashboard é composto por:
-        \begin{itemize}
-            \item \textbf{Grid Dinâmico (16x16):} Renderização central do labirinto com atualização de trajeto conforme o mapeamento do robô.
-            \item \textbf{Fluxo de Eventos (Logs):} Painel lateral dedicado ao rastreio de decisões do algoritmo e status de conexão.
-            \item \textbf{Widgets de Telemetria:} Monitoramento de consumo de bateria (tensão/corrente), velocidade média e sensores de distância (ToF).
-            \item \textbf{Status da Missão:} Indicadores de tempo de conclusão e validação do desafio cumprido.
+        \item \textbf{Tecnologias:}
+            \begin{itemize}
+            \item \textbf{Linguagens de programação:} JavaScript (ES6+) e C++.
+            \item \textbf{\textit{Frameworks}, bibliotecas e protocolos:} No \textit{front-end}, utiliza-se \textbf{React (Vite)} com \textbf{Tailwind CSS}. No \textit{back-end}, \textbf{Node.js}, \textbf{Express} e \textbf{Socket.io}. Para o \textit{firmware}, o \textit{framework} \textbf{Arduino} via \textbf{PlatformIO}. A comunicação é regida pelos protocolos \textbf{MQTT} (entre ESP32 e Broker) para telemetria leve e \textbf{WebSockets} (entre Backend e Frontend) para atualização em tempo real.
+            \item \textbf{Banco de dados:} Relacional \textbf{Prisma ORM} e \textbf{PostgreSQL} via Docker.
+            \end{itemize}
+
+    \item \textbf{Persistência de dados:}
+
+A solução proposta utiliza um banco de dados relacional PostgreSQL para armazenamento das informações do sistema de monitoramento e controle do micromouse. O modelo de persistência foi estruturado utilizando o Prisma ORM, permitindo representar tanto a estrutura física dos labirintos quanto os dados históricos das execuções realizadas pelo robô.
+
+O Modelo Entidade-Relacionamento (MER) foi projetado para atender às necessidades de armazenamento de mapas, corridas, telemetria e auditoria do sistema. As principais entidades identificadas são: \textit{Maze}, \textit{Cell}, \textit{Session}, \textit{SessionStep}, \textit{TelemetryLog} e \textit{TelemetryRaw}.
+
+\subsubsection*{Entidade Maze}
+
+A entidade \textit{Maze} representa um labirinto cadastrado no sistema. Cada labirinto possui um identificador único, nome, dimensões (largura e altura) e data de criação. Esta entidade funciona como elemento central da modelagem física do ambiente percorrido pelo robô.
+
+\textbf{Atributos:}
+
+\begin{itemize}
+    \item id;
+    \item name;
+    \item width;
+    \item height;
+    \item createdAt.
+\end{itemize}
+
+\subsubsection*{Entidade Cell}
+
+A entidade \textit{Cell} representa uma célula individual pertencente a um labirinto. Cada célula armazena sua posição na matriz e a existência de paredes em cada uma das quatro direções cardeais.
+
+\textbf{Atributos:}
+
+\begin{itemize}
+    \item id;
+    \item mazeId;
+    \item posX;
+    \item posY;
+    \item wallNorth;
+    \item wallSouth;
+    \item wallEast;
+    \item wallWest.
+\end{itemize}
+
+Existe uma restrição de unicidade composta pelos atributos \textit{mazeId}, \textit{posX} e \textit{posY}, garantindo que não existam duas células ocupando a mesma posição dentro de um mesmo labirinto.
+
+\subsubsection*{Entidade Session}
+
+A entidade \textit{Session} representa uma execução completa do micromouse. Ela armazena informações referentes ao algoritmo utilizado, modo de execução, métricas de desempenho e dados energéticos coletados durante a corrida.
+
+\textbf{Atributos:}
+
+\begin{itemize}
+    \item id;
+    \item sessionName;
+    \item algorithm;
+    \item mode;
+    \item createdAt;
+    \item totalDurationMs;
+    \item DFSDurationMs;
+    \item FloodFillDurationMs;
+    \item avgSpeed;
+    \item isCompleted;
+    \item startPosX;
+    \item startPosY;
+    \item initialVoltage;
+    \item finalVoltage;
+    \item totalDrainMah;
+    \item fastestPath;
+    \item mazeId.
+\end{itemize}
+
+\subsubsection*{Entidade SessionStep}
+
+A entidade \textit{SessionStep} registra a evolução temporal da execução do robô. Cada registro corresponde a um instante específico da corrida, permitindo reconstruir completamente o percurso realizado.
+
+\textbf{Atributos:}
+
+\begin{itemize}
+    \item id;
+    \item sessionId;
+    \item timestamp;
+    \item stepOrder;
+    \item posX;
+    \item posY;
+    \item voltage;
+    \item current;
+    \item consumption.
+\end{itemize}
+
+\subsubsection*{Entidade TelemetryLog}
+
+A entidade \textit{TelemetryLog} é responsável pelo armazenamento de eventos relevantes ocorridos durante a execução do sistema. Seu objetivo é fornecer mecanismos de auditoria, rastreabilidade e diagnóstico.
+
+\textbf{Atributos:}
+
+\begin{itemize}
+    \item id;
+    \item sessionId;
+    \item timestamp;
+    \item logType;
+    \item message.
+\end{itemize}
+
+\subsubsection*{Entidade TelemetryRaw}
+
+A entidade \textit{TelemetryRaw} armazena as mensagens MQTT recebidas em formato bruto antes de qualquer processamento ou transformação. Essa estrutura permite auditoria completa dos dados recebidos pelo sistema.
+
+\textbf{Atributos:}
+
+\begin{itemize}
+    \item id;
+    \item createdAt;
+    \item topic;
+    \item robotId;
+    \item payload.
+\end{itemize}
+
+\subsubsection*{Relacionamentos e Cardinalidades}
+
+Os relacionamentos definidos no modelo são apresentados a seguir:
+
+\begin{itemize}
+
+    \item \textbf{Maze -- Cell (1:N)}
+
+    Um labirinto pode possuir várias células, enquanto cada célula pertence obrigatoriamente a um único labirinto.
+
+    \item \textbf{Maze -- Session (1:N)}
+
+    Um mesmo labirinto pode ser utilizado em diversas execuções do robô. Entretanto, cada sessão está associada a apenas um labirinto.
+
+    \item \textbf{Session -- SessionStep (1:N)}
+
+    Uma sessão é composta por diversos passos sequenciais registrados durante a execução do robô. Cada passo pertence a uma única sessão.
+
+    \item \textbf{Session -- TelemetryLog (1:N)}
+
+    Uma sessão pode gerar diversos registros de auditoria, enquanto cada log pertence a apenas uma sessão.
+
+\end{itemize}
+
+Dessa forma, o modelo permite armazenar tanto a configuração estrutural dos labirintos quanto o histórico detalhado das corridas executadas pelo micromouse, incluindo dados de navegação, consumo energético, eventos de sistema e telemetria recebida via MQTT.
+
+\subsubsection*{Diagrama Entidade-Relacionamento (DER)}
+
+A Figura \ref{fig:der} apresenta o Diagrama Entidade-Relacionamento derivado do modelo descrito anteriormente.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{figuras/DER.png}
+    \caption{Diagrama Entidade-Relacionamento do sistema.}
+    \label{fig:der}
+\end{figure}
+
         \end{itemize}
-    \end{itemize}
     
     \item {\textbf{ Roteiro de testes funcionais:} }
     \subsubsection*{CT01 – Exibição do tipo do labirinto}
@@ -585,33 +1103,6 @@ Abaixo, apresenta-se o detalhamento do consumo energético do sistema, considera
 % \end{enumerate}
 % }
 %\textcolor{red}{Com relação ao \textit{software}, será necessário apresentar pacotes de componentes de \textit{software}, suas funções e características, e explicar as decisões de projeto.}
-
-        \subsubsection{Relacionamentos e Cardinalidades}
-
-        O comportamento do sistema é regido pelas seguintes regras de negócio entre as entidades:
-
-        \begin{itemize}
-            \item \textbf{Relacionamento: Labirinto possui Desafio}
-            \begin{itemize}
-                \item \textbf{Descrição:} Define o local onde uma tentativa ocorreu.
-                \item \textbf{Cardinalidade (1:N):} Um \textbf{Labirinto} físico pode ser palco de \textit{N} (vários) \textbf{Desafios} ao longo do tempo (1,n). Em contrapartida, um \textbf{Desafio} específico deve ocorrer em exatamente \textit{1} único \textbf{Labirinto} (1,1).
-            \end{itemize}
-
-            \item \textbf{Relacionamento: Desafio contém Trajeto}
-            \begin{itemize}
-                \item \textbf{Descrição:} Vincula as coordenadas capturadas à sua respectiva corrida.
-                \item \textbf{Cardinalidade (1:N):} Um \textbf{Desafio} completo registra \textit{N} (vários) pontos de \textbf{Trajeto} para compor seu caminho final (1,n). Por outro lado, uma coordenada de \textbf{Trajeto} armazenada pertence estritamente a \textit{1} único \textbf{Desafio} (1,1).
-            \end{itemize}
-        \end{itemize}
-
-        \begin{figure}[ht]
-    \centering
-    \includegraphics[width=0.8\textwidth]{figuras/DER.png}
-    \caption{Diagrama Lógico de Dados (DER) do sistema de telemetria.}
-    \label{fig:der_logico}
-    \end{figure}
-
-
 
     \textbf{Roteiro de testes funcionais:}
    
