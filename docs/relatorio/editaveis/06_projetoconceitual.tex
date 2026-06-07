@@ -663,107 +663,156 @@ Abaixo, apresenta-se o detalhamento do consumo energético do sistema, considera
             \begin{itemize}
             \item \textbf{Linguagens de programação:} JavaScript (ES6+) e C++.
             \item \textbf{\textit{Frameworks}, bibliotecas e protocolos:} No \textit{front-end}, utiliza-se \textbf{React (Vite)} com \textbf{Tailwind CSS}. No \textit{back-end}, \textbf{Node.js}, \textbf{Express} e \textbf{Socket.io}. Para o \textit{firmware}, o \textit{framework} \textbf{Arduino} via \textbf{PlatformIO}. A comunicação é regida pelos protocolos \textbf{MQTT} (entre ESP32 e Broker) para telemetria leve e \textbf{WebSockets} (entre Backend e Frontend) para atualização em tempo real.
-            \item \textbf{Banco de dados:} Relacional \textbf{PostgreSQL} via Docker.
+            \item \textbf{Banco de dados:} Relacional \textbf{Prisma ORM} e \textbf{PostgreSQL} via Docker.
             \end{itemize}
 
-        \item \textbf{Persistência de dados:}
-            O modelo conceitual do sistema foi projetado para registrar o histórico de telemetria e o mapeamento de coordenadas do robô de forma eficiente. O domínio do problema foi abstraído nas seguintes entidades, atributos e relacionamentos:
-            \subsubsection{Entidades e Atributos}
-            \begin{itemize}
-            \item \textbf{Entidade: Labirinto} \\
-            Representa os diferentes mapas físicos onde as corridas ocorrem.
-            \begin{itemize}
-                \item \textbf{id\_labirinto}: Identificador único do mapa (Chave Primária).
-                \item \textbf{tipo\_matriz}: Classificação da dimensão da grade (Ex: 4x4, 8x8, 16x16).
-                \item \textbf{tamanho\_celula\_cm}: Medida física do lado de cada célula para auxiliar a renderização.
-            \end{itemize}
+    \item \textbf{Persistência de dados:}
 
-            \item \textbf{Entidade: Desafio} \\
-            Representa o evento de uma tentativa ou corrida específica realizada pelo micromouse. Consolida as métricas finais de \textit{hardware} e desempenho.
-            \begin{itemize}
-                \item \textbf{id\_desafio}: Identificador único da corrida (Chave Primária).
-                \item \textbf{data\_hora\_execucao}: Registro cronológico (timestamp) de quando a corrida foi iniciada.
-                \item \textbf{consumo\_bateria}: Métrica de energia gasta pelo robô durante o trajeto.
-                \item \textbf{velocidade\_media}: Métrica de desempenho cinemático do robô.
-                \item \textbf{tempo\_conclusao}: Tempo total gasto do início ao fim da corrida.
-                \item \textbf{desafio\_cumprido}: Indicador booleano (Verdadeiro/Falso) que define se o robô alcançou o centro do labirinto com sucesso.
-            \end{itemize}
+A solução proposta utiliza um banco de dados relacional PostgreSQL para armazenamento das informações do sistema de monitoramento e controle do micromouse. O modelo de persistência foi estruturado utilizando o Prisma ORM, permitindo representar tanto a estrutura física dos labirintos quanto os dados históricos das execuções realizadas pelo robô.
 
-            \item \textbf{Entidade: Trajeto} \\
-            Representa a unidade de coordenada percorrida. Armazena o passo a passo do robô para permitir a reconstrução visual do caminho no front-end.
-            \begin{itemize}
-                \item \textbf{id\_trajeto}: Identificador único da coordenada registrada (Chave Primária).
-                \item \textbf{ordem\_movimento}: Valor sequencial numérico para garantir a ordenação cronológica do caminho traçado.
-                \item \textbf{posicao\_x}: Coordenada horizontal correspondente à matriz do labirinto.
-                \item \textbf{posicao\_y}: Coordenada vertical correspondente à matriz do labirinto.
-            \end{itemize}
-        \end{itemize}
+O Modelo Entidade-Relacionamento (MER) foi projetado para atender às necessidades de armazenamento de mapas, corridas, telemetria e auditoria do sistema. As principais entidades identificadas são: \textit{Maze}, \textit{Cell}, \textit{Session}, \textit{SessionStep}, \textit{TelemetryLog} e \textit{TelemetryRaw}.
 
+\subsubsection*{Entidade Maze}
 
-    \end{itemize}
+A entidade \textit{Maze} representa um labirinto cadastrado no sistema. Cada labirinto possui um identificador único, nome, dimensões (largura e altura) e data de criação. Esta entidade funciona como elemento central da modelagem física do ambiente percorrido pelo robô.
 
-    
+\textbf{Atributos:}
 
+\begin{itemize}
+    \item id;
+    \item name;
+    \item width;
+    \item height;
+    \item createdAt.
+\end{itemize}
 
+\subsubsection*{Entidade Cell}
 
+A entidade \textit{Cell} representa uma célula individual pertencente a um labirinto. Cada célula armazena sua posição na matriz e a existência de paredes em cada uma das quatro direções cardeais.
 
+\textbf{Atributos:}
 
-    
-    \subsubsection{Entidades e Atributos}
-    O modelo conceitual do sistema foi projetado para registrar o histórico de telemetria e o mapeamento de coordenadas do robô de forma eficiente. O domínio do problema foi abstraído nas seguintes entidades, atributos e relacionamentos:
+\begin{itemize}
+    \item id;
+    \item mazeId;
+    \item posX;
+    \item posY;
+    \item wallNorth;
+    \item wallSouth;
+    \item wallEast;
+    \item wallWest.
+\end{itemize}
 
-        \begin{itemize}
-            \item \textbf{Entidade: Labirinto} \\
-            Representa os diferentes mapas físicos onde as corridas ocorrem.
-            \begin{itemize}
-                \item \textbf{id\_labirinto}: Identificador único do mapa (Chave Primária).
-                \item \textbf{tipo\_matriz}: Classificação da dimensão da grade (Ex: 4x4, 8x8, 16x16).
-                \item \textbf{tamanho\_celula\_cm}: Medida física do lado de cada célula para auxiliar a renderização.
-            \end{itemize}
+Existe uma restrição de unicidade composta pelos atributos \textit{mazeId}, \textit{posX} e \textit{posY}, garantindo que não existam duas células ocupando a mesma posição dentro de um mesmo labirinto.
 
-            \item \textbf{Entidade: Desafio} \\
-            Representa o evento de uma tentativa ou corrida específica realizada pelo micromouse. Consolida as métricas finais de \textit{hardware} e desempenho.
-            \begin{itemize}
-                \item \textbf{id\_desafio}: Identificador único da corrida (Chave Primária).
-                \item \textbf{data\_hora\_execucao}: Registro cronológico (timestamp) de quando a corrida foi iniciada.
-                \item \textbf{consumo\_bateria}: Métrica de energia gasta pelo robô durante o trajeto.
-                \item \textbf{velocidade\_media}: Métrica de desempenho cinemático do robô.
-                \item \textbf{tempo\_conclusao}: Tempo total gasto do início ao fim da corrida.
-                \item \textbf{desafio\_cumprido}: Indicador booleano (Verdadeiro/Falso) que define se o robô alcançou o centro do labirinto com sucesso.
-            \end{itemize}
+\subsubsection*{Entidade Session}
 
-            \item \textbf{Entidade: Trajeto} \\
-            Representa a unidade de coordenada percorrida. Armazena o passo a passo do robô para permitir a reconstrução visual do caminho no front-end.
-            \begin{itemize}
-                \item \textbf{id\_trajeto}: Identificador único da coordenada registrada (Chave Primária).
-                \item \textbf{ordem\_movimento}: Valor sequencial numérico para garantir a ordenação cronológica do caminho traçado.
-                \item \textbf{posicao\_x}: Coordenada horizontal correspondente à matriz do labirinto.
-                \item \textbf{posicao\_y}: Coordenada vertical correspondente à matriz do labirinto.
-            \end{itemize}
-\subsubsection{Relacionamentos e Cardinalidades}
+A entidade \textit{Session} representa uma execução completa do micromouse. Ela armazena informações referentes ao algoritmo utilizado, modo de execução, métricas de desempenho e dados energéticos coletados durante a corrida.
 
-        O comportamento do sistema é regido pelas seguintes regras de negócio entre as entidades:
+\textbf{Atributos:}
 
-        \begin{itemize}
-            \item \textbf{Relacionamento: Labirinto possui Desafio}
-            \begin{itemize}
-                \item \textbf{Descrição:} Define o local onde uma tentativa ocorreu.
-                \item \textbf{Cardinalidade (1:N):} Um \textbf{Labirinto} físico pode ser palco de \textit{N} (vários) \textbf{Desafios} ao longo do tempo (1,n). Em contrapartida, um \textbf{Desafio} específico deve ocorrer em exatamente \textit{1} único \textbf{Labirinto} (1,1).
-            \end{itemize}
+\begin{itemize}
+    \item id;
+    \item sessionName;
+    \item algorithm;
+    \item mode;
+    \item createdAt;
+    \item totalDurationMs;
+    \item DFSDurationMs;
+    \item FloodFillDurationMs;
+    \item avgSpeed;
+    \item isCompleted;
+    \item startPosX;
+    \item startPosY;
+    \item initialVoltage;
+    \item finalVoltage;
+    \item totalDrainMah;
+    \item fastestPath;
+    \item mazeId.
+\end{itemize}
 
-            \item \textbf{Relacionamento: Desafio contém Trajeto}
-            \begin{itemize}
-                \item \textbf{Descrição:} Vincula as coordenadas capturadas à sua respectiva corrida.
-                \item \textbf{Cardinalidade (1:N):} Um \textbf{Desafio} completo registra \textit{N} (vários) pontos de \textbf{Trajeto} para compor seu caminho final (1,n). Por outro lado, uma coordenada de \textbf{Trajeto} armazenada pertence estritamente a \textit{1} único \textbf{Desafio} (1,1).
-            \end{itemize}
-        \end{itemize}
+\subsubsection*{Entidade SessionStep}
 
-        \begin{figure}[ht]
-            \centering
-            \includegraphics[width=0.8\textwidth]{figuras/DER.png}
-            \caption{Diagrama Lógico de Dados (DER) do sistema de telemetria.}
-            \label{fig:der_logico}
-        \end{figure}
+A entidade \textit{SessionStep} registra a evolução temporal da execução do robô. Cada registro corresponde a um instante específico da corrida, permitindo reconstruir completamente o percurso realizado.
+
+\textbf{Atributos:}
+
+\begin{itemize}
+    \item id;
+    \item sessionId;
+    \item timestamp;
+    \item stepOrder;
+    \item posX;
+    \item posY;
+    \item voltage;
+    \item current;
+    \item consumption.
+\end{itemize}
+
+\subsubsection*{Entidade TelemetryLog}
+
+A entidade \textit{TelemetryLog} é responsável pelo armazenamento de eventos relevantes ocorridos durante a execução do sistema. Seu objetivo é fornecer mecanismos de auditoria, rastreabilidade e diagnóstico.
+
+\textbf{Atributos:}
+
+\begin{itemize}
+    \item id;
+    \item sessionId;
+    \item timestamp;
+    \item logType;
+    \item message.
+\end{itemize}
+
+\subsubsection*{Entidade TelemetryRaw}
+
+A entidade \textit{TelemetryRaw} armazena as mensagens MQTT recebidas em formato bruto antes de qualquer processamento ou transformação. Essa estrutura permite auditoria completa dos dados recebidos pelo sistema.
+
+\textbf{Atributos:}
+
+\begin{itemize}
+    \item id;
+    \item createdAt;
+    \item topic;
+    \item robotId;
+    \item payload.
+\end{itemize}
+
+\subsubsection*{Relacionamentos e Cardinalidades}
+
+Os relacionamentos definidos no modelo são apresentados a seguir:
+
+\begin{itemize}
+
+    \item \textbf{Maze -- Cell (1:N)}
+
+    Um labirinto pode possuir várias células, enquanto cada célula pertence obrigatoriamente a um único labirinto.
+
+    \item \textbf{Maze -- Session (1:N)}
+
+    Um mesmo labirinto pode ser utilizado em diversas execuções do robô. Entretanto, cada sessão está associada a apenas um labirinto.
+
+    \item \textbf{Session -- SessionStep (1:N)}
+
+    Uma sessão é composta por diversos passos sequenciais registrados durante a execução do robô. Cada passo pertence a uma única sessão.
+
+    \item \textbf{Session -- TelemetryLog (1:N)}
+
+    Uma sessão pode gerar diversos registros de auditoria, enquanto cada log pertence a apenas uma sessão.
+
+\end{itemize}
+
+Dessa forma, o modelo permite armazenar tanto a configuração estrutural dos labirintos quanto o histórico detalhado das corridas executadas pelo micromouse, incluindo dados de navegação, consumo energético, eventos de sistema e telemetria recebida via MQTT.
+
+\subsubsection*{Diagrama Entidade-Relacionamento (DER)}
+
+A Figura \ref{fig:der} apresenta o Diagrama Entidade-Relacionamento derivado do modelo descrito anteriormente.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{figuras/DER.png}
+    \caption{Diagrama Entidade-Relacionamento do sistema.}
+    \label{fig:der}
+\end{figure}
 
         \end{itemize}
     
