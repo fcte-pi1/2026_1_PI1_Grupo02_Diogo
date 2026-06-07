@@ -8,6 +8,7 @@
 #include "../lib/output/motor/motor.h"
 #include "../lib/utils/conexao/conexoes.h"
 #include "../lib/utils/telemetria/telemetria.h"
+#include "../lib/utils/dfs/dfs.h"
 
 #pragma region Variáveis
 
@@ -60,14 +61,9 @@ int destinoY = -1;
 //
 //  CORRIDA  : Usa caminho descoberto no Floodfill
 //              --> robô volta de DEST a INICIO pelo melhor caminho
+//
+//  O enum Estado é definido em dfs.h (para ser compartilhado com passoDFS).
 // -------------------------------------------------------------------------------
-enum Estado
-{
-    PARADO,
-    EXPLORANDO,
-    CORRIDA,
-    CONCLUIDO
-};
 Estado estado = PARADO;
 
 // -------------------------------------------------------------------------------
@@ -85,6 +81,7 @@ unsigned long lastSerialLog = 0;
 
 bool motorsRunning = false;
 bool ledState = false;
+bool concluido = false;
 unsigned long stepCounter = 0;
 
 Rato rato;
@@ -157,6 +154,9 @@ void setup()
     connectMQTT();
 
     delay(1000); // só um tempo pra começar dps
+
+    resetDFS();          // garante pilha/flags zeradas antes de explorar
+    estado = EXPLORANDO; // inicia a exploração por DFS
 }
 
 // -------------------------------------------------------------------------------
@@ -179,7 +179,7 @@ void loop()
     if (currentMillis - lastTelemetrySend >= 2000)
     {
         lastTelemetrySend = currentMillis;
-        publishTelemetry(rato, lab, mqttClient, MQTT_TOPIC, ROBOT_ID, stepCounter, motorsRunning, estado == CONCLUIDO);
+        publishTelemetry(rato, lab, mqttClient, MQTT_TOPIC, ROBOT_ID, stepCounter, motorsRunning, getUltimoMovimentoDFS(), concluido);
     }
 
     // Serial (2s)
@@ -192,12 +192,21 @@ void loop()
         Serial.printf("Motores    -> Status: %s\n", motorsRunning ? "EM MOVIMENTO" : "PARADO");
     }
 
-    atualizaSensores();
-
-    // Cada chamada executa 1 passo, dentro de cada passo vai ter a parte de preencher a matriz com explorado / visitado
-    // switch (estado) {
-    //     case EXPLORANDO: if(modo == DFS) passoDFS(); else passoFF(); break;
-    //     case CORRIDA:  passoOtimizado(); break;
-    //     case CONCLUIDO / parado:  ()     break;
-    // }
+    // Cada chamada executa 1 passo. atualizaSensores()/lerDistancias() são
+    // chamados dentro de passoDFS().
+    switch (estado)
+    {
+    case EXPLORANDO:
+        passoDFS(&rato, &lab, &motorsRunning, &stepCounter,
+                 &destinoX, &destinoY, &concluido, &estado);
+        break;
+    case CORRIDA:
+        // FloodFill — não implementar agora
+        break;
+    case CONCLUIDO:
+    case PARADO:
+    default:
+        atualizaSensores();
+        break;
+    }
 }

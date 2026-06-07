@@ -16,4 +16,5 @@ void publishTelemetry(
     const char *robotId,
     unsigned long &stepCounter,
     bool motorsRunning,
+    const char *ultimoMovimento,
     bool concluded);
