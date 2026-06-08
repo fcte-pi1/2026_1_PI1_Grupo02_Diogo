@@ -1,4 +1,4 @@
-# 📝 [2026.1] Projeto Rato Robótico - Grupo 2
+# 📝 [2026.1] Projeto Ratobô - Grupo 2
 
 Este é o repositório central para o desenvolvimento do projeto de **Projeto Integrador 1 (PI1)**. O objetivo é desenvolver um rato robótico capaz de mapear e resolver um labirinto de forma autônoma.
 
