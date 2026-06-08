@@ -22,19 +22,52 @@ Ao balizar o processo de validação por esta padronização metodológica, as p
 
 \section{Testes da estrutura}
 
-\textcolor{red}{Apresentar com detalhes os testes feitos para conferir se os objetivos da estrutura foram atendidos, incluindo:}
+%\textcolor{red}{Apresentar com detalhes os testes feitos para conferir se os objetivos da estrutura foram atendidos, incluindo:}
 
-\begin{itemize}
-    \item \textcolor{red}{Imagem com todas as peças separadas da estrutura (carcaça) do veículo;}
-    \item \textcolor{red}{Imagem que apresente a estrutura já montada (sem necessidade de partes internas, como eletrônica ou motores);}
-    \item \textcolor{red}{Ilustração contemplando o carro montado virtualmente em alguma ferramenta de CAD, no intuito de verificar se as peças foram construídas e montadas em conformidade com o projeto.}
-\end{itemize}
-
-
+%\begin{itemize}
+ %   \item \textcolor{red}{Imagem com todas as peças separadas da estrutura (carcaça) do veículo;}
+  %  \item \textcolor{red}{Imagem que apresente a estrutura já montada (sem necessidade de partes internas, como eletrônica ou motores);}
+   % \item \textcolor{red}{Ilustração contemplando o carro montado virtualmente em alguma ferramenta de CAD, no intuito de verificar se as peças foram construídas e montadas em conformidade com o projeto.}
+%\end{itemize}
 
 
+A estrutura do projeto foi avaliada por meio de testes visuais e de montagem, com o objetivo de verificar a conformidade entre o projeto desenvolvido e o protótipo físico construído.
+
+Inicialmente, todas as peças do carrinho produzidas por impressão 3D foram inspecionadas individualmente para verificar a qualidade da fabricação, a ausência de deformações e a compatibilidade dimensional entre os componentes. Essa etapa permitiu identificar possíveis falhas de impressão e garantir o correto encaixe das peças durante a montagem.
+
+Após a inspeção individual, realizou-se a montagem completa da estrutura mecânica do carrinho, sem considerar inicialmente os componentes eletrônicos. Nessa fase, foi verificado o alinhamento das rodas, a fixação dos motores, a estabilidade da carcaça e a resistência estrutural do conjunto. Os resultados demonstraram que as peças impressas apresentaram encaixe adequado e sustentação suficiente para suportar os componentes do sistema.
+
+Também foi realizada a comparação entre o modelo virtual desenvolvido em software CAD e a estrutura física construída. Essa verificação teve como objetivo confirmar que as dimensões, os encaixes e a geometria das peças produzidas correspondiam ao projeto original. A análise mostrou que o protótipo final manteve conformidade com o modelo digital, atendendo aos requisitos definidos para o desenvolvimento do micromouse.
+
+Além dos testes do carrinho, foi realizada a montagem do labirinto em MDF utilizado para validação do sistema. Foram verificadas as dimensões dos corredores, o alinhamento das paredes e a estabilidade da estrutura. O labirinto apresentou medidas compatíveis com o projeto, permitindo a circulação adequada do veículo e a realização dos testes de navegação.
 
 
+A estrutura do projeto foi avaliada por meio de testes visuais e de montagem, com o objetivo de verificar a conformidade entre o projeto desenvolvido e o protótipo físico construído.
+
+Inicialmente, todas as peças do carrinho produzidas por impressão 3D foram inspecionadas individualmente para verificar a qualidade da fabricação, a ausência de deformações e a compatibilidade dimensional entre os componentes. Essa etapa permitiu identificar possíveis falhas de impressão e garantir o correto encaixe das peças durante a montagem.
+
+% Inserir futuramente a figura das peças separadas
+
+Após a inspeção individual, realizou-se a montagem completa da estrutura mecânica do carrinho, sem considerar inicialmente os componentes eletrônicos. Nessa fase, foi verificado o alinhamento das rodas, a fixação dos motores, a estabilidade da carcaça e a resistência estrutural do conjunto. Os resultados demonstraram que as peças impressas apresentaram encaixe adequado e sustentação suficiente para suportar os componentes do sistema.
+
+A Figura \ref{fig:estrutura-montada} apresenta a estrutura do veículo já montada, permitindo verificar os encaixes e a estabilidade da carcaça.
+
+\begin{figure}[H]
+    \centering
+    \caption{Estrutura do veículo montada}
+    \includegraphics[width=0.8\textwidth]{figuras/figuras/estrutura-montada.jpeg}
+    \label{fig:estrutura-montada}
+    \legend{Fonte: Autoria própria.}
+\end{figure}
+
+A Figura a seguir apresenta o modelo virtual desenvolvido em software CAD, utilizado para verificar a conformidade dimensional e a montagem das peças em relação ao projeto original.
+
+\begin{figure}[H]
+    \centering
+    \caption{Modelo virtual do veículo desenvolvido em CAD}
+    \includegraphics[width=0.8\textwidth]{figuras/figuras/cad-veiculo.pdf}
+    \legend{Fonte: Autoria própria.}
+\end{figure}
 
 
 
@@ -176,41 +209,55 @@ Ao balizar o processo de validação por esta padronização metodológica, as p
 
 \section{Testes de \textit{hardware}}
 
-\textcolor{red}{Apresentar com detalhes os testes feitos para conferir se os objetivos do \textit{hardware} foram atendidos, incluindo:}
+Com o objetivo de garantir o funcionamento adequado do rato robótico, foram realizados testes com os componentes eletrônicos do projeto. O propósito foi verificar o funcionamento correto de cada componente individualmente, bem como avaliar a compatibilidade entre os módulos quando integrados. O ambiente de desenvolvimento utilizado foi o PlatformIO, tendo o ESP32 DevKit V1 como placa principal.
 
-\begin{enumerate}
-    \item \textcolor{red}{Processamento (Arduino, ESP32 etc):}
-    \begin{itemize}
-        \item \textcolor{red}{Definir interface de desenvolvimento;}
-        \item \textcolor{red}{Rodar exemplo mínimo.}
-    \end{itemize}
-    \item \textcolor{red}{Sensores (temperatura, pressão, posição, velocidade etc.):}
-    \begin{itemize}
-        \item \textcolor{red}{Realizar leitura básica de dados;}
-        \item \textcolor{red}{Validar/calibrar leituras;}
-        \item \textcolor{red}{Definir taxas de amostragem e quantidade de dados para transmissão e/ou armazenamento;}
-        \item \textcolor{red}{Validar taxas definidas e quantidade de dados;}
-        \item \textcolor{red}{Realizar processamento básico de dados (\textit{thresholding}, filtro média-móvel etc.).}
-    \end{itemize}
-    \item \textcolor{red}{Armazenamento (memória interna, cartão SD, pendrive etc.):}
-    \begin{itemize}
-        \item \textcolor{red}{Armazenar dados básicos;}
-        \item \textcolor{red}{Armazenar e validar dados de sensores.}
-    \end{itemize}
-    \item \textcolor{red}{Atuadores (Motores DC, relés, LEDs etc.):}
-    \begin{itemize}
-        \item \textcolor{red}{Realizar acionamentos básicos;}
-        \item \textcolor{red}{Realizar acionamentos com base em dados de sensores;}
-        \item \textcolor{red}{Realizar processamento básico de dados (PWM etc.).}
-    \end{itemize}
-    \item \textcolor{red}{Comunicações (UART, I2C, SPI, USB, WiFi, Bluetooth etc.):}
-    \begin{itemize}
-        \item \textcolor{red}{Transmissão básica de dados;}
-        \item \textcolor{red}{Transmissão de dados de sensores dentro da taxa de amostragem.}
-    \end{itemize}
-\end{enumerate}
+\subsubsection{ESP32}
 
+A validação da placa ESP32 foi realizada por meio de testes de leitura e escrita digital, comunicação serial e acionamento de periféricos, assegurando o funcionamento correto da placa antes das etapas mais complexas do desenvolvimento. A conectividade Wi-Fi também foi verificada, confirmando a capacidade de conexão à rede utilizada no projeto.
 
+\subsubsection{Sensores Ultrassônicos}
+
+Os sensores ultrassônicos foram avaliados individualmente e, em seguida, em operação conjunta. Um programa foi desenvolvido para realizar a leitura contínua das distâncias medidas e exibir os valores no monitor serial, sendo os resultados comparados com distâncias aferidas manualmente. Os valores obtidos apresentaram boa correspondência com os esperados, e a operação simultânea dos três sensores não evidenciou interferências entre eles.
+
+As leituras foram realizadas periodicamente pelo ESP32, em frequência adequada para a navegação do robô em tempo real, possibilitando a atualização contínua das informações de distância. Os valores obtidos pelos sensores foram processados pelo ESP32 para conversão e interpretação das distâncias medidas, permitindo sua utilização pelas rotinas de navegação e tomada de decisão do sistema.
+
+\subsubsection{Ponte H e Motores DC}
+
+Foram realizados testes de controle dos motores, abrangendo a variação de velocidade por meio de sinais PWM e a inversão do sentido de rotação. Os motores responderam adequadamente aos comandos, operando nas duas direções e em diferentes velocidades sem apresentar comportamento irregular. O torque verificado mostrou-se suficiente para a movimentação do robô.
+
+A calibração da distância percorrida foi postergada para uma etapa posterior do projeto, uma vez que a estrutura mecânica do robô ainda não se encontrava disponível para montagem completa nesta fase.
+
+\subsubsection{Encoders}
+
+Os encoders foram conectados e geraram sinais compatíveis com sua finalidade nos testes iniciais. Entretanto, pela indisponibilidade da estrutura mecânica final, não foi possível validar a precisão das medições de velocidade e deslocamento. Essa validação será realizada em etapa posterior do projeto.
+
+\subsubsection{Regulador de Tensão}
+
+O regulador de tensão foi montado e as tensões de saída foram aferidas com multímetro. Os valores obtidos ficaram dentro do esperado e se mantiveram estáveis durante os testes, sem oscilações capazes de comprometer os demais componentes do sistema.
+
+\subsubsection{Sensor INA219}
+
+O sensor INA219 foi utilizado para o monitoramento de tensão e corrente do sistema. As leituras obtidas foram comparadas com as de um multímetro digital, apresentando boa concordância com os valores de referência, o que confirma a adequação do sensor para essa finalidade.
+
+\subsubsection{Bateria}
+
+A bateria foi avaliada por meio de medição de tensão, apresentando valores compatíveis com a especificação nominal de 12~V. Durante os testes de hardware realizados ao longo do desenvolvimento do protótipo, a bateria manteve a alimentação dos componentes de forma satisfatória, demonstrando capacidade adequada para a aplicação proposta.
+
+\subsubsection{LEDs Indicadores}
+
+Os LEDs foram submetidos a testes de continuidade e funcionamento por meio de multímetro, sendo confirmado o correto acionamento de todos os componentes avaliados.
+
+\subsubsection{Comunicação Wi-Fi}
+
+Foi realizado um teste de transmissão de dados entre o ESP32 e a aplicação web desenvolvida pelo grupo para monitoramento e mapeamento do labirinto. A comunicação manteve-se estável durante o teste, validando o Wi-Fi como meio de transmissão de dados do projeto.
+
+\subsubsection{Integração dos Componentes}
+
+Por fim, foram realizados testes de integração envolvendo o ESP32, os sensores ultrassônicos, os motores, a ponte H, o regulador de tensão, o sensor INA219 e o sistema de comunicação Wi-Fi. Os componentes operaram de forma conjunta sem conflitos aparentes entre os módulos, confirmando a viabilidade da arquitetura eletrônica proposta.
+
+\paragraph{}
+
+Os resultados obtidos demonstraram que os componentes eletrônicos empregados no projeto apresentaram funcionamento compatível com os requisitos estabelecidos para esta etapa de desenvolvimento. Os testes realizados permitiram validar a operação dos sensores, atuadores, sistema de alimentação, comunicação sem fio e unidade de processamento. As validações pendentes, especialmente relacionadas à calibração dos encoders e à movimentação do robô em sua estrutura definitiva, serão realizadas nas próximas etapas do projeto.
 
 
 
