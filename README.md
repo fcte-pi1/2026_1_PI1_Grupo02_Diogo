@@ -17,33 +17,32 @@ O repositório está organizado para facilitar a colaboração entre as frentes 
 
 ## 🚦 Como Contribuir (IMPORTANTE)
 
-Para manter a organização entre as 4 equipes, seguimos um fluxo de trabalho rigoroso. **Antes de realizar qualquer alteração, leia o nosso [Guia de Contribuição (CONTRIBUTING.md)](https://www.google.com/search?q=./CONTRIBUTING.md)**.
+Para manter a organização entre as 4 equipes, seguimos um fluxo de trabalho rigoroso. **Antes de realizar qualquer alteração, leia o nosso [Guia de Contribuição (CONTRIBUTING.md)](https://github.com/fcte-pi1/2026_1_PI1_Grupo02_Diogo/blob/main/CONTRIBUTING.md)**.
 
 ### Resumo das Regras:
 
-1.  **Não commite na `main`**: Use a branch `develop` ou branches de funcionalidade (`feat/`, `fix/`).
+1.  **Não commite na `main`**: Use branches de funcionalidade (`feat/`, `fix/`) a partir da branch `develop` 
 2.  **Padrão de Commits**: Use o formato `tipo(escopo): descrição` (ex: `feat(soft): adiciona algoritmo A*`).
-3.  **Issues**: Toda tarefa deve estar documentada em uma Issue e atribuída a um membro.
+3.  **Issues**: Toda tarefa deve estar documentada em uma Issue e atribuída a um ou dois membros.
 
 -----
 
 ## 🛠️ Tecnologias e Ferramentas
-ainda nn definido totalmente...
 
 | Frente | Tecnologias |
 | :--- | :--- |
-| **Software** | ESP32 (C++), React, MQTT, WebSockets, PHP/Laravel |
+| **Software** | ESP32 (C++), React, MQTT, WebSockets, Expres.js, PrismaORM, Postgres |
 | **Eletrônica** | EasyEDA, Motores com Encoder, Sensores Ultrassônicos/IR |
-| **Estrutura** | Impressão 3D (PLA/ABS), CAD (SolidWorks/Fusion360) |
-| **Energia** | Baterias Li-Po, Sensores de Tensão e Corrente (Telemetria Real-time) |
+| **Estrutura** | Impressão 3D (PLA/ABS), CAD (Fusion360) |
+| **Energia** | Baterias Li-Po, Sensores de Tensão e Corrente |
 
 -----
 
 ## 📅 Links e Referências Rápidas
 
-  * 📘 **Relatório Técnico (Overleaf):** [Link do Projeto]
-  * 📊 **Dashboard de Telemetria:** [Link do Site/IP]
-  * 📂 **Documento de Decisões:** [Link do Google Docs]
+  * 📘 **Template Relatório Técnico (Overleaf):** [Link do Projeto](https://www.overleaf.com/project/64ecade6b5042884c2722cc8)
+  * 📊 **Tutorial para Rodar software:** [Tutorial README.md](https://github.com/fcte-pi1/2026_1_PI1_Grupo02_Diogo/blob/main/src/README.md)
+  * 📂 **Documento de Decisões:** [Link do Google Docs](https://docs.google.com/document/d/1rcPcyDlrb-aLtko67VCIYEqcur4CE0YzXbpeuBHNm5k/edit?usp=sharing)
 
 -----
 
