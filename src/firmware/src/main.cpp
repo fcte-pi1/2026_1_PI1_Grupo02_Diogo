@@ -87,8 +87,7 @@ unsigned long stepCounter = 0;
 Rato rato;
 Labirinto lab;
 
-WiFiClient wifiClient;
-PubSubClient mqttClient(wifiClient);
+// wifiClient e mqttClient são definidos em conexoes.cpp (declarados em conexoes.h)
 
 #pragma endregion
 
