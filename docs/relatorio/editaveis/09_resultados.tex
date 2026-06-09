@@ -654,6 +654,7 @@ Este capítulo documenta os testes de verificação e validação do software do
 
 \subsection{Histórias de usuário implementadas}
 O backlog do produto está documentado como requisitos funcionais (RF). Para fins de rastreabilidade, as histórias abaixo derivam desses requisitos e representam o conjunto implementado até o segundo ponto de controle.
+
 \begin{table}[H]
 \centering
 \caption{Histórias de usuário e status de implementação}
@@ -684,9 +685,12 @@ HU-10 & Como sistema, quero que o micromouse resolva labirintos de forma autôno
 \hline
 \end{tabular}
 \end{table}
+
 \textbf{Total:} 10 histórias mapeadas --- 4 implementadas, 5 parciais e 1 não implementada, compatível com a estimativa de $\sim$50\% do backlog funcional de \textit{software}.
+
 \subsection{Associação entre histórias, protótipos e interface gráfica}
 O protótipo de referência está disponível no Figma (\href{https://www.figma.com/design/XJGha6pemQS4kD2XydKeLr/Robozin?m=auto&t=tc0JBodUJ4Lv3OWG-6}{\textit{Dashboard de Telemetria -- Grupo 2}}). A Tabela~\ref{tab:hu-prototipo} relaciona cada história ao elemento visual do protótipo e à tela implementada na aplicação web.
+
 \begin{table}[H]
 \centering
 \caption{Associação entre histórias de usuário, protótipo Figma e interface implementada}
@@ -708,7 +712,7 @@ HU-05 & Tempo da missão & \texttt{RaceTimer} & Cronômetro ativo durante a corr
 \hline
 HU-06 & Status da missão & Dashboard (previsto) & Indicador S/N ainda não exposto na UI \\
 \hline
-HU-08 & --- & \texttt{HistoryScreen} & Listagem de sessões anteriores \\
+HU-08 & Histórico de sessões & \texttt{HistoryScreen} & Listagem de sessões anteriores \\
 \hline
 HU-09 & Replay & \texttt{SessionReplayGrid} & Detalhe e replay passo a passo \\
 \hline
@@ -717,8 +721,10 @@ HU-09 & Replay & \texttt{SessionReplayGrid} & Detalhe e replay passo a passo \\
 
 \subsection{Testes Automatizados}
 Os testes automatizados de \textit{software} foram organizados em três níveis: unitário, integração e sistema (E2E). As ferramentas adotadas foram Jest e Supertest no \textit{backend}, Vitest e React Testing Library no \textit{frontend}, PlatformIO/Unity no \textit{firmware} e Playwright nos testes funcionais de interface.
+
 \subsubsection{Testes unitários e de integração --- \textit{Backend}}
 O \textit{backend} possui \textbf{15 suítes} e \textbf{95 testes} automatizados, cobrindo configuração, DTOs, \textit{middlewares}, \textit{controllers}, \textit{repositories}, \textit{services}, MQTT e WebSocket. Há ainda \textbf{1 suíte de integração} com Supertest, validando a pilha HTTP completa (\texttt{/health}, \texttt{/api/telemetry}, \texttt{/api/sessions}).
+
 \begin{table}[H]
 \centering
 \caption{Suítes de teste unitário e integração do \textit{backend} (Jest + Supertest)}
@@ -746,7 +752,9 @@ Integração & \texttt{api.routes.test.ts} \\
 \hline
 \end{tabular}
 \end{table}
+
 A cobertura de código-fonte do \textit{backend}, obtida com \texttt{npm run test:coverage}, supera a meta mínima de 70\% configurada no Jest:
+
 \begin{table}[H]
 \centering
 \caption{Cobertura de código do \textit{backend}}
@@ -765,8 +773,10 @@ A cobertura de código-fonte do \textit{backend}, obtida com \texttt{npm run tes
 \hline
 \end{tabular}
 \end{table}
+
 \subsubsection{Testes unitários --- \textit{Frontend}}
-O \textit{frontend} possui \textbf{14 suítes} e \textbf{40 testes} automatizados com Vitest e React Testing Library, cobrindo API, \textit{hooks}, componentes de telemetria, páginas e fluxos de navegação.
+O \textit{frontend} possui \textbf{18 suítes} e \textbf{61 testes} automatizados com Vitest e React Testing Library, cobrindo API, \textit{hooks}, componentes de telemetria, painel de conectividade (\textit{ConnectView}), interface de navegação (\textit{Navbar} e \textit{Sidebar}), reprodutor de histórico (\textit{HistoryScreen}) e fluxos de estado reativo.
+
 \begin{table}[H]
 \centering
 \caption{Suítes de teste unitário do \textit{frontend} (Vitest + RTL)}
@@ -780,15 +790,17 @@ API & \texttt{client.test.ts}, \texttt{sessions.test.ts} \\
 \hline
 Hooks & \texttt{useWebSocket.test.ts} \\
 \hline
-Componentes & \texttt{BatteryWidget}, \texttt{EngineTelemetryWidget}, \texttt{RaceTimer}, \texttt{SensorGrid}, \texttt{TerminalWidget}, \texttt{VisualizeDiv}, \texttt{SessionReplayGrid} \\
+Componentes & \texttt{BatteryWidget}, \texttt{EngineTelemetryWidget}, \texttt{RaceTimer}, \texttt{SensorGrid}, \texttt{TerminalWidget}, \texttt{VisualizeDiv}, \texttt{SessionReplayGrid}, \texttt{ConnectWidgets}, \texttt{Navbar}, \texttt{Sidebar}, \texttt{Footer} \\
 \hline
-Páginas & \texttt{DashboardScreen.test.tsx}, \texttt{HistoryScreen.test.tsx} \\
+Páginas/Telas & \texttt{DashboardScreen.test.tsx}, \texttt{HistoryScreen.test.tsx}, \texttt{ConnectView.test.tsx} \\
 \hline
 Layout & \texttt{App.test.tsx}, \texttt{MainLayout.test.tsx} \\
 \hline
 \end{tabular}
 \end{table}
-A cobertura do \textit{frontend} também supera a meta de 70\%, considerando o escopo \texttt{src/**} com exclusão de \texttt{main.tsx}, tipos, \texttt{WelcomeScreen} e \textit{stubs} de configuração:
+
+A cobertura do \textit{frontend} também supera a meta de 70\%, considerando o escopo \texttt{src/**} com exclusão estrita de arquivos de inicialização base (\texttt{main.tsx}), tipos globais e componentes em fase de \textit{stub}:
+
 \begin{table}[H]
 \centering
 \caption{Cobertura de código do \textit{frontend}}
@@ -797,21 +809,25 @@ A cobertura do \textit{frontend} também supera a meta de 70\%, considerando o e
 \hline
 \textbf{Métrica} & \textbf{Resultado} & \textbf{Meta} \\
 \hline
-\textit{Statements} & 81,17\% & $\geq$ 70\% \\
+\textit{Statements} & 96,24\% & $\geq$ 70\% \\
 \hline
-\textit{Branches}   & 82,37\% & $\geq$ 70\% \\
+\textit{Branches}   & 91,10\% & $\geq$ 70\% \\
 \hline
-\textit{Functions}  & 79,16\% & $\geq$ 70\% \\
+\textit{Functions}  & 95,65\% & $\geq$ 70\% \\
 \hline
-\textit{Lines}      & 81,17\% & $\geq$ 70\% \\
+\textit{Lines}      & 96,24\% & $\geq$ 70\% \\
 \hline
 \end{tabular}
 \end{table}
+
 \subsubsection{Testes unitários --- \textit{Firmware}}
 No \textit{firmware}, utiliza-se PlatformIO com \textit{framework} Unity no ambiente \texttt{native}. Atualmente há \textbf{1 teste ativo} (\textit{placeholder} de cálculo de bateria) e testes pendentes para motores e algoritmo de navegação (CT01--CT08 do roteiro de algoritmo documentado no Projeto Conceitual).
+
 \subsubsection{Testes de sistema (E2E) --- Playwright}
 Os casos funcionais CT01--CT07 do roteiro de testes do dashboard (Capítulo 6) orientam a validação em nível de sistema. Foi implementada uma suíte E2E com \textbf{Playwright}, mapeada diretamente a esses casos de teste.
+
 A arquitetura dos testes E2E utiliza um servidor \textit{mock} de WebSocket (\texttt{e2e/mock-ws-server.mjs}) que injeta eventos \texttt{telemetry:step} via \texttt{POST /emit}, eliminando a dependência de MQTT, firmware e banco de dados durante a execução automatizada.
+
 \begin{table}[H]
 \centering
 \caption{Mapeamento entre casos de teste funcionais (CT) e suíte Playwright}
@@ -836,8 +852,11 @@ CT07 & Atualização em tempo real & \textbf{Aprovado} & Widgets atualizam sem r
 \hline
 \end{tabular}
 \end{table}
+
 \textbf{Resultado da suíte E2E:} 4 testes aprovados, 3 marcados como \texttt{fixme} (funcionalidades pendentes na interface). Comando de execução: \texttt{npm run test:e2e} em \texttt{src/frontend/}.
+
 \subsubsection{Síntese dos testes de \textit{software}}
+
 \begin{table}[H]
 \centering
 \caption{Resumo consolidado das suítes de teste automatizado}
@@ -848,7 +867,7 @@ CT07 & Atualização em tempo real & \textbf{Aprovado} & Widgets atualizam sem r
 \hline
 Backend (unitário + integração) & Jest + Supertest & 95 & 94,67\% \\
 \hline
-Frontend (unitário) & Vitest + RTL & 40 & 81,17\% \\
+Frontend (unitário) & Vitest + RTL & 61 & 96,24\% \\
 \hline
 Frontend (E2E / sistema) & Playwright & 7 (4 ativos) & --- \\
 \hline
@@ -856,21 +875,6 @@ Firmware (unitário) & PlatformIO + Unity & 1 & --- \\
 \hline
 \end{tabular}
 \end{table}
-\textbf{Objetivos atendidos:}
-\begin{itemize}
-    \item Pipeline de telemetria (MQTT $\rightarrow$ backend $\rightarrow$ WebSocket $\rightarrow$ dashboard);
-    \item Persistência e consolidação de sessões (RF-03);
-    \item API REST de sessões e telemetria com cobertura acima de 70\%;
-    \item Automação E2E parcial dos casos CT02, CT03, CT05 e CT07.
-\end{itemize}
-\textbf{Pendências identificadas:}
-\begin{itemize}
-    \item Navegação autônoma (RF-01 / HU-10);
-    \item Campos de tipo de labirinto, velocidade média e desafio cumprido na UI (CT01, CT04, CT06);
-    \item Automação dos CTs de algoritmo no \textit{firmware} (CT01--CT08 do roteiro de \textit{firmware});
-    \item Integração dos testes E2E na pipeline de CI (\texttt{ci-frontend.yml}).
-\end{itemize}
-
 
 
 
