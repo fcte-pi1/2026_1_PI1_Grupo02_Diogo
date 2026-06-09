@@ -225,7 +225,7 @@ export default function HistoryScreen() {
           </div>
         </section>
 
-        <section className="bg-surface-container-low/60 border border-outline-variant/30 p-6 flex-1 min-h-[280px]">
+        <section className="bg-surface-container-low/60 border border-outline-variant/30 p-6 flex-1 min-h-\[280px\]">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-[10px] font-mono text-outline uppercase tracking-widest">
               Replay do percurso
