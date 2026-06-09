@@ -1,18 +1,18 @@
 #include "./motor.h"
 
-// -- Pinos e encoders (registrados em inicializaMotors) -----------------------
+// -- Pinos e encoders (registrados em inicializaMotores) ----------------------
 static uint8_t _in1L, _in2L;
 static uint8_t _in1R, _in2R;
 static volatile long *_encEsq;
 static volatile long *_encDir;
 
 // -------------------------------------------------------------------------------
-//  Inicializa motors
+//  Inicializa motores
 // -------------------------------------------------------------------------------
 
-void inicializaMotors(uint8_t in1L, uint8_t in2L,
-                      uint8_t in1R, uint8_t in2R,
-                      volatile long *encEsq, volatile long *encDir)
+void inicializaMotores(uint8_t in1L, uint8_t in2L,
+                       uint8_t in1R, uint8_t in2R,
+                       volatile long *encEsq, volatile long *encDir)
 {
     _in1L = in1L;
     _in2L = in2L;

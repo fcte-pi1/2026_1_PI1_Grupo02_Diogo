@@ -1,5 +1,15 @@
 #include "./conexoes.h"
 
+// -- Definições dos globais declarados (extern) em conexoes.h -----------------
+const char *WIFI_SSID = "SUA_REDE_WIFI";      // troque para o wifi conectado ao computador e à ESP32
+const char *WIFI_PASSWORD = "SUA_SENHA_WIFI"; // sua senha
+
+const char *MQTT_BROKER = "192.168.x.x"; // IP do broker MQTT (Docker) na sua rede
+const int MQTT_PORT = 1883;
+
+WiFiClient wifiClient;
+PubSubClient mqttClient(wifiClient);
+
 void connectWiFi()
 {
     if (WiFi.status() == WL_CONNECTED)
