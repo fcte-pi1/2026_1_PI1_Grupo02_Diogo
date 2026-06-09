@@ -54,29 +54,29 @@ io.on("connection", (socket) => {
   });
 });
 
-if (env.telemetry.mockEnabled) {
-  let telemetryFake = 0;
-  setInterval(() => {
-    try {
-      const socketIo = getSocket();
+// if (env.telemetry.mockEnabled) {
+//   let telemetryFake = 0;
+//   setInterval(() => {
+//     try {
+//       const socketIo = getSocket();
 
-      socketIo.emit("telemetry:new", {
-        stepOrder: telemetryFake,
-        posX: Math.floor(Math.random() * 16),
-        posY: Math.floor(Math.random() * 16),
-        voltage: Number((11.1 - telemetryFake * 0.015).toFixed(2)),
-        current: Math.floor(Math.random() * 50) + 200,
-      });
+//       socketIo.emit("telemetry:new", {
+//         stepOrder: telemetryFake,
+//         posX: Math.floor(Math.random() * 16),
+//         posY: Math.floor(Math.random() * 16),
+//         voltage: Number((11.1 - telemetryFake * 0.015).toFixed(2)),
+//         current: Math.floor(Math.random() * 50) + 200,
+//       });
 
-      console.log(
-        `[TEST_TRIGGER] Nova telemetria fake #${telemetryFake} via WS.`
-      );
-      telemetryFake += 1;
-    } catch {
-      // socket ainda não inicializado
-    }
-  }, 1500);
-}
+//       console.log(
+//         `[TEST_TRIGGER] Nova telemetria fake #${telemetryFake} via WS.`
+//       );
+//       telemetryFake += 1;
+//     } catch {
+//       // socket ainda não inicializado
+//     }
+//   }, 1500);
+// }
 
 server.listen(env.port, () => {
   console.log(`API listening on :${env.port}`);
