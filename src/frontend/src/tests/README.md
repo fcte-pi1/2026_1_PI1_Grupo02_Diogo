@@ -1,5 +1,25 @@
 # Frontend tests
 
+## E2E (Playwright)
+
+Testes funcionais do dashboard mapeados ao roteiro CT01–CT07 ficam em `e2e/`.
+Ver `e2e/README.md` para execução e mapeamento completo.
+
+```bash
+npm run test:e2e:install   # primeira vez
+npm run test:e2e
+```
+
+## Cobertura
+
+Meta mínima configurada no Vitest: **70%** (statements, branches, functions, lines).
+
+```bash
+npm run test:coverage
+```
+
+Escopo: `src/**`, exceto `main.tsx`, tipos, `WelcomeScreen` e stubs de config.
+
 ## Structure
 - tests/components: component tests (React Testing Library).
 - tests/hooks: hook tests and hook utilities.

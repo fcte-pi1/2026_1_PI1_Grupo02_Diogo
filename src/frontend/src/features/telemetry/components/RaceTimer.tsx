@@ -43,21 +43,21 @@ export default function RaceTimer({ timeMs, isActive, startTime }: RaceTimerProp
   };
 
   return (
-    <div className="bg-surface-container-low/60 border border-outline-variant/30 backdrop-blur-md p-stack-md flex flex-col gap-stack-sm rounded-none w-full">
+    <div data-testid="race-timer" className="bg-surface-container-low/60 border border-outline-variant/30 backdrop-blur-md p-stack-md flex flex-col gap-stack-sm rounded-none w-full">
       
       <div className="flex justify-between items-center border-b border-outline-variant/20 pb-2">
         <h2 className="text-label-caps text-xs font-bold text-on-surface-variant tracking-widest uppercase flex items-center gap-stack-sm">
           <Timer className="w-3.5 h-3.5 text-primary" strokeWidth={2} />
           Cronômetro {timeMs === undefined && isActive && <span className="text-[9px] text-amber-500">(MOCK)</span>}
         </h2>
-        <span className={`text-[10px] px-2 py-0.5 border border-solid font-mono ${isActive ? 'bg-secondary-container/10 border-emerald-500 text-emerald-400 animate-pulse' : 'bg-surface-variant text-outline border-outline/20'}`}>
+        <span data-testid="race-timer-status" className={`text-[10px] px-2 py-0.5 border border-solid font-mono ${isActive ? 'bg-secondary-container/10 border-emerald-500 text-emerald-400 animate-pulse' : 'bg-surface-variant text-outline border-outline/20'}`}>
           {isActive ? 'ACTIVE' : 'STANDBY'}
         </span>
       </div>
 
       {/* Relógio em formato display digital de telemetria */}
       <div className="text-center py-2">
-        <span className="font-mono text-2xl font-bold text-primary tracking-wider block drop-shadow-[0_0_10px_rgba(157,226,255,0.1)]">
+        <span data-testid="race-timer-value" className="font-mono text-2xl font-bold text-primary tracking-wider block drop-shadow-[0_0_10px_rgba(157,226,255,0.1)]">
           {formatTime(actualTime)}
         </span>
       </div>

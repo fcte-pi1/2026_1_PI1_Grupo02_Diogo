@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LayoutDashboard, Settings, ScrollText, WifiSync, CircleFadingPlus, ArrowLeftToLine } from 'lucide-react';
+import { LayoutDashboard, ScrollText, WifiSync, CircleFadingPlus, ArrowLeftToLine } from 'lucide-react';
 
 interface SidebarProps {
   currentView?: string;
@@ -12,7 +12,6 @@ export default function Sidebar({ currentView = 'dashboard', onNavigate }: Sideb
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'network', label: 'Conexão', icon: WifiSync },
     { id: 'logs', label: 'Histórico de sessões', icon: ScrollText },
-    { id: 'config', label: 'Configurações', icon: Settings },
   ];
 
   // Fica true quando a barra está colapsada (apenas ícones)
@@ -51,7 +50,7 @@ export default function Sidebar({ currentView = 'dashboard', onNavigate }: Sideb
           {/* Esconde o subtexto da UnB/Grupo se colapsado */}
           {!isNavOpen && (
             <span className="text-[10px] font-mono text-on-surface-variant/60 tracking-wider transition-all">
-              GRUPO_02 // RAT_V6R
+              RATOBÔ
             </span>
           )}
         </div>

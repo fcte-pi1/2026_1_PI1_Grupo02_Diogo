@@ -1,14 +1,15 @@
 import { useState } from "react";
-import { ConnectWidget } from "../../components/connectWidgets";
+import { ConnectWidget } from "../../components/connectWidgets"; 
 import { VisualizeDiv } from "../../components/VisualizeDiv";
 import { Wifi, WifiOff, Battery, RefreshCw } from "lucide-react";
+import { useWebSocket } from "../../hooks/useWebSocket"; 
 
 interface ConnectViewProps {
   currentView: string;
   connectionProps: {
     latency: string;
   } | null;
-  isConnected: boolean; // Flag real vinda do hook useWebSocket
+  isConnected: boolean;
 }
 
 export default function ConnectView({
@@ -16,9 +17,14 @@ export default function ConnectView({
   connectionProps,
   isConnected,
 }: ConnectViewProps) {
-  // Se estiver conectado, mantém a latência do mock ou do back. Se cair, força -99 DBM (sem sinal)
   const [latency, setLatency] = useState(42);
   const currentLatency = isConnected ? latency : 99;
+
+  const { robotData } = useWebSocket();
+
+  // Fallbacks defensivos para a posição iniciar em [0,0] se o robô estiver desligado
+  const x = robotData?.posX ?? 0;
+  const y = robotData?.posY ?? 0;
 
   return (
     <main className="w-full h-full p-6 flex flex-col gap-4 overflow-hidden bg-background select-none">
@@ -52,12 +58,13 @@ export default function ConnectView({
           />
         </div>
 
-        {/* 🚀 COLUNA 2 & 3: Painel Central Inteligente Reutilizado (CORRIGIDO) */}
         <VisualizeDiv
-          activeSession={null} // ✅ Mudado de string para null (atende o objeto esperado pela tipagem)
+          activeSession={null} 
           currentView={currentView}
-          connectionProps={connectionProps ?? { latency: String(currentLatency) }} // ✅ Garante objeto preenchido se nulo
-          isConnected={isConnected} // ✅ Correção crítica: Passando a prop real e existente no arquivo!
+          connectionProps={connectionProps ?? { latency: String(currentLatency) }} 
+          isConnected={isConnected} 
+          posX={x}
+          posY={y}
         />
 
         {/* COLUNA 4: Telemetria de Infraestrutura Lateral Reativa */}
@@ -68,20 +75,20 @@ export default function ConnectView({
             <div className="border-b border-outline-variant/20 mb-3">
               <h2 className="text-label-caps text-xs mb-3 font-bold text-on-surface-variant tracking-widest uppercase flex items-center gap-2">
                 {isConnected ? (
-                  <Wifi className="w-3.5 h-3.5 text-primary" strokeWidth={2} />
+                  <Wifi className="w-3.5 h-3.5 text-primary" data-testid="wifi-on-icon" strokeWidth={2} />
                 ) : (
-                  <WifiOff className="w-3.5 h-3.5 text-red-400" strokeWidth={2} />
+                  <WifiOff className="w-3.5 h-3.5 text-red-400" data-testid="wifi-off-icon" strokeWidth={2} />
                 )}
                 Sinal
               </h2>
             </div>
 
             <div className="flex items-end gap-2 mb-3 opacity-90">
-              <div className={`w-full h-8 transition-all ${isConnected ? 'bg-emerald-500' : 'bg-surface-variant/20 border border-outline-variant/10'}`}></div>
-              <div className={`w-full h-10 transition-all ${isConnected ? 'bg-emerald-500' : 'bg-surface-variant/20 border border-outline-variant/10'}`}></div>
-              <div className={`w-full h-12 transition-all ${isConnected ? 'bg-emerald-500' : 'bg-surface-variant/20 border border-outline-variant/10'}`}></div>
-              <div className={`w-full h-14 transition-all ${isConnected ? 'bg-emerald-500' : 'bg-surface-variant/20 border border-outline-variant/10'}`}></div>
-              <div className={`w-full h-16 transition-all ${isConnected ? 'bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.3)]' : 'bg-surface-variant/20 border border-outline-variant/10'}`}></div>
+              <div className={`w-full h-8 transition-all ${isConnected ? 'bg-emerald-500' : 'bg-surface-variant/20 border border-outline-variant/10'}`} data-testid="signal-bar"></div>
+              <div className={`w-full h-10 transition-all ${isConnected ? 'bg-emerald-500' : 'bg-surface-variant/20 border border-outline-variant/10'}`} data-testid="signal-bar"></div>
+              <div className={`w-full h-12 transition-all ${isConnected ? 'bg-emerald-500' : 'bg-surface-variant/20 border border-outline-variant/10'}`} data-testid="signal-bar"></div>
+              <div className={`w-full h-14 transition-all ${isConnected ? 'bg-emerald-500' : 'bg-surface-variant/20 border border-outline-variant/10'}`} data-testid="signal-bar"></div>
+              <div className={`w-full h-16 transition-all ${isConnected ? 'bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.3)]' : 'bg-surface-variant/20 border border-outline-variant/10'}`} data-testid="signal-bar"></div>
             </div>
             
             <div className="flex justify-between text-[11px] font-bold pt-1">
@@ -98,7 +105,7 @@ export default function ConnectView({
           <div className="bg-surface-container-low/60 border border-outline-variant/30 p-4 flex-1 flex flex-col justify-between">
             <div>
               <div className="border-b border-outline-variant/20 mb-3">
-                <h2 className="text-label-caps text-xs mb-3 font-bold text-on-surface-variant tracking-widest uppercase flex items-center gap-stack-sm">
+                <h2 className="text-label-caps text-xs mb-3 font-bold text-on-surface-variant tracking-widest uppercase flex items-center gap-2">
                   <Battery className="w-3.5 h-3.5 text-primary" strokeWidth={2} />
                   POWER_ARRAY
                 </h2>
@@ -112,6 +119,7 @@ export default function ConnectView({
                   <div
                     className={`h-full transition-all duration-500 ${isConnected ? 'bg-emerald-500' : 'bg-transparent'}`}
                     style={{ width: isConnected ? "92%" : "0%" }}
+                    data-testid="primary-cell-bar"
                   ></div>
                 </div>
               </div>
@@ -124,6 +132,7 @@ export default function ConnectView({
                   <div
                     className={`h-full transition-all duration-500 ${isConnected ? 'bg-cyan-500' : 'bg-transparent'}`}
                     style={{ width: isConnected ? "45%" : "0%" }}
+                    data-testid="aux-buffer-bar"
                   ></div>
                 </div>
               </div>
