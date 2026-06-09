@@ -8,6 +8,7 @@ void publishTelemetry(
     const char *robotId,
     unsigned long &stepCounter,
     bool motorsRunning,
+    const char *ultimoMovimento,
     bool concluded)
 {
     if (WiFi.status() != WL_CONNECTED || !mqttClient.connected())
@@ -16,7 +17,7 @@ void publishTelemetry(
     StaticJsonDocument<768> doc;
 
     doc["robotId"] = robotId;
-    doc["step"] = stepCounter++;
+    doc["step"] = stepCounter; // incremento fica a cargo do passoDFS()
     doc["tempoMs"] = millis();
     doc["modo"] = "DFS";
     doc["estado"] = motorsRunning ? "EXPLORANDO" : "PARADO";
@@ -30,7 +31,7 @@ void publishTelemetry(
                                                                              : "oeste";
     doc["direcao"] = dirStr;
 
-    doc["ultimomovimento"] = motorsRunning ? "frente" : "parado";
+    doc["ultimoMovimento"] = ultimoMovimento;
 
     JsonObject paredes = doc.createNestedObject("paredes");
     paredes["norte"] = lab.celula[rato.x][rato.y].norte;
