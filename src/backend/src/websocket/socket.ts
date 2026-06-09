@@ -40,6 +40,10 @@ export const logWebSocketEvent = async (
 
 let io: Server | null = null;
 
+export const resetSocketForTests = (): void => {
+  io = null;
+};
+
 export const initSocket = (server: http.Server): Server => {
   io = new Server(server, {
     cors: {

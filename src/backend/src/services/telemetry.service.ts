@@ -32,6 +32,10 @@ type ActiveRunContext = {
 
 let activeRunContext: ActiveRunContext | null = null;
 
+export const resetTelemetryRunContextForTests = (): void => {
+  activeRunContext = null;
+};
+
 const parsePayload = (buffer: Buffer): ParsedTelemetry => {
   const raw = buffer.toString("utf-8");
   try {
