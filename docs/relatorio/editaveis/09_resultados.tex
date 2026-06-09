@@ -1237,7 +1237,76 @@ Firmware (unitário) & PlatformIO + Unity & 1 & --- \\
 
 \section{Testes de integração}
 
-\textcolor{red}{Apresentar com detalhes os testes feitos para conferir se os objetivos do projeto como um todo foram atendidos.}
+Esta seção apresenta os resultados dos testes realizados com o objetivo de verificar o
+funcionamento conjunto dos subsistemas do Ratobô, avaliando se a integração entre as
+frentes de estrutura, hardware, energia e software atende aos requisitos estabelecidos
+para o projeto.
 
-%\textcolor{red}{Com relação ao \textit{software}, será necessário apresentar pacotes de componentes de \textit{software}, suas funções e características, e explicar as decisões de projeto.}
+\subsection{Integração dos componentes eletrônicos}
 
+A integração dos componentes eletrônicos foi verificada por meio de testes que envolveram
+a operação simultânea da placa ESP32 DevKit~V1, dos sensores ultrassônicos HC-SR04, dos
+motores DC N20 com ponte H, do regulador de tensão LM2596, do sensor de corrente INA219 e
+do sistema de comunicação Wi-Fi. O ambiente de desenvolvimento utilizado foi o PlatformIO.
+
+Durante os testes, os módulos operaram de forma conjunta sem que fossem identificados
+conflitos aparentes entre os componentes. As leituras periódicas dos três sensores
+ultrassônicos não evidenciaram interferência mútua entre os transdutores quando acionados
+simultaneamente. O regulador de tensão manteve saída estável durante a operação dos demais
+componentes, não sendo observadas oscilações capazes de comprometer o funcionamento do
+sistema. O monitoramento de tensão e corrente pelo INA219 apresentou concordância com os
+valores de referência aferidos por multímetro digital durante a operação integrada.
+
+Os motores responderam aos comandos gerados pelo ESP32 via sinais PWM, operando nas duas
+direções de rotação e em diferentes velocidades sem comportamento irregular, com torque
+verificado como suficiente para a movimentação do robô. A operação conjunta de motores e
+sensores não introduziu degradação perceptível nas leituras de distância.
+
+\subsection{Integração da comunicação sem fio}
+
+Foi realizado um teste de transmissão de dados entre o ESP32 e a aplicação web desenvolvida
+para monitoramento e mapeamento do labirinto. Durante o ensaio, a comunicação Wi-Fi
+manteve-se estável, validando esse meio de transmissão como viável para o envio de dados
+de telemetria do robô à interface de monitoramento.
+
+\subsection{Integração da estrutura mecânica e dos componentes eletrônicos}
+
+A estrutura mecânica do Ratobô, produzida por impressão 3D, foi inspecionada individualmente
+quanto à qualidade de fabricação, ausência de deformações e compatibilidade dimensional entre
+as peças. A montagem completa da estrutura mecânica --- verificando o alinhamento das rodas,
+a fixação dos motores, a estabilidade da carcaça e a resistência estrutural --- demonstrou
+encaixe adequado e sustentação suficiente para suportar os componentes eletrônicos do sistema.
+A conformidade dimensional com o modelo virtual desenvolvido em CAD também foi confirmada por
+comparação visual e dimensional.
+
+O labirinto construído em MDF, utilizado para as etapas de validação de navegação, apresentou
+dimensões de corredores e alinhamento de paredes compatíveis com o projeto, permitindo a
+circulação adequada do veículo.
+
+\subsection{Validações pendentes}
+
+Em razão da indisponibilidade da estrutura mecânica definitiva durante a fase de testes de
+hardware, duas validações de integração não puderam ser concluídas nesta etapa do projeto e
+serão realizadas nas próximas iterações:
+
+\begin{itemize}
+    \item \textbf{Calibração dos encoders magnéticos:} a precisão das medições de velocidade e
+    deslocamento dos encoders acoplados aos motores DC N20 não pôde ser validada sem a
+    estrutura montada. Essa calibração é necessária para que a malha de controle da
+    locomoção diferencial execute curvas de 90 graus com a exatidão requerida pela
+    navegação autônoma.
+
+    \item \textbf{Calibração da distância percorrida e validação de navegação:} a integração
+    entre o algoritmo de Busca em Profundidade (DFS), os sensores ultrassônicos e os
+    atuadores, no contexto da navegação autônoma em labirinto $4 \times 4$, será validada em
+    etapa posterior, quando a estrutura completa estiver disponível para montagem e
+    os encoders estiverem devidamente calibrados.
+\end{itemize}
+
+\paragraph{}
+
+Os resultados obtidos até esta etapa demonstram que a arquitetura eletrônica proposta para
+o Ratobô é viável, com os subsistemas operando em conjunto sem conflitos identificados. As
+validações pendentes, concentradas na calibração dos encoders e na navegação autônoma em
+ambiente físico, constituem os principais itens em aberto para a próxima fase de
+desenvolvimento do projeto.
