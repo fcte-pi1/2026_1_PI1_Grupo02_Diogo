@@ -821,7 +821,9 @@ A cobertura do \textit{frontend} também supera a meta de 70\%, considerando o e
 \end{table}
 
 \subsubsection{Testes unitários --- \textit{Firmware}}
-No \textit{firmware}, utiliza-se PlatformIO com \textit{framework} Unity no ambiente \texttt{native}. Atualmente há \textbf{1 teste ativo} (\textit{placeholder} de cálculo de bateria) e testes pendentes para motores e algoritmo de navegação (CT01--CT08 do roteiro de algoritmo documentado no Projeto Conceitual).
+No escopo de desenvolvimento do \textit{firmware}, utiliza-se o ecossistema PlatformIO integrado ao \textit{framework} Unity sob o ambiente computacional \texttt{native}. Atualmente, encontra-se ativo \textbf{1 caso de teste} funcional, configurado como um elemento de validação (*placeholder*) para o algoritmo de cálculo de decaimento da célula de bateria. 
+
+Os testes unitários associados ao controle dinâmico dos motores e ao algoritmo cartesiano de navegação autônoma (mapeados de CT01 a CT08 no Projeto Conceitual) encontram-se temporariamente em estado pendente. Essa condição justifica-se pelo estágio atual do ciclo de vida do projeto, focado na codificação das diretrizes definitivas do sistema embarcado. Contudo, em paralelo ao desenvolvimento do código de produção, foram conduzidos ensaios práticos e testes de bancada isolados nos componentes periféricos do robô (como calibração de sensores e modulação por largura de pulso dos motores), garantindo a integridade do \textit{hardware} para a futura acoplagem e homologação das suítes de testes automatizadas.
 
 \subsubsection{Testes de sistema (E2E) --- Playwright}
 Os casos funcionais CT01--CT07 do roteiro de testes do dashboard (Capítulo 6) orientam a validação em nível de sistema. Foi implementada uma suíte E2E com \textbf{Playwright}, mapeada diretamente a esses casos de teste.
