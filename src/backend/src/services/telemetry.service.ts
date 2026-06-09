@@ -4,9 +4,7 @@ import type { TelemetryPayloadDto } from "../dtos/telemetry.dto";
 import { validateTelemetryPayload } from "../dtos/telemetry.dto";
 import { prisma } from "../lib/prisma";
 import { findOrCreateDefaultMaze } from "../repositories/maze.repository";
-import {
-  createConsolidatedSession,
-} from "../repositories/session.repository";
+import { createConsolidatedSession } from "../repositories/session.repository";
 import {
   createOrphanSessionStep,
   findOrphanSteps,
@@ -23,6 +21,7 @@ import { emitTelemetry, getSocket } from "../websocket/socket";
 type ParsedTelemetry = {
   payload: unknown;
   robotId?: string;
+  validatedPayload?: TelemetryPayloadDto;
 };
 
 type ActiveRunContext = {
@@ -82,7 +81,7 @@ const ensureActiveRunContext = async (
 
 export const recordOrphanTelemetryStep = async (
   espData: TelemetryPayloadDto
-): Promise<any> => {
+) => {
   await ensureActiveRunContext(espData);
 
   const stepRecord = await createOrphanSessionStep({
@@ -96,7 +95,7 @@ export const recordOrphanTelemetryStep = async (
   try {
     const io = getSocket();
     io.emit("telemetry:step", stepRecord);
-    io.emit("telemetry:subscribe", stepRecord); 
+    io.emit("telemetry:subscribe", stepRecord);
   } catch (wsError) {
     console.error(
       "[WS_STREAM_ERROR] Servidor WS não inicializado ou falhou ao emitir:",
@@ -121,7 +120,8 @@ export const consolidateSession = async (
 
     const firstStep = orphanSteps[0];
     const lastStep = orphanSteps[orphanSteps.length - 1];
-    const durationMs = lastStep.timestamp.getTime() - firstStep.timestamp.getTime();
+    const durationMs =
+      lastStep.timestamp.getTime() - firstStep.timestamp.getTime();
 
     const session = await createConsolidatedSession(
       {
@@ -164,6 +164,7 @@ export const storeTelemetry = async (
 
   emitTelemetry(created);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let espData = parsed.payload as any;
   if (espData && espData.validationErrors) {
     try {
@@ -176,10 +177,10 @@ export const storeTelemetry = async (
 
   if (espData && !espData.validationErrors) {
     try {
-      await recordOrphanTelemetryStep(espData);
+      await recordOrphanTelemetryStep(espData as TelemetryPayloadDto);
 
-      if (espData.conclusao === true) {
-        const sessionId = await consolidateSession(espData);
+      if ((espData as TelemetryPayloadDto).conclusao === true) {
+        const sessionId = await consolidateSession(espData as TelemetryPayloadDto);
         if (sessionId) {
           console.log(
             `[AUTO-STOP] 🏁 Robô concluiu o labirinto. Métrica unificada na Session: [${sessionId}]`
