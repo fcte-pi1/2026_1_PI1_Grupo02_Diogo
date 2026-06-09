@@ -1,4 +1,4 @@
-import { SquareTerminal, Play, Square, Wifi, WifiOff } from "lucide-react";
+import { SquareTerminal, Wifi, WifiOff } from "lucide-react";
 import { AppState } from "../App";
 
 interface NavbarProps {
@@ -8,8 +8,6 @@ interface NavbarProps {
   appState: AppState;
   setViewTerminal: React.Dispatch<React.SetStateAction<boolean>>;
   currentView: string;
-  onRaceAction: (action: "START" | "PAUSE" | "STOP") => void;
-  // ⚡ Novas propriedades conectadas ao hook central
   isSocketConnected: boolean;
   onConnect: () => void;
   onDisconnect: () => void;
@@ -24,7 +22,6 @@ function Navbar({
   isSocketConnected,
   onConnect,
   onDisconnect,
-  onRaceAction,
 }: NavbarProps) {
   return (
     <header className="w-full h-12 bg-surface-container-low/40 border-b border-outline-variant/30 backdrop-blur-md flex justify-between items-center px-container-padding font-space text-[11px] font-medium tracking-widest uppercase text-on-surface-variant/70 shrink-0 select-none z-20">
@@ -73,27 +70,6 @@ function Navbar({
                   className={`text-[10px] font-mono border border-red-500/30 px-2 py-1 bg-red-500/5 text-red-400 transition-colors cursor-pointer ${!isSocketConnected ? 'opacity-40 cursor-not-allowed' : 'hover:bg-red-500/10'}`}
                 >
                   Encerrar conexão
-                </button>
-              </div>
-            )}
-
-            {/* Controles do Cockpit (Dashboard) */}
-            {currentView === "dashboard" && (
-              <div className="flex items-center gap-2">
-                <button 
-                  disabled={!isSocketConnected}
-                  onClick={() => onRaceAction("START")}
-                  className="text-[10px] font-mono border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors px-2 py-1 flex items-center gap-1 cursor-pointer font-bold disabled:opacity-30 disabled:cursor-not-allowed"
-                >
-                  <Play className="w-2.5 h-2.5 fill-current" /> Iniciar Corrida
-                </button>
-                
-                <button 
-                  disabled={!isSocketConnected}
-                  onClick={() => onRaceAction("STOP")}
-                  className="text-[10px] font-mono border border-red-500/30 bg-red-500/5 text-red-400 hover:bg-red-500/10 transition-colors px-2 py-1 flex items-center gap-1 cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed"
-                >
-                  <Square className="w-2.5 h-2.5 fill-current" /> Abortar
                 </button>
               </div>
             )}

@@ -32,7 +32,7 @@ export function VisualizeDiv({
             
             <div className="text-[10px] justify-between font-mono text-outline uppercase tracking-widest flex items-center gap-2 w-full mb-6">
               <span className="flex items-center gap-1">Mapeamento do labirinto</span>
-              <span className="text-[9px] px-2 py-0.5 border border-outline-variant/30 font-mono tracking-wider text-on-surface bg-surface-container-lowest">
+              <span data-testid="maze-coords" className="text-[9px] px-2 py-0.5 border border-outline-variant/30 font-mono tracking-wider text-on-surface bg-surface-container-lowest">
                 COORDS: X-{posX}, Y-{posY}
               </span>
             </div>

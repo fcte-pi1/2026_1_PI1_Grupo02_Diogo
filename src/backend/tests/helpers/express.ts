@@ -3,12 +3,14 @@ import type { Request, Response, NextFunction } from "express";
 export type MockResponse = Response & {
   status: jest.Mock;
   json: jest.Mock;
+  sendStatus: jest.Mock;
 };
 
 export const createMockResponse = (): MockResponse => {
   const res = {} as MockResponse;
   res.status = jest.fn().mockReturnValue(res);
   res.json = jest.fn().mockReturnValue(res);
+  res.sendStatus = jest.fn().mockReturnValue(res);
   return res;
 };
 

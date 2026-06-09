@@ -6,7 +6,7 @@ interface BatteryProps {
 
 export default function BatteryWidget({ voltage, percentage, isCritical }: BatteryProps) {
   return (
-    <div className="bg-surface-container-low/60 border border-outline-variant/30 backdrop-blur-md p-stack-md flex flex-col gap-stack-md rounded-none w-full">
+    <div data-testid="battery-widget" className="bg-surface-container-low/60 border border-outline-variant/30 backdrop-blur-md p-stack-md flex flex-col gap-stack-md rounded-none w-full">
       
       {/* Cabeçalho do Card (Label Caps) */}
       <div className="border-b border-outline-variant/20 pb-2">
@@ -19,7 +19,7 @@ export default function BatteryWidget({ voltage, percentage, isCritical }: Batte
       <div className="flex flex-col gap-unit">
         <div className="flex justify-between text-[11px] font-mono text-outline">
           <span>CHARGE_LEVEL</span>
-          <span className={isCritical ? 'text-error font-bold animate-pulse' : 'text-secondary-fixed'}>
+          <span data-testid="battery-percentage" className={isCritical ? 'text-error font-bold animate-pulse' : 'text-secondary-fixed'}>
             {percentage}%
           </span>
         </div>
@@ -36,7 +36,7 @@ export default function BatteryWidget({ voltage, percentage, isCritical }: Batte
       <ul className="flex flex-col gap-unit font-mono text-[12px] text-on-surface-variant">
         <li className="flex justify-between border-b border-outline-variant/10 py-1">
           <span>VOLTAGEM:</span>
-          <span className="font-telemetry text-on-surface font-bold">{voltage}V</span>
+          <span data-testid="battery-voltage" className="font-telemetry text-on-surface font-bold">{voltage}V</span>
         </li>
         <li className="flex justify-between py-1">
           <span>TENSÃO:</span>

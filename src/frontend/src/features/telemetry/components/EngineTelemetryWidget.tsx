@@ -15,7 +15,7 @@ export default function EngineTelemetryWidget({ motorCurrent, velocity }: Engine
       </div>
 
       {/* Placeholder para o gráfico do Recharts que vocês vão colocar */}
-      <div className="h-24 w-full bg-surface-container-lowest/50 border border-outline-variant/20 flex items-center justify-center font-mono text-[11px] text-outline">
+      <div data-testid="velocity-display" className="h-24 w-full bg-surface-container-lowest/50 border border-outline-variant/20 flex items-center justify-center font-mono text-[11px] text-outline">
         [ Gráfico de Velocidade: {velocity} m/s ]
       </div>
 

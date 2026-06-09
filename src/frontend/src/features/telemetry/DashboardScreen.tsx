@@ -43,7 +43,7 @@ export default function DashboardView({
   };
 
   return (
-    <main className="w-full h-full p-container-padding flex flex-col gap-gutter overflow-hidden">
+    <main data-testid="dashboard" className="w-full h-full p-container-padding flex flex-col gap-gutter overflow-hidden">
       <div className="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-gutter">
         
         <div className="flex flex-col gap-gutter lg:col-span-1">
