@@ -1,0 +1,113 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Telemetria bruta recebida via MQTT (Histórico/Auditoria de segurança)
+model TelemetryRaw {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  topic     String
+  robotId   String?
+  payload   Json
+
+  @@index([createdAt])
+  @@index([robotId])
+}
+
+// Labirintos (Estrutura geométrica estática de um mapa)
+model Maze {
+  id        String   @id @default(uuid())
+  name      String
+  width     Int      @default(16)
+  height    Int      @default(16)
+  createdAt DateTime @default(now())
+
+  cells    Cell[]
+  sessions Session[]
+}
+
+// Células estáticas do labirinto (Definição física das paredes)
+model Cell {
+  id     String @id @default(uuid())
+  mazeId String
+  maze   Maze   @relation(fields: [mazeId], references: [id], onDelete: Cascade)
+
+  posX Int
+  posY Int
+
+  wallNorth Boolean @default(false)
+  wallSouth Boolean @default(false)
+  wallEast  Boolean @default(false)
+  wallWest  Boolean @default(false)
+
+  @@unique([mazeId, posX, posY])
+  @@index([mazeId])
+}
+
+// Sessões / Corridas (Histórico geral do cockpit)
+model Session {
+  id          String   @id @default(uuid())
+  sessionName String
+  algorithm   String
+  mode        String
+  createdAt   DateTime @default(now())
+
+  durationMs   Int?
+  avgSpeed     Float?
+  isCompleted  Boolean @default(false)
+
+  startPosX    Int?
+  startPosY    Int?
+
+  initialVoltage Float?
+  finalVoltage   Float?
+  totalDrainMah  Float?
+
+  fastestPath Json?
+
+  mazeId String
+  maze   Maze   @relation(fields: [mazeId], references: [id])
+
+  telemetrySteps SessionStep[]
+  logs           TelemetryLog[]
+
+  @@index([mazeId])
+  @@index([createdAt])
+}
+
+// Rastreamento temporal passo a passo
+model SessionStep {
+  id        String   @id @default(uuid())
+  sessionId String?
+  session   Session? @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  timestamp DateTime @default(now())
+  stepOrder Int
+
+  posX Int
+  posY Int
+
+  voltage     Float
+  current     Float
+  consumption Float?
+
+  @@index([sessionId])
+  @@index([stepOrder])
+}
+
+// Logs de auditoria do sistema de telemetria
+model TelemetryLog {
+  id        String   @id @default(uuid())
+  sessionId String
+  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  timestamp DateTime @default(now())
+  logType   String
+  message   String   @db.Text
+
+  @@index([sessionId])
+  @@index([timestamp])
+}

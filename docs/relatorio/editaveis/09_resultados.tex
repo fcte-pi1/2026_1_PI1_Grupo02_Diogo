@@ -2,16 +2,1311 @@
 
 \section{Características Gerais}
 
+Este capítulo tem como objetivo apresentar a metodologia de testes de verificação e validação do sistema Ratobô, garantindo que o protótipo atenda aos requisitos funcionais e não funcionais estabelecidos no Termo de Abertura do Projeto. Essa fase de validação é um instrumento essencial para comprovar a eficácia da integração multidisciplinar entre as áreas de estrutura, hardware, energia e software.
+
+Para assegurar o rigor científico, a rastreabilidade e a plena repetibilidade dos experimentos, os ensaios realizados em cada subsistema adotarão uma documentação técnica padronizada. Cada bateria de testes apresentada nas seções subsequentes detalhará obrigatoriamente os seguintes parâmetros:
+
+\begin{itemize}
+    \item \textbf{Hipóteses levantadas:} Definição clara das premissas que o teste pretende provar ou validar. Como exemplos práticos no escopo do projeto, têm-se a hipótese de que o algoritmo de Busca em Profundidade (DFS) é capaz de mapear e solucionar um labirinto $4 \times 4$ de forma autônoma, ou a premissa de que o conversor LM2596 conseguirá rebaixar e fornecer uma tensão perfeitamente estável de 5V para o microcontrolador ESP32 e os sensores, mesmo sob o pico de demanda de corrente dos motores.
+    
+    \item \textbf{Condições de contorno:} Estabelecimento criterioso do ambiente e das restrições impostas durante a execução de cada ensaio. Isso engloba o mapeamento de variáveis físicas, lógicas e operacionais, tais como o estado inicial de carga da bateria de íons de Lítio, a garantia de pista limpa no labirinto construído em MDF com chão preto e paredes brancas, e a estabilidade da rede Wi-Fi local para sustentar as conexões MQTT.
+    
+    \item \textbf{Resultados esperados:} Critérios de sucesso pré-determinados, sejam eles quantitativos ou qualitativos, que atestam o comportamento ideal do sistema sob as condições testadas. Espera-se, por exemplo, que a malha de controle da locomoção diferencial realize curvas exatas de 90 graus, e que o \textit{dashboard} de telemetria seja capaz de plotar na tela as métricas instantâneas de velocidade, consumo e posição no mapa dinâmico de forma reativa e sem latência perceptível.
+    
+    \item \textbf{Materiais e métodos:} Descrição minuciosa dos instrumentos empregados e do roteiro passo a passo adotado. Envolve listar as ferramentas físicas e digitais --- como o uso do simulador MMS (Mackorone Micromouse Simulator) ou Wokwi para isolar e validar a lógica de código, o uso de multímetros para atestar parâmetros elétricos e a infraestrutura física de apoio --- bem como o sequenciamento exato para a execução de cada rotina de verificação.
+    
+    \item \textbf{Precisão e acurácia das medidas obtidas:} Análise crítica sobre a confiabilidade e tolerância dos dados coletados em relação às folhas de dados (\textit{datasheets}) dos componentes. Nesta etapa, reporta-se o comportamento das medidas vitais, como a resolução dos sensores ultrassônicos HC-SR04 em detectar paredes a curtas distâncias, a margem de erro na medição de corrente provida pelo módulo INA219, e a sensibilidade dos \textit{encoders} magnéticos acoplados aos motores DC N20.
+\end{itemize}
+
+Ao balizar o processo de validação por esta padronização metodológica, as próximas seções apresentarão os roteiros práticos das frentes de validação do projeto, dividindo-se entre as averiguações de Estrutura (7.2), Hardware (7.3), Consumo Energético (7.4), Software (7.5) e Integração Sistêmica (7.6), traçando um panorama completo acerca da viabilidade técnica do produto.
+
 \section{Testes da estrutura}
 
+%\textcolor{red}{Apresentar com detalhes os testes feitos para conferir se os objetivos da estrutura foram atendidos, incluindo:}
+
+%\begin{itemize}
+ %   \item \textcolor{red}{Imagem com todas as peças separadas da estrutura (carcaça) do veículo;}
+  %  \item \textcolor{red}{Imagem que apresente a estrutura já montada (sem necessidade de partes internas, como eletrônica ou motores);}
+   % \item \textcolor{red}{Ilustração contemplando o carro montado virtualmente em alguma ferramenta de CAD, no intuito de verificar se as peças foram construídas e montadas em conformidade com o projeto.}
+%\end{itemize}
+
+
+A estrutura do projeto foi avaliada por meio de testes visuais e de montagem, com o objetivo de verificar a conformidade entre o projeto desenvolvido e o protótipo físico construído.
+
+Inicialmente, todas as peças do carrinho produzidas por impressão 3D foram inspecionadas individualmente para verificar a qualidade da fabricação, a ausência de deformações e a compatibilidade dimensional entre os componentes. Essa etapa permitiu identificar possíveis falhas de impressão e garantir o correto encaixe das peças durante a montagem.
+
+Após a inspeção individual, realizou-se a montagem completa da estrutura mecânica do carrinho, sem considerar inicialmente os componentes eletrônicos. Nessa fase, foi verificado o alinhamento das rodas, a fixação dos motores, a estabilidade da carcaça e a resistência estrutural do conjunto. Os resultados demonstraram que as peças impressas apresentaram encaixe adequado e sustentação suficiente para suportar os componentes do sistema.
+
+Também foi realizada a comparação entre o modelo virtual desenvolvido em software CAD e a estrutura física construída. Essa verificação teve como objetivo confirmar que as dimensões, os encaixes e a geometria das peças produzidas correspondiam ao projeto original. A análise mostrou que o protótipo final manteve conformidade com o modelo digital, atendendo aos requisitos definidos para o desenvolvimento do micromouse.
+
+Além dos testes do carrinho, foi realizada a montagem do labirinto em MDF utilizado para validação do sistema. Foram verificadas as dimensões dos corredores, o alinhamento das paredes e a estabilidade da estrutura. O labirinto apresentou medidas compatíveis com o projeto, permitindo a circulação adequada do veículo e a realização dos testes de navegação.
+
+
+A estrutura do projeto foi avaliada por meio de testes visuais e de montagem, com o objetivo de verificar a conformidade entre o projeto desenvolvido e o protótipo físico construído.
+
+Inicialmente, todas as peças do carrinho produzidas por impressão 3D foram inspecionadas individualmente para verificar a qualidade da fabricação, a ausência de deformações e a compatibilidade dimensional entre os componentes. Essa etapa permitiu identificar possíveis falhas de impressão e garantir o correto encaixe das peças durante a montagem.
+
+\begin{figure}[H]
+    \centering
+    \caption{Peças impressas em 3D e componentes mecânicos do veículo.}
+    \label{fig:pecas-separadas}
+    
+    % Primeira linha com 3 imagens
+    \begin{minipage}{0.30\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figuras/pecas_carrinho/fixador_motor.png}
+        \subcaption{Fixador do motor}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.30\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figuras/pecas_carrinho/placa_de_apoio.png}
+        \subcaption{Placa de apoio}
+    \end{minipage}
+    \hfill
+    \begin{minipage}{0.30\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figuras/pecas_carrinho/placa_perfurada.png}
+        \subcaption{Placa perfurada}
+    \end{minipage}
+
+    \vspace{0.5cm} % Espaçamento entre linhas
+
+    % Segunda linha com 2 imagens centralizadas
+    \begin{minipage}{0.30\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figuras/pecas_carrinho/roda_boba.png}
+        \subcaption{Roda boba}
+    \end{minipage}
+    \hspace{0.5cm}
+    \begin{minipage}{0.30\textwidth}
+        \centering
+        \includegraphics[width=\linewidth]{figuras/pecas_carrinho/rodan20.png}
+        \subcaption{Roda do motor N20}
+    \end{minipage}
+    
+    \legend{Fonte: Autoria própria.}
+\end{figure}
+Após a inspeção individual, realizou-se a montagem completa da estrutura mecânica do carrinho, sem considerar inicialmente os componentes eletrônicos. Nessa fase, foi verificado o alinhamento das rodas, a fixação dos motores, a estabilidade da carcaça e a resistência estrutural do conjunto. Os resultados demonstraram que as peças impressas apresentaram encaixe adequado e sustentação suficiente para suportar os componentes do sistema.
+
+A Figura \ref{fig:estrutura-montada} apresenta a estrutura do veículo já montada, permitindo verificar os encaixes e a estabilidade da carcaça.
+
+\begin{figure}[H]
+    \centering
+    \caption{Estrutura do veículo montada}
+    \includegraphics[width=0.8\textwidth]{figuras/figuras/estrutura-montada.jpeg}
+    \label{fig:estrutura-montada}
+    \legend{Fonte: Autoria própria.}
+\end{figure}
+
+A Figura a seguir apresenta o modelo virtual desenvolvido em software CAD, utilizado para verificar a conformidade dimensional e a montagem das peças em relação ao projeto original.
+
+\begin{figure}[H]
+    \centering
+    \caption{Modelo virtual do veículo desenvolvido em CAD}
+    \includegraphics[width=0.8\textwidth]{figuras/figuras/cad-veiculo.pdf}
+    \legend{Fonte: Autoria própria.}
+\end{figure}
+
+A Figura a seguir apresenta o labirinto em MDF utilizado para validação do sistema, com o alinhamento das paredes. O labirinto foi construído com espessura de 1,2 cm e com uma quadrado de 2x2 cm no canto do labirinto.
+\begin{figure}[H]
+    \centering
+    \caption{Labirinto em MDF}
+    \includegraphics[width=0.8\textwidth]{figuras/figuras/labirinto-mdf.png}
+    \legend{Fonte: Autoria própria.}
+\end{figure}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 \section{Testes de \textit{hardware}}
+
+Com o objetivo de garantir o funcionamento adequado do rato robótico, foram realizados testes com os componentes eletrônicos do projeto. O propósito foi verificar o funcionamento correto de cada componente individualmente, bem como avaliar a compatibilidade entre os módulos quando integrados. O ambiente de desenvolvimento utilizado foi o PlatformIO, tendo o ESP32 DevKit V1 como placa principal.
+
+\subsubsection{ESP32}
+
+A validação da placa ESP32 foi realizada por meio de testes de leitura e escrita digital, comunicação serial e acionamento de periféricos, assegurando o funcionamento correto da placa antes das etapas mais complexas do desenvolvimento. A conectividade Wi-Fi também foi verificada, confirmando a capacidade de conexão à rede utilizada no projeto.
+
+\subsubsection{Sensores Ultrassônicos}
+
+Os sensores ultrassônicos foram avaliados individualmente e, em seguida, em operação conjunta. Um programa foi desenvolvido para realizar a leitura contínua das distâncias medidas e exibir os valores no monitor serial, sendo os resultados comparados com distâncias aferidas manualmente. Os valores obtidos apresentaram boa correspondência com os esperados, e a operação simultânea dos três sensores não evidenciou interferências entre eles.
+
+As leituras foram realizadas periodicamente pelo ESP32, em frequência adequada para a navegação do robô em tempo real, possibilitando a atualização contínua das informações de distância. Os valores obtidos pelos sensores foram processados pelo ESP32 para conversão e interpretação das distâncias medidas, permitindo sua utilização pelas rotinas de navegação e tomada de decisão do sistema.
+
+\subsubsection{Ponte H e Motores DC}
+
+Foram realizados testes de controle dos motores, abrangendo a variação de velocidade por meio de sinais PWM e a inversão do sentido de rotação. Os motores responderam adequadamente aos comandos, operando nas duas direções e em diferentes velocidades sem apresentar comportamento irregular. O torque verificado mostrou-se suficiente para a movimentação do robô.
+
+A calibração da distância percorrida foi postergada para uma etapa posterior do projeto, uma vez que a estrutura mecânica do robô ainda não se encontrava disponível para montagem completa nesta fase.
+
+\subsubsection{Encoders}
+
+Os encoders foram conectados e geraram sinais compatíveis com sua finalidade nos testes iniciais. Entretanto, pela indisponibilidade da estrutura mecânica final, não foi possível validar a precisão das medições de velocidade e deslocamento. Essa validação será realizada em etapa posterior do projeto.
+
+\subsubsection{Regulador de Tensão}
+
+O regulador de tensão foi montado e as tensões de saída foram aferidas com multímetro. Os valores obtidos ficaram dentro do esperado e se mantiveram estáveis durante os testes, sem oscilações capazes de comprometer os demais componentes do sistema.
+
+\subsubsection{Sensor INA219}
+
+O sensor INA219 foi utilizado para o monitoramento de tensão e corrente do sistema. As leituras obtidas foram comparadas com as de um multímetro digital, apresentando boa concordância com os valores de referência, o que confirma a adequação do sensor para essa finalidade.
+
+\subsubsection{Bateria}
+
+A bateria foi avaliada por meio de medição de tensão, apresentando valores compatíveis com a especificação nominal de 12~V. Durante os testes de hardware realizados ao longo do desenvolvimento do protótipo, a bateria manteve a alimentação dos componentes de forma satisfatória, demonstrando capacidade adequada para a aplicação proposta.
+
+\subsubsection{LEDs Indicadores}
+
+Os LEDs foram submetidos a testes de continuidade e funcionamento por meio de multímetro, sendo confirmado o correto acionamento de todos os componentes avaliados.
+
+\subsubsection{Comunicação Wi-Fi}
+
+Foi realizado um teste de transmissão de dados entre o ESP32 e a aplicação web desenvolvida pelo grupo para monitoramento e mapeamento do labirinto. A comunicação manteve-se estável durante o teste, validando o Wi-Fi como meio de transmissão de dados do projeto.
+
+\subsubsection{Integração dos Componentes}
+
+Por fim, foram realizados testes de integração envolvendo o ESP32, os sensores ultrassônicos, os motores, a ponte H, o regulador de tensão, o sensor INA219 e o sistema de comunicação Wi-Fi. Os componentes operaram de forma conjunta sem conflitos aparentes entre os módulos, confirmando a viabilidade da arquitetura eletrônica proposta.
+
+\paragraph{}
+
+Os resultados obtidos demonstraram que os componentes eletrônicos empregados no projeto apresentaram funcionamento compatível com os requisitos estabelecidos para esta etapa de desenvolvimento. Os testes realizados permitiram validar a operação dos sensores, atuadores, sistema de alimentação, comunicação sem fio e unidade de processamento. As validações pendentes, especialmente relacionadas à calibração dos encoders e à movimentação do robô em sua estrutura definitiva, serão realizadas nas próximas etapas do projeto.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 \section{Testes de consumo energético}
 
+Com o objetivo de validar a capacidade energética do sistema, foi realizado um teste inicial utilizando uma bateria de lítio de 12 V na alimentação do micromouse. Inicialmente, a tensão da bateria foi verificada por meio de um voltímetro digital, constatando-se que o dispositivo encontrava-se completamente carregado e apto para os testes experimentais.
+
+Nesta etapa do projeto, os testes foram limitados à avaliação dos componentes eletrônicos já integrados ao protótipo e à execução de algoritmos de validação em ambiente embarcado. Como o hardware ainda não se encontra totalmente montado e integrado, não foi possível realizar medições conclusivas relacionadas à autonomia total do sistema, capacidade efetiva da bateria sob carga real e consumo energético durante uma corrida completa no labirinto.
+
+Entretanto, durante a execução dos testes preliminares, foi realizada a observação da variação da tensão da bateria ao longo de um intervalo de operação contínua do protótipo. Os resultados obtidos indicaram uma redução desprezível da tensão elétrica durante o período analisado, evidenciando um baixo consumo energético nas condições de teste.
+
+Adicionalmente, considerando as especificações nominais da bateria utilizada e o consumo estimado dos principais subsistemas do robô — incluindo motores, sensores ultrassônicos, módulo ESP32, sistema de telemetria e circuitos auxiliares — foi possível calcular de forma estimada a autonomia esperada, tendo como resultado que a capacidade energética disponível é significativamente superior ao tempo de execução previsto para as provas.
+
+Dessa forma, embora os ensaios definitivos de autonomia e capacidade devam ser conduzidos após a conclusão da integração completa do hardware, os testes iniciais e as estimativas realizadas permitem concluir que a bateria selecionada apresenta capacidade suficiente para atender aos requisitos operacionais do projeto durante as atividades previstas.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 \section{Testes de \textit{software}}
+
+Este capítulo documenta os testes de verificação e validação do software do projeto Ratobô, considerando a implementação de aproximadamente 50\% do backlog funcional definido no primeiro ponto de controle (RF-01 a RF-04). Os testes automatizados cobrem as camadas de \textit{backend} (Node.js/Express), \textit{frontend} (React/Vite) e \textit{firmware} (ESP32/PlatformIO), complementados pelo roteiro de testes funcionais documentado no Projeto Conceitual.
+
+\subsection{Histórias de usuário implementadas}
+O backlog do produto está documentado como requisitos funcionais (RF). Para fins de rastreabilidade, as histórias abaixo derivam desses requisitos e representam o conjunto implementado até o segundo ponto de controle.
+
+\begin{table}[H]
+\centering
+\caption{Histórias de usuário e status de implementação}
+\label{tab:historias-usuario}
+\begin{tabular}{|c|p{7cm}|c|c|}
+\hline
+\textbf{ID} & \textbf{História de usuário} & \textbf{RF} & \textbf{Status} \\
+\hline
+HU-01 & Como operador, quero receber telemetria em tempo real no dashboard & RF-02 & Implementada \\
+\hline
+HU-02 & Como operador, quero visualizar consumo de bateria (tensão/corrente) & RF-02 & Implementada \\
+\hline
+HU-03 & Como operador, quero ver a posição do robô no labirinto & RF-02 & Parcial \\
+\hline
+HU-04 & Como operador, quero ver sensores ultrassônicos e RPM dos motores & RF-02 & Parcial \\
+\hline
+HU-05 & Como operador, quero acompanhar o tempo da corrida em tempo real & RF-02 & Parcial \\
+\hline
+HU-06 & Como operador, quero saber se o desafio foi cumprido (S/N) & RF-02/03 & Parcial \\
+\hline
+HU-07 & Como sistema, quero armazenar os dados finais da execução & RF-03 & Implementada \\
+\hline
+HU-08 & Como professor(a), quero consultar o histórico de execuções & RF-04 & Implementada \\
+\hline
+HU-09 & Como professor(a), quero ver detalhes e replay de uma sessão & RF-04 & Implementada \\
+\hline
+HU-10 & Como sistema, quero que o micromouse resolva labirintos de forma autônoma & RF-01 & Não implementada \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{Total:} 10 histórias mapeadas --- 4 implementadas, 5 parciais e 1 não implementada, compatível com a estimativa de $\sim$50\% do backlog funcional de \textit{software}.
+
+\subsection{Associação entre histórias, protótipos e interface gráfica}
+O protótipo de referência está disponível no Figma (\href{https://www.figma.com/design/XJGha6pemQS4kD2XydKeLr/Robozin?m=auto&t=tc0JBodUJ4Lv3OWG-6}{\textit{Dashboard de Telemetria -- Grupo 2}}). A Tabela~\ref{tab:hu-prototipo} relaciona cada história ao elemento visual do protótipo e à tela implementada na aplicação web.
+
+\begin{table}[H]
+\centering
+\caption{Associação entre histórias de usuário, protótipo Figma e interface implementada}
+\label{tab:hu-prototipo}
+\small
+\begin{tabular}{|c|p{3.2cm}|p{2.8cm}|p{4.8cm}|}
+\hline
+\textbf{HU} & \textbf{Protótipo (Figma)} & \textbf{Tela} & \textbf{Funcionalidade acessível} \\
+\hline
+HU-01 & Mission Control & Dashboard & Telemetria atualizada via WebSocket \\
+\hline
+HU-02 & Widget de bateria & \texttt{BatteryWidget} & Tensão, porcentagem e alerta crítico \\
+\hline
+HU-03 & Grid 16$\times$16 & \texttt{VisualizeDiv} & Posição atual; trajeto completo limitado \\
+\hline
+HU-04 & Sensores e motores & \texttt{SensorGrid} / \texttt{EngineWidget} & Estrutura visual pronta; dados reais pendentes \\
+\hline
+HU-05 & Tempo da missão & \texttt{RaceTimer} & Cronômetro ativo durante a corrida \\
+\hline
+HU-06 & Status da missão & Dashboard (previsto) & Indicador S/N ainda não exposto na UI \\
+\hline
+HU-08 & Histórico de sessões & \texttt{HistoryScreen} & Listagem de sessões anteriores \\
+\hline
+HU-09 & Replay & \texttt{SessionReplayGrid} & Detalhe e replay passo a passo \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Testes Automatizados}
+Os testes automatizados de \textit{software} foram organizados em três níveis: unitário, integração e sistema (E2E). As ferramentas adotadas foram Jest e Supertest no \textit{backend}, Vitest e React Testing Library no \textit{frontend}, PlatformIO/Unity no \textit{firmware} e Playwright nos testes funcionais de interface.
+
+\subsubsection{Testes unitários e de integração --- \textit{Backend}}
+O \textit{backend} possui \textbf{15 suítes} e \textbf{95 testes} automatizados, cobrindo configuração, DTOs, \textit{middlewares}, \textit{controllers}, \textit{repositories}, \textit{services}, MQTT e WebSocket. Há ainda \textbf{1 suíte de integração} com Supertest, validando a pilha HTTP completa (\texttt{/health}, \texttt{/api/telemetry}, \texttt{/api/sessions}).
+
+\begin{table}[H]
+\centering
+\caption{Suítes de teste unitário e integração do \textit{backend} (Jest + Supertest)}
+\label{tab:testes-backend}
+\small
+\begin{tabular}{|l|p{8.5cm}|}
+\hline
+\textbf{Camada} & \textbf{Arquivos de teste} \\
+\hline
+Config & \texttt{env.test.ts} \\
+\hline
+DTOs & \texttt{session.dto.test.ts}, \texttt{telemetry.dto.test.ts} \\
+\hline
+Middleware & \texttt{telemetry-validation.middleware.test.ts} \\
+\hline
+Controllers & \texttt{session.controller.test.ts}, \texttt{telemetry.controller.test.ts} \\
+\hline
+Repositories & \texttt{maze}, \texttt{session}, \texttt{session-step}, \texttt{telemetry} \\
+\hline
+Services & \texttt{session}, \texttt{telemetry}, \texttt{mqtt} \\
+\hline
+WebSocket & \texttt{socket.test.ts} \\
+\hline
+Integração & \texttt{api.routes.test.ts} \\
+\hline
+\end{tabular}
+\end{table}
+
+A cobertura de código-fonte do \textit{backend}, obtida com \texttt{npm run test:coverage}, supera a meta mínima de 70\% configurada no Jest:
+
+\begin{table}[H]
+\centering
+\caption{Cobertura de código do \textit{backend}}
+\label{tab:cobertura-backend}
+\begin{tabular}{|l|r|r|}
+\hline
+\textbf{Métrica} & \textbf{Resultado} & \textbf{Meta} \\
+\hline
+\textit{Statements} & 94,67\% & $\geq$ 70\% \\
+\hline
+\textit{Branches}   & 80,00\% & $\geq$ 70\% \\
+\hline
+\textit{Functions}  & 92,95\% & $\geq$ 70\% \\
+\hline
+\textit{Lines}      & 93,87\% & $\geq$ 70\% \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Testes unitários --- \textit{Frontend}}
+O \textit{frontend} possui \textbf{18 suítes} e \textbf{61 testes} automatizados com Vitest e React Testing Library, cobrindo API, \textit{hooks}, componentes de telemetria, painel de conectividade (\textit{ConnectView}), interface de navegação (\textit{Navbar} e \textit{Sidebar}), reprodutor de histórico (\textit{HistoryScreen}) e fluxos de estado reativo.
+
+\begin{table}[H]
+\centering
+\caption{Suítes de teste unitário do \textit{frontend} (Vitest + RTL)}
+\label{tab:testes-frontend}
+\small
+\begin{tabular}{|l|p{8.5cm}|}
+\hline
+\textbf{Camada} & \textbf{Arquivos de teste} \\
+\hline
+API & \texttt{client.test.ts}, \texttt{sessions.test.ts} \\
+\hline
+Hooks & \texttt{useWebSocket.test.ts} \\
+\hline
+Componentes & \texttt{BatteryWidget}, \texttt{EngineTelemetryWidget}, \texttt{RaceTimer}, \texttt{SensorGrid}, \texttt{TerminalWidget}, \texttt{VisualizeDiv}, \texttt{SessionReplayGrid}, \texttt{ConnectWidgets}, \texttt{Navbar}, \texttt{Sidebar}, \texttt{Footer} \\
+\hline
+Páginas/Telas & \texttt{DashboardScreen.test.tsx}, \texttt{HistoryScreen.test.tsx}, \texttt{ConnectView.test.tsx} \\
+\hline
+Layout & \texttt{App.test.tsx}, \texttt{MainLayout.test.tsx} \\
+\hline
+\end{tabular}
+\end{table}
+
+A cobertura do \textit{frontend} também supera a meta de 70\%, considerando o escopo \texttt{src/**} com exclusão estrita de arquivos de inicialização base (\texttt{main.tsx}), tipos globais e componentes em fase de \textit{stub}:
+
+\begin{table}[H]
+\centering
+\caption{Cobertura de código do \textit{frontend}}
+\label{tab:cobertura-frontend}
+\begin{tabular}{|l|r|r|}
+\hline
+\textbf{Métrica} & \textbf{Resultado} & \textbf{Meta} \\
+\hline
+\textit{Statements} & 96,24\% & $\geq$ 70\% \\
+\hline
+\textit{Branches}   & 91,10\% & $\geq$ 70\% \\
+\hline
+\textit{Functions}  & 95,65\% & $\geq$ 70\% \\
+\hline
+\textit{Lines}      & 96,24\% & $\geq$ 70\% \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Testes unitários --- \textit{Firmware}}
+No escopo de desenvolvimento do \textit{firmware}, utiliza-se o ecossistema PlatformIO integrado ao \textit{framework} Unity sob o ambiente computacional \texttt{native}. Atualmente, encontra-se ativo \textbf{1 caso de teste} funcional, configurado como um elemento de validação (*placeholder*) para o algoritmo de cálculo de decaimento da célula de bateria. 
+
+Os testes unitários associados ao controle dinâmico dos motores e ao algoritmo cartesiano de navegação autônoma (mapeados de CT01 a CT08 no Projeto Conceitual) encontram-se temporariamente em estado pendente. Essa condição justifica-se pelo estágio atual do ciclo de vida do projeto, focado na codificação das diretrizes definitivas do sistema embarcado. Contudo, em paralelo ao desenvolvimento do código de produção, foram conduzidos ensaios práticos e testes de bancada isolados nos componentes periféricos do robô (como calibração de sensores e modulação por largura de pulso dos motores), garantindo a integridade do \textit{hardware} para a futura acoplagem e homologação das suítes de testes automatizadas.
+
+\subsubsection{Testes de sistema (E2E) --- Playwright}
+Os casos funcionais CT01--CT07 do roteiro de testes do dashboard (Capítulo 6) orientam a validação em nível de sistema. Foi implementada uma suíte E2E com \textbf{Playwright}, mapeada diretamente a esses casos de teste.
+
+A arquitetura dos testes E2E utiliza um servidor \textit{mock} de WebSocket (\texttt{e2e/mock-ws-server.mjs}) que injeta eventos \texttt{telemetry:step} via \texttt{POST /emit}, eliminando a dependência de MQTT, firmware e banco de dados durante a execução automatizada.
+
+\begin{table}[H]
+\centering
+\caption{Mapeamento entre casos de teste funcionais (CT) e suíte Playwright}
+\label{tab:mapeamento-ct-e2e}
+\begin{tabular}{|c|p{5cm}|c|p{3.5cm}|}
+\hline
+\textbf{CT} & \textbf{Caso de teste} & \textbf{Status E2E} & \textbf{Observação} \\
+\hline
+CT01 & Exibir tipo do labirinto & \texttt{fixme} & Campo ainda não existe na UI \\
+\hline
+CT02 & Exibir trajeto do micromouse & \textbf{Aprovado} & Coordenadas atualizadas em tempo real \\
+\hline
+CT03 & Exibir consumo de bateria & \textbf{Aprovado} & Tensão e porcentagem validadas \\
+\hline
+CT04 & Exibir velocidade média & \texttt{fixme} & Velocidade ainda fixa em 0 no dashboard \\
+\hline
+CT05 & Exibir tempo de conclusão & \textbf{Aprovado} & Cronômetro ativo durante execução \\
+\hline
+CT06 & Exibir desafio cumprido (S/N) & \texttt{fixme} & Indicador ainda não exposto na UI \\
+\hline
+CT07 & Atualização em tempo real & \textbf{Aprovado} & Widgets atualizam sem recarregar a página \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{Resultado da suíte E2E:} 4 testes aprovados, 3 marcados como \texttt{fixme} (funcionalidades pendentes na interface). Comando de execução: \texttt{npm run test:e2e} em \texttt{src/frontend/}.
+
+\subsubsection{Síntese dos testes de \textit{software}}
+
+\begin{table}[H]
+\centering
+\caption{Resumo consolidado das suítes de teste automatizado}
+\label{tab:resumo-testes}
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Camada} & \textbf{Ferramenta} & \textbf{Testes} & \textbf{Cobertura} \\
+\hline
+Backend (unitário + integração) & Jest + Supertest & 95 & 94,67\% \\
+\hline
+Frontend (unitário) & Vitest + RTL & 61 & 96,24\% \\
+\hline
+Frontend (E2E / sistema) & Playwright & 7 (4 ativos) & --- \\
+\hline
+Firmware (unitário) & PlatformIO + Unity & 1 & --- \\
+\hline
+\end{tabular}
+\end{table}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 \section{Testes de integração}
 
+Esta seção apresenta os resultados dos testes realizados com o objetivo de verificar o
+funcionamento conjunto dos subsistemas do Ratobô, avaliando se a integração entre as
+frentes de estrutura, hardware, energia e software atende aos requisitos estabelecidos
+para o projeto.
+
+\subsection{Integração dos componentes eletrônicos}
+
+A integração dos componentes eletrônicos foi verificada por meio de testes que envolveram
+a operação simultânea da placa ESP32 DevKit~V1, dos sensores ultrassônicos HC-SR04, dos
+motores DC N20 com ponte H, do regulador de tensão LM2596, do sensor de corrente INA219 e
+do sistema de comunicação Wi-Fi. O ambiente de desenvolvimento utilizado foi o PlatformIO.
+
+Durante os testes, os módulos operaram de forma conjunta sem que fossem identificados
+conflitos aparentes entre os componentes. As leituras periódicas dos três sensores
+ultrassônicos não evidenciaram interferência mútua entre os transdutores quando acionados
+simultaneamente. O regulador de tensão manteve saída estável durante a operação dos demais
+componentes, não sendo observadas oscilações capazes de comprometer o funcionamento do
+sistema. O monitoramento de tensão e corrente pelo INA219 apresentou concordância com os
+valores de referência aferidos por multímetro digital durante a operação integrada.
+
+Os motores responderam aos comandos gerados pelo ESP32 via sinais PWM, operando nas duas
+direções de rotação e em diferentes velocidades sem comportamento irregular, com torque
+verificado como suficiente para a movimentação do robô. A operação conjunta de motores e
+sensores não introduziu degradação perceptível nas leituras de distância.
+
+\subsection{Integração da comunicação sem fio}
+
+Foi realizado um teste de transmissão de dados entre o ESP32 e a aplicação web desenvolvida
+para monitoramento e mapeamento do labirinto. Durante o ensaio, a comunicação Wi-Fi
+manteve-se estável, validando esse meio de transmissão como viável para o envio de dados
+de telemetria do robô à interface de monitoramento.
+
+\subsection{Integração da estrutura mecânica e dos componentes eletrônicos}
+
+A estrutura mecânica do Ratobô, produzida por impressão 3D, foi inspecionada individualmente
+quanto à qualidade de fabricação, ausência de deformações e compatibilidade dimensional entre
+as peças. A montagem completa da estrutura mecânica --- verificando o alinhamento das rodas,
+a fixação dos motores, a estabilidade da carcaça e a resistência estrutural --- demonstrou
+encaixe adequado e sustentação suficiente para suportar os componentes eletrônicos do sistema.
+A conformidade dimensional com o modelo virtual desenvolvido em CAD também foi confirmada por
+comparação visual e dimensional.
+
+O labirinto construído em MDF, utilizado para as etapas de validação de navegação, apresentou
+dimensões de corredores e alinhamento de paredes compatíveis com o projeto, permitindo a
+circulação adequada do veículo.
+
+\subsection{Validações pendentes}
+
+Em razão da indisponibilidade da estrutura mecânica definitiva durante a fase de testes de
+hardware, duas validações de integração não puderam ser concluídas nesta etapa do projeto e
+serão realizadas nas próximas iterações:
+
+\begin{itemize}
+    \item \textbf{Calibração dos encoders magnéticos:} a precisão das medições de velocidade e
+    deslocamento dos encoders acoplados aos motores DC N20 não pôde ser validada sem a
+    estrutura montada. Essa calibração é necessária para que a malha de controle da
+    locomoção diferencial execute curvas de 90 graus com a exatidão requerida pela
+    navegação autônoma.
+
+    \item \textbf{Calibração da distância percorrida e validação de navegação:} a integração
+    entre o algoritmo de Busca em Profundidade (DFS), os sensores ultrassônicos e os
+    atuadores, no contexto da navegação autônoma em labirinto $4 \times 4$, será validada em
+    etapa posterior, quando a estrutura completa estiver disponível para montagem e
+    os encoders estiverem devidamente calibrados.
+\end{itemize}
+
+\paragraph{}
+
+Os resultados obtidos até esta etapa demonstram que a arquitetura eletrônica proposta para
+o Ratobô é viável, com os subsistemas operando em conjunto sem conflitos identificados. As
+validações pendentes, concentradas na calibração dos encoders e na navegação autônoma em
+ambiente físico, constituem os principais itens em aberto para a próxima fase de
+desenvolvimento do projeto.

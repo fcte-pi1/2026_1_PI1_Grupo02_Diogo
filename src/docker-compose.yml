@@ -1,13 +1,13 @@
 services:
   backend:
-    build: ./backend # Ajustado: removido o 'software/'
+    build: ./backend
     volumes:
       - ./backend:/app
       - /app/node_modules
     ports:
       - "3000:3000"
-    # Se você ainda não criou o .env no backend, o Docker vai avisar
-    env_file: ./backend/.env 
+    env_file: ./backend/.env.docker
+    command: sh -c "npm install && npx prisma generate && npx prisma migrate deploy && npm run dev"
     depends_on:
       - db
       - broker
@@ -19,7 +19,8 @@ services:
       - /app/node_modules
     ports:
       - "5173:5173"
-    env_file: ./frontend/.env
+    env_file: ./frontend/.env.docker
+    command: sh -c "npm install --no-audit --no-fund --loglevel=error && npm run dev -- --host"
 
   broker:
     image: eclipse-mosquitto:latest

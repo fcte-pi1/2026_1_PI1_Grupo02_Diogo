@@ -44,22 +44,19 @@ Qual área do projeto essa seção envolve?
 
 Descreva o que deve ser entregue nesta parte do relatório.
 
-Exemplo:
-
-> Descrever a estrutura física do robô, incluindo dimensões, materiais e decisões de projeto.
+> Exemplo: Descrever a estrutura física do robô, incluindo dimensões, materiais e decisões de projeto.
 
 ---
 
 ## 📚 Base no template oficial
 
-Descreva o que o template exige para essa seção.
+Descreva o que o template exige para essa seção (cole a instrução do relatório no bloco de código abaixo).
 
-Exemplo (4.2 Estrutura):
+```
 
-* Desenho em CAD
-* Dimensões
-* Materiais utilizados
-* Explicação das decisões de projeto
+
+
+```
 
 ---
 
@@ -90,9 +87,7 @@ Liste tudo que precisa ser gerado:
 
 Essa seção depende de algo?
 
-Exemplo:
-
-* Desenvolvimento do hardware
+* Exemplo: Desenvolvimento do hardware
 * Definição da arquitetura
 * Protótipo pronto
 
@@ -105,19 +100,6 @@ Exemplo:
 * [ ] Sem ambiguidades
 * [ ] Revisado pelo grupo
 * [ ] Pronto para entrega no LaTeX
-
----
-
-## 👤 Responsável
-
-@nome-do-integrante
-
----
-
-## 📅 Prazo
-
-Data limite:
-`DD/MM`
 
 ---
 

@@ -1,0 +1,28 @@
+name: CI Firmware
+
+on:
+  pull_request:
+    branches: ["develop", "main"]
+    paths:
+      - "src/firmware/**" 
+
+jobs:
+  firmware:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/firmware 
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install PlatformIO
+        run: pip install -U platformio
+
+      - name: Run Unit Tests
+        run: pio test -e native
