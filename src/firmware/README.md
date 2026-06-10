@@ -22,20 +22,35 @@ Este repositório contém o firmware de telemetria e controle do robô MicroMous
 Abra o arquivo na raiz do projeto do firmware e atente-se às seguintes diretivas:
 
 ```ini
-[env:esp32doit-devkit-v1]
+; ---------------------------------------------------------------------
+; Ambiente 1: Desenvolvimento Físico na Placa DevKit V1 (Bancada Local)
+; A Placa configurada atualmente foi testada e validada, por favor
+; NÃO altere a configuração do ambiente 'esp32dev' nem a velocidade do monitor.
+; ---------------------------------------------------------------------
+
+[env:esp32dev]
 platform = espressif32
-board = esp32doit-devkit-v1
+board = esp32dev
 framework = arduino
 monitor_speed = 115200
-upload_speed = 115200 
-
-# 🔌 PERMISSÃO E MAPEAMENTO DE PORTA (COMENTE SE PREFERIR DETECÇÃO AUTOMÁTICA)
-# Se o PlatformIO não achar sua placa sozinho, descomente as linhas abaixo e mude o número da porta.
-# upload_port = /dev/ttyUSB0
-# monitor_port = /dev/ttyUSB0
 
 lib_deps =
     knolleary/PubSubClient@^2.8
+    bblanchon/ArduinoJson@^6.21.3
+    adafruit/Adafruit INA219@^1.2.3
+
+; 🔌 PORTAS USB LOCAIS: Comentadas para usar a varredura automática do PlatformIO.
+; Se precisar travar em uma porta específica do Linux, mude o número e tire o ';'
+; upload_port = /dev/ttyUSB1
+; monitor_port = /dev/ttyUSB1
+
+; ---------------------------------------------------------------------
+; Ambiente 2: Configuração EXCLUSIVA para Testes Automatizados na CI (GitHub Actions)
+; Comente para passar o código para a ESP32 real, descomente para rodar testes unitários locais.
+; ---------------------------------------------------------------------
+[env:native]
+platform = native
+test_framework = unity
 ```
 
 ### 2. Configurações de Firmware (`src/main.cpp`)
