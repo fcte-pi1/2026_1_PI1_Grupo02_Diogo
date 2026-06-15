@@ -1,18 +1,19 @@
 #include "./motor.h"
 
-// -- Pinos e encoders (registrados em inicializaMotors) -----------------------
+
+
+// -- Pinos e encoders (registrados em inicializaMotores) ----------------------
 static uint8_t _in1L, _in2L;
 static uint8_t _in1R, _in2R;
 static volatile long *_encEsq;
 static volatile long *_encDir;
 
 // -------------------------------------------------------------------------------
-//  Inicializa motors
+//  Inicializa motores
 // -------------------------------------------------------------------------------
-
-void inicializaMotors(uint8_t in1L, uint8_t in2L,
-                      uint8_t in1R, uint8_t in2R,
-                      volatile long *encEsq, volatile long *encDir)
+void inicializaMotores(uint8_t in1L, uint8_t in2L,
+                       uint8_t in1R, uint8_t in2R,
+                       volatile long *encEsq, volatile long *encDir)
 {
     _in1L = in1L;
     _in2L = in2L;
@@ -36,7 +37,6 @@ void inicializaMotors(uint8_t in1L, uint8_t in2L,
 // -------------------------------------------------------------------------------
 // Funções de motor (auxiliar)
 // -------------------------------------------------------------------------------
-
 static void _stopMotors()
 {
     digitalWrite(_in1L, LOW);
@@ -85,15 +85,7 @@ static void _esperarEncoder(long pulsos)
 
 // -------------------------------------------------------------------------------
 //  ATUALIZAÇÃO DE POSIÇÃO E DIREÇÃO
-//
-//  Sistema de coordenadas:
-//      Norte → y+1 | Sul → y-1 | Leste → x+1 | Oeste → x-1
-//
-//  Ordem horária para o índice de direção:
-//      dirs[0]='N'  dirs[1]='L'  dirs[2]='S'  dirs[3]='O'
-//      Girar direita (+1) | Girar esquerda (+3) | Meia volta (+2)
 // -------------------------------------------------------------------------------
-
 static const char _dirs[] = {'N', 'L', 'S', 'O'};
 
 static int _indiceDirecao(char d)
@@ -131,7 +123,6 @@ static void _atualizaPosicao(Rato *rato)
 // -------------------------------------------------------------------------------
 //  MOVIMENTOS PÚBLICOS
 // -------------------------------------------------------------------------------
-
 void Andar(Rato *rato)
 {
     _fowardMotors();
@@ -162,4 +153,83 @@ void Virar180(Rato *rato)
     _rotateRightMotors();
     _esperarEncoder(PULSOS_GIRO_90 * 2);
     _atualizaDirecao(rato, +2); // N↔S | L↔O
+}
+
+
+
+
+// Configurações PWM da ESP32
+const int FREQUENCIA_PWM = 5000; 
+const int RESOLUCAO_PWM = 8;     
+const int CANAL_ESQ_IN1 = 0; const int CANAL_ESQ_IN2 = 1;
+const int CANAL_DIR_IN1 = 2; const int CANAL_DIR_IN2 = 3;
+
+// local de alteracao com dados do robo fisico
+const int TEMPO_CURVA_90 = 600;  
+const int VELOCIDADE_GIRO = 150; 
+
+int velocidadeEsquerdaAtual = 0;
+int velocidadeDireitaAtual = 0;
+bool motorsRunning = false;
+
+void setupMotores() {
+    // Liga os canais PWM aos pinos que a equipa já registou lá em cima
+    ledcSetup(CANAL_ESQ_IN1, FREQUENCIA_PWM, RESOLUCAO_PWM); ledcAttachPin(_in1L, CANAL_ESQ_IN1);
+    ledcSetup(CANAL_ESQ_IN2, FREQUENCIA_PWM, RESOLUCAO_PWM); ledcAttachPin(_in2L, CANAL_ESQ_IN2);
+    ledcSetup(CANAL_DIR_IN1, FREQUENCIA_PWM, RESOLUCAO_PWM); ledcAttachPin(_in1R, CANAL_DIR_IN1);
+    ledcSetup(CANAL_DIR_IN2, FREQUENCIA_PWM, RESOLUCAO_PWM); ledcAttachPin(_in2R, CANAL_DIR_IN2);
+    stopMotors();
+}
+
+void acionarMotores(int velEsquerda, int velDireita) {
+    velocidadeEsquerdaAtual = velEsquerda;
+    velocidadeDireitaAtual = velDireita;
+
+    // Lógica do Motor Esquerdo
+    if (velEsquerda > 0) {
+        ledcWrite(CANAL_ESQ_IN1, velEsquerda); ledcWrite(CANAL_ESQ_IN2, 0);           
+    } else if (velEsquerda < 0) {
+        ledcWrite(CANAL_ESQ_IN1, 0); ledcWrite(CANAL_ESQ_IN2, abs(velEsquerda)); 
+    } else {
+        ledcWrite(CANAL_ESQ_IN1, 0); ledcWrite(CANAL_ESQ_IN2, 0);
+    }
+
+    // Lógica do Motor Direito
+    if (velDireita > 0) {
+        ledcWrite(CANAL_DIR_IN1, velDireita); ledcWrite(CANAL_DIR_IN2, 0);
+    } else if (velDireita < 0) {
+        ledcWrite(CANAL_DIR_IN1, 0); ledcWrite(CANAL_DIR_IN2, abs(velDireita));
+    } else {
+        ledcWrite(CANAL_DIR_IN1, 0); ledcWrite(CANAL_DIR_IN2, 0);
+    }
+    
+    // Atualiza a flag para a telemetria saber que o rato está em movimento
+    motorsRunning = (velEsquerda != 0 || velDireita != 0);
+}
+
+void stopMotors() { acionarMotores(0, 0); }
+void moveForward() { acionarMotores(140, 140); }
+
+void virarDireita90() {
+    Serial.println("[MANOBRA] Virando 90° para a Direita...");
+    acionarMotores(VELOCIDADE_GIRO, -VELOCIDADE_GIRO);
+    delay(TEMPO_CURVA_90);
+    stopMotors();
+    delay(200); 
+}
+
+void virarEsquerda90() {
+    Serial.println("[MANOBRA] Virando 90° para a Esquerda...");
+    acionarMotores(-VELOCIDADE_GIRO, VELOCIDADE_GIRO);
+    delay(TEMPO_CURVA_90);
+    stopMotors();
+    delay(200);
+}
+
+void meiaVolta180() {
+    Serial.println("[MANOBRA] Dando meia volta (180°)...");
+    acionarMotores(VELOCIDADE_GIRO, -VELOCIDADE_GIRO);
+    delay(TEMPO_CURVA_90 * 2); // O dobro do tempo para inverter totalmente
+    stopMotors();
+    delay(200);
 }

@@ -2,14 +2,13 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
-
-// Importação das bibliotecas modulares da equipa
 #include "../lib/utils/rato/rato.h"
 #include "../lib/utils/mapa/labirinto.h"
 #include "../lib/input/ultrassonico/sensores.h"
 #include "../lib/output/motor/motor.h"
 #include "../lib/utils/conexao/conexoes.h"
 #include "../lib/utils/telemetria/telemetria.h"
+#include "../lib/utils/dfs/dfs.h"
 
 #pragma region Variáveis
 
@@ -22,17 +21,24 @@ const char *ROBOT_ID = "UAV-MOUSE-01";
 const uint8_t LED_PIN = 2;
 
 // Ultrassônicos
-const uint8_t TRIG_FRONT = 4;   const uint8_t ECHO_FRONT = 16;
-const uint8_t TRIG_LEFT = 17;   const uint8_t ECHO_LEFT = 5;
-const uint8_t TRIG_RIGHT = 18;  const uint8_t ECHO_RIGHT = 19;
+const uint8_t TRIG_FRONT = 4;
+const uint8_t ECHO_FRONT = 16;
+const uint8_t TRIG_LEFT = 17;
+const uint8_t ECHO_LEFT = 5;
+const uint8_t TRIG_RIGHT = 18;
+const uint8_t ECHO_RIGHT = 19;
 
 // Motores
-const uint8_t MOTOR_LEFT_IN1 = 25;  const uint8_t MOTOR_LEFT_IN2 = 26;
-const uint8_t MOTOR_RIGHT_IN1 = 27; const uint8_t MOTOR_RIGHT_IN2 = 14;
+const uint8_t MOTOR_LEFT_IN1 = 25;
+const uint8_t MOTOR_LEFT_IN2 = 26;
+const uint8_t MOTOR_RIGHT_IN1 = 27;
+const uint8_t MOTOR_RIGHT_IN2 = 14;
 
 // Encoders
-const uint8_t ENCODER_LEFT_A = 34;  const uint8_t ENCODER_LEFT_B = 35;
-const uint8_t ENCODER_RIGHT_A = 32; const uint8_t ENCODER_RIGHT_B = 33;
+const uint8_t ENCODER_LEFT_A = 34;
+const uint8_t ENCODER_LEFT_B = 35;
+const uint8_t ENCODER_RIGHT_A = 32;
+const uint8_t ENCODER_RIGHT_B = 33;
 
 // -------------------------------------------------------------------------------
 //  LABIRINTO - posições de início e destino
@@ -40,54 +46,62 @@ const uint8_t ENCODER_RIGHT_A = 32; const uint8_t ENCODER_RIGHT_B = 33;
 #define INICIO_X 15
 #define INICIO_Y 15
 
+// vou usar dps pra floodfill (-1 pq não encontrou ainda)
 int destinoX = -1;
 int destinoY = -1;
 
 // -------------------------------------------------------------------------------
-//  ESTADOS (A Máquina de Decisões)
+//  ESTADOS
 // -------------------------------------------------------------------------------
-enum Estado {
-    PARADO,
-    EXPLORANDO,
-    CORRIDA,
-    CONCLUIDO
-};
-Estado estado = EXPLORANDO; // O rato já começa no estado de exploração
+Estado estado = PARADO;
 
 // -------------------------------------------------------------------------------
-//  GLOBAIS E TIMERS ASSÍNCRONOS
+//  GLOBAIS
 // -------------------------------------------------------------------------------
+// Variáveis Voláteis para Interrupções
 volatile long encoderLeftCount = 0;
 volatile long encoderRightCount = 0;
 
+// Gerenciamento de Timers Assíncronos
 unsigned long lastTelemetrySend = 0;
+unsigned long lastMotorToggle = 0;
+unsigned long lastLedBlink = 0;
 unsigned long lastSerialLog = 0;
-unsigned long lastLedBlink = 0; // O seu timer do LED
 
-bool motorsRunning = false;
 bool ledState = false;
+bool concluido = false;
 unsigned long stepCounter = 0;
 
 Rato rato;
 Labirinto lab;
 
-WiFiClient wifiClient;
-PubSubClient mqttClient(wifiClient);
-
 #pragma endregion
 
 #pragma region Encoders
-void IRAM_ATTR encoderLeftISR() { encoderLeftCount++; }
-void IRAM_ATTR encoderRightISR() { encoderRightCount++; }
+// -------------------------------------------------------------------------------
+//  ISRs - ENCODERS
+// -------------------------------------------------------------------------------
+void IRAM_ATTR encoderLeftISR()
+{ 
+    encoderLeftCount++;
+}
+
+void IRAM_ATTR encoderRightISR()
+{
+    encoderRightCount++;
+}
+
 #pragma endregion
 
 // -------------------------------------------------------------------------------
 // SETUP
 // -------------------------------------------------------------------------------
-void setup() {
+void setup()
+{
     Serial.begin(115200);
     mqttClient.setBufferSize(1024);
 
+    // LED
     pinMode(LED_PIN, OUTPUT);
 
     // Encoders
@@ -96,10 +110,19 @@ void setup() {
     attachInterrupt(digitalPinToInterrupt(ENCODER_LEFT_A), encoderLeftISR, RISING);
     attachInterrupt(digitalPinToInterrupt(ENCODER_RIGHT_A), encoderRightISR, RISING);
 
-    // Sensores e Motores (Usando as bibliotecas da equipa)
-    inicializaSensores(TRIG_FRONT, ECHO_FRONT, TRIG_LEFT, ECHO_LEFT, TRIG_RIGHT, ECHO_RIGHT);
-    inicializaMotores(MOTOR_LEFT_IN1, MOTOR_LEFT_IN2, MOTOR_RIGHT_IN1, MOTOR_RIGHT_IN2, &encoderLeftCount, &encoderRightCount);
-    
+    // Sensores
+    inicializaSensores(TRIG_FRONT, ECHO_FRONT,
+                       TRIG_LEFT, ECHO_LEFT,
+                       TRIG_RIGHT, ECHO_RIGHT);
+
+    // Motores (Lógica estrutural da equipe)
+    inicializaMotores(MOTOR_LEFT_IN1, MOTOR_LEFT_IN2,
+                      MOTOR_RIGHT_IN1, MOTOR_RIGHT_IN2,
+                      &encoderLeftCount, &encoderRightCount);
+
+    // Ativa o controle PWM analógico  no motor.cpp
+    setupMotores(); 
+
     inicializaRato(&rato);
     inicializaLabirinto(&lab);
 
@@ -107,83 +130,96 @@ void setup() {
     connectWiFi();
     connectMQTT();
 
-    delay(1000); 
+    delay(1000); // tempo de estabilização
+
+    resetDFS();          // garante pilha/flags zeradas antes de explorar
+    estado = EXPLORANDO; // inicia a exploração por DFS
 }
 
 // -------------------------------------------------------------------------------
-// LOOP PRINCIPAL
+// LOOP
 // -------------------------------------------------------------------------------
-void loop() {
-    // 1. Manter a rede ativa
+void loop()
+{
     if (WiFi.status() != WL_CONNECTED) connectWiFi();
     if (!mqttClient.connected()) connectMQTT();
+
     mqttClient.loop();
 
     unsigned long currentMillis = millis();
 
-    // 2. Piscar o LED (A sua lógica visual para saber que não travou)
-    if (currentMillis - lastLedBlink >= 250) {
-        lastLedBlink = currentMillis;
-        ledState = !ledState;
-        digitalWrite(LED_PIN, ledState);
-    }
-
-    // 3. Atualizar os Sensores (Salva as distâncias na struct 'rato')
-    atualizaSensores();
-
-    // 4. MÁQUINA DE ESTADOS (A Junção do seu Cérebro com a estrutura do GitHub)
-    switch (estado) {
-        case PARADO:
-            // Aguardando comando
-            break;
-
-        case EXPLORANDO: {
-            // ---> A SUA LÓGICA DE DESVIO DE PAREDES AQUI <---
-            static unsigned long lastDecision = 0;
-            if (currentMillis - lastDecision >= 100) {
-                lastDecision = currentMillis;
-
-                // Lê as distâncias de dentro da struct que a equipa criou
-                if (rato.distancia_frente < 12.0) {
-                    stopMotors();
-                    delay(200);
-
-                    if (rato.distancia_esquerda > 15.0) {
-                        virarEsquerda90();
-                    } else if (rato.distancia_direita > 15.0) {
-                        virarDireita90();
-                        
-                    } else {
-                        meiaVolta180();
-                    }
-                } else {
-                    moveForward();
-                }
-            }
-            break;
-        }
-
-        case CORRIDA:
-            // Futura lógica de corrida otimizada
-            break;
-
-        case CONCLUIDO:
-            stopMotors();
-            break;
-    }
-
-    // 5. Envio de Telemetria (A cada 2 segundos)
-    if (currentMillis - lastTelemetrySend >= 2000) {
+    // Telemetria MQTT (2s)
+    if (currentMillis - lastTelemetrySend >= 2000)
+    {
         lastTelemetrySend = currentMillis;
-        publishTelemetry(rato, lab, mqttClient, MQTT_TOPIC, ROBOT_ID, stepCounter, motorsRunning, estado == CONCLUIDO);
+        publishTelemetry(rato, lab, mqttClient, MQTT_TOPIC, ROBOT_ID, stepCounter, motorsRunning, getUltimoMovimentoDFS(), concluido);
     }
 
-    // 6. Monitor Serial Local (A cada 2 segundos)
-    if (currentMillis - lastSerialLog >= 2000) {
+    // Serial (2s)
+    if (currentMillis - lastSerialLog >= 2000)
+    {
         lastSerialLog = currentMillis;
         Serial.println("\n--- [TELEMETRIA LOCAL] ---");
         Serial.printf("Distâncias -> F: %.2f cm | E: %.2f cm | D: %.2f cm\n", rato.distancia_frente, rato.distancia_esquerda, rato.distancia_direita);
         Serial.printf("Encoders   -> L: %ld | R: %ld\n", encoderLeftCount, encoderRightCount);
-        Serial.printf("Estado     -> %d\n", estado);
+        Serial.printf("Motores    -> Status: %s\n", motorsRunning ? "EM MOVIMENTO" : "PARADO");
+    }
+
+    // Atualiza as distâncias dos sensores na struct 'rato'
+    atualizaSensores();
+
+    // Ações baseadas no Estado do Robô
+    switch (estado)
+    {
+    case EXPLORANDO:
+        {
+            // --------------------------------------------------------
+            // LÓGICA REATIVA DOS MOTORES (Desvio de Paredes)
+            // --------------------------------------------------------
+            static unsigned long lastDecision = 0;
+            
+            // O robô avalia o labirinto e ajusta os motores a cada 100ms
+            if (currentMillis - lastDecision >= 100) {
+                lastDecision = currentMillis;
+
+                // Regra 1: Tem obstáculo muito perto na frente (menos de 12 cm)?
+                if (rato.distancia_frente < 12.0) { 
+                    stopMotors();
+                    delay(200); // Evita derrapar no chão da bancada
+                    
+                    // Regra 2: Olha para os lados e decide o caminho livre
+                    if (rato.distancia_esquerda > 15.0) {
+                        Serial.println("[DECISÃO] Parede na frente! Virando à Esquerda.");
+                        virarEsquerda90();
+                    } else if (rato.distancia_direita > 15.0) {
+                        Serial.println("[DECISÃO] Parede na frente! Virando à Direita.");
+                        virarDireita90();
+                    } else {
+                        Serial.println("[DECISÃO] Beco sem saída! Fazendo Meia-volta.");
+                        meiaVolta180(); 
+                    }
+                } else {
+                    // Regra 3: Frente totalmente limpa, acelera reto!
+                    moveForward();
+                }
+            }
+            
+            // Comentado temporariamente para isolar os testes de hardware/movimento dos motores
+            /* passoDFS(&rato, &lab, &motorsRunning, &stepCounter,
+                     &destinoX, &destinoY, &concluido, &estado); 
+            */
+            break;
+        }
+
+    case CORRIDA:
+        // FloodFill — não implementar agora
+        stopMotors();
+        break;
+
+    case CONCLUIDO:
+    case PARADO:
+    default:
+        stopMotors();
+        break;
     }
 }
