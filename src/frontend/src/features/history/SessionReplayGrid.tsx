@@ -30,7 +30,7 @@ export function SessionReplayGrid({ steps, activeIndex }: SessionReplayGridProps
           <div
             key={key}
             className={[
-              "aspect-square min-h-[22px] border border-outline-variant/10 transition-colors duration-200",
+              "aspect-square min-h-/[22px] border border-outline-variant/10 transition-colors duration-200",
               isRobot
                 ? "bg-primary border-primary shadow-[0_0_14px] shadow-primary/50 scale-110 z-10"
                 : isTrail

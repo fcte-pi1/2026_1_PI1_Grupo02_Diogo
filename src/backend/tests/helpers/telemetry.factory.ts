@@ -1,22 +1,19 @@
-import type { TelemetryPayloadDto } from "../../src/dtos/telemetry.dto";
-
-export const createValidTelemetryPayload = (
-  overrides: Partial<TelemetryPayloadDto> = {}
-): TelemetryPayloadDto => ({
+export const createValidTelemetryPayload = (overrides = {}) => ({
   step: 1,
-  tempoMs: 1000,
+  tempoMs: 1500,
   modo: "DFS",
   estado: "EXPLORANDO",
+  conclusao: false,
   posicao: { x: 0, y: 0 },
   direcao: "norte",
-  paredes: { norte: false, sul: true, leste: false, oeste: true },
-  motores: { pwmEsquerdo: 120, pwmDireito: 120 },
-  sensores: { esquerdaCm: 10, frenteCm: 5, direitaCm: 12 },
-  energia: { tensaoV: 11.5, correnteMa: 250 },
-  conclusao: false,
+  paredes: { norte: false, sul: false, leste: false, oeste: false },
+  energia: { tensaoV: 11.1, correnteMa: 220 },
+  motores: { pwmEsquerdo: 200, pwmDireito: 200 },
+  sensores: { frenteCm: 10, esquerdaCm: 12, direitaCm: 12 },
+  robotId: "UAV-MOUSE-01",
   ...overrides,
 });
 
-export const telemetryPayloadToBuffer = (
-  payload: TelemetryPayloadDto | Record<string, unknown>
-): Buffer => Buffer.from(JSON.stringify(payload), "utf-8");
+export const telemetryPayloadToBuffer = (payload: any) => {
+  return Buffer.from(JSON.stringify(payload), "utf-8");
+};

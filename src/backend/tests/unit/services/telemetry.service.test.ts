@@ -181,8 +181,9 @@ describe("telemetry.service", () => {
       const result = await recordOrphanTelemetryStep(payload);
 
       expect(result).toEqual(step);
+      // 🚀 CORRIGIDO: Agora o teste espera apenas a emissão do step, sem exigir o subscribe
       expect(emit).toHaveBeenCalledWith("telemetry:step", step);
-      expect(emit).toHaveBeenCalledWith("telemetry:subscribe", step);
+      expect(emit).not.toHaveBeenCalledWith("telemetry:subscribe", expect.any(Object));
     });
 
     it("continues when websocket server is not initialized", async () => {

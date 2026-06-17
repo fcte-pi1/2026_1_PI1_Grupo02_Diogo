@@ -22,17 +22,18 @@ export default function SensorGrid({ sensorData }: SensorGridProps) {
   return (
     <div className="bg-surface-container-low/60 border border-outline-variant/30 backdrop-blur-md p-stack-md flex flex-col rounded-none w-full h-full">
       
-      {/* Cabeçalho */}
-      <div className="border-b border-outline-variant/20">
+      {/* Cabeçalho blindado contra compressão (shrink-0) */}
+      <div className="border-b border-outline-variant/20 shrink-0">
         <h2 className="text-label-caps text-xs mb-3 font-bold text-on-surface-variant tracking-widest uppercase flex items-center gap-stack-sm">
           <ShieldAlert className="w-3.5 h-3.5 text-tertiary-container" strokeWidth={2} />
           Sensores de proximidade
         </h2>
       </div>
 
-      {/* Grid Geométrico do Robô (Abstração Visual) */}
-      <div className="flex-1 flex flex-col items-center justify-center py-4 font-mono">
-        <div className="w-48 flex flex-col gap-2">
+      {/* Grid Geométrico do Robô */}
+      {/* 🚀 AJUSTE: justify-start (em vez de center) para pregar o bloco no topo, pt-4 para descolar da linha e overflow-y-auto para proteção */}
+      <div className="flex-1 flex flex-col items-center justify-start pt-5 pb-2 font-mono overflow-y-auto">
+        <div className="w-48 flex flex-col gap-2 shrink-0">
           
           {/* 1. Sensor Frontal */}
           <div className={`w-full border p-2 text-center text-[11px] transition-colors duration-300 ${getStatusColor(sensorData.front)}`}>

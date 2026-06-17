@@ -95,7 +95,6 @@ export const recordOrphanTelemetryStep = async (
   try {
     const io = getSocket();
     io.emit("telemetry:step", stepRecord);
-    io.emit("telemetry:subscribe", stepRecord);
   } catch (wsError) {
     console.error(
       "[WS_STREAM_ERROR] Servidor WS não inicializado ou falhou ao emitir:",

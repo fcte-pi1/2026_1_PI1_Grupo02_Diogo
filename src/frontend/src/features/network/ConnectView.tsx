@@ -63,6 +63,7 @@ export default function ConnectView({
           currentView={currentView}
           connectionProps={connectionProps ?? { latency: String(currentLatency) }} 
           isConnected={isConnected} 
+          robotData={robotData}
           posX={x}
           posY={y}
         />
