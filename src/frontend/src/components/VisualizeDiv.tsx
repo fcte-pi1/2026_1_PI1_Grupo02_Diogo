@@ -29,26 +29,44 @@ interface VisualizeDivProps {
   connectionProps: {
     latency: string;
   };
-  isConnected: boolean;
-  robotData: any;
+  isConnected?: boolean;
+  isSocketConnected?: boolean;
+  robotData?: SessionStep | null;
+  steps?: SessionStep[];
   posX: number;
   posY: number;
+}
+
+function clampCoord(value: number, max: number): number {
+  if (!Number.isFinite(value)) return 0;
+  return Math.max(0, Math.min(max, Math.floor(value)));
 }
 
 export function VisualizeDiv({
   activeSession,
   currentView,
   isConnected,
+  isSocketConnected,
   robotData,
+  steps,
   posX,
   posY,
   connectionProps,
 }: VisualizeDivProps) {
+  const socketConnected = isSocketConnected ?? isConnected ?? false;
   const [liveSteps, setLiveSteps] = useState<SessionStep[]>([]);
+
+  const mazeWidth = activeSession?.maze?.width ?? 16;
+  const mazeHeight = activeSession?.maze?.height ?? 16;
+  const safePosX = clampCoord(posX, mazeWidth - 1);
+  const safePosY = clampCoord(posY, mazeHeight - 1);
+
+  const resolvedSteps = steps ?? liveSteps;
 
   // Monitora o feed do WebSocket para acumular o rastro em tempo real
   useEffect(() => {
-    if (isConnected && robotData) {
+    if (steps !== undefined) return;
+    if (socketConnected && robotData) {
       setLiveSteps((prevSteps) => {
         // Evita duplicar passos repetidos na mesma ordem sequencial
         const stepExists = prevSteps.some((s) => s.stepOrder === robotData.stepOrder);
@@ -56,20 +74,21 @@ export function VisualizeDiv({
         return [...prevSteps, robotData];
       });
     }
-  }, [robotData, isConnected]);
+  }, [robotData, socketConnected, steps]);
 
   // Reseta o mapa se o soquete desconectar (fim ou queda da corrida)
   useEffect(() => {
-    if (!isConnected) {
+    if (steps !== undefined) return;
+    if (!socketConnected) {
       setLiveSteps([]);
     }
-  }, [isConnected]);
+  }, [socketConnected, steps]);
 
   const renderContentView = () => {
     switch (currentView) {
       case "dashboard":
         // 🚀 CORREÇÃO 3: Tela de bloqueio amigável caso não haja telemetria ativa rodando
-        if (!isConnected && liveSteps.length === 0) {
+        if (!socketConnected && resolvedSteps.length === 0) {
           return (
             <div className="bg-surface-container-low/60 border border-outline-variant/30 p-6 flex flex-col h-full min-h-/[350px] w-full relative justify-center items-center text-center font-mono">
               <div className="p-4 rounded-full border border-primary/20 bg-primary/5 text-primary/40 mb-4 animate-pulse">
@@ -95,7 +114,7 @@ export function VisualizeDiv({
                 data-testid="maze-coords"
                 className="text-[9px] px-2 py-0.5 border border-outline-variant/30 font-mono tracking-wider text-on-surface bg-surface-container-lowest"
               >
-                COORDS: X-{posX}, Y-{posY}
+                COORDS: X-{safePosX}, Y-{safePosY}
               </span>
             </div>
 
@@ -103,11 +122,11 @@ export function VisualizeDiv({
             <div className="flex flex-col items-center justify-center flex-1 w-full gap-4">
               <LabyrinthMap
                 staticCells={activeSession?.maze?.cells || []}
-                steps={liveSteps} 
-                currentX={posX}
-                currentY={posY}
-                width={activeSession?.maze?.width || 16}
-                height={activeSession?.maze?.height || 16}
+                steps={resolvedSteps}
+                currentX={safePosX}
+                currentY={safePosY}
+                width={mazeWidth}
+                height={mazeHeight}
               />
 
               <div className="font-mono text-[10px] text-center text-primary uppercase tracking-wider mt-2">
@@ -126,7 +145,7 @@ export function VisualizeDiv({
               <span className="flex items-center gap-1">
                 Topologia rede ativa
               </span>
-              {isConnected ? (
+              {socketConnected ? (
                 <span className="text-[9px] px-2 py-0.5 border border-emerald-500/30 bg-emerald-500/10 text-emerald-400 font-mono tracking-wider uppercase">
                   online
                 </span>
@@ -139,24 +158,24 @@ export function VisualizeDiv({
 
             {/* Mapeamento de Nós Gráficos Dinâmicos */}
             <div
-              className={`flex items-center gap-4 md:gap-8 w-full justify-center flex-1 transition-opacity duration-300 ${isConnected ? "opacity-100" : "opacity-40"}`}
+              className={`flex items-center gap-4 md:gap-8 w-full justify-center flex-1 transition-opacity duration-300 ${socketConnected ? "opacity-100" : "opacity-40"}`}
             >
               {/* Estação Terrestre */}
               <div className="flex flex-col items-center text-center font-mono">
                 <div
-                  className={`p-4 border mb-2 transition-colors ${isConnected ? "border-cyan-500/30 bg-cyan-950/10 text-cyan-400" : "border-outline-variant/20 bg-surface-container-low text-outline/50"}`}
+                  className={`p-4 border mb-2 transition-colors ${socketConnected ? "border-cyan-500/30 bg-cyan-950/10 text-cyan-400" : "border-outline-variant/20 bg-surface-container-low text-outline/50"}`}
                 >
                   <span className="text-xl">
                     <ComputerIcon />
                   </span>
                 </div>
                 <span
-                  className={`text-[11px] font-bold tracking-wider ${isConnected ? "text-primary" : "text-outline"}`}
+                  className={`text-[11px] font-bold tracking-wider ${socketConnected ? "text-primary" : "text-outline"}`}
                 >
                   OPERATOR_STATION
                 </span>
                 <span className="text-[9px] text-outline">
-                  {isConnected ? "192.168.1.1" : "---.---.-.-"}
+                  {socketConnected ? "192.168.1.1" : "---.---.-.-"}
                 </span>
               </div>
 
@@ -165,23 +184,23 @@ export function VisualizeDiv({
 
               {/* Robô MicroMouse (ESP32) */}
               <div className="flex flex-col items-center text-center font-mono relative">
-                {isConnected && (
+                {socketConnected && (
                   <span className="absolute -top-1 -right-1 w-2 h-2 bg-emerald-500 rounded-full animate-ping"></span>
                 )}
                 <div
-                  className={`p-4 border mb-2 transition-all ${isConnected ? "border-emerald-500 bg-emerald-950/20 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.1)]" : "border-outline-variant/20 bg-surface-container-low text-outline/50"}`}
+                  className={`p-4 border mb-2 transition-all ${socketConnected ? "border-emerald-500 bg-emerald-950/20 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.1)]" : "border-outline-variant/20 bg-surface-container-low text-outline/50"}`}
                 >
                   <span className="text-xl">
                     <ComponentIcon />
                   </span>
                 </div>
                 <span
-                  className={`text-[11px] font-bold tracking-wider ${isConnected ? "text-emerald-400" : "text-outline"}`}
+                  className={`text-[11px] font-bold tracking-wider ${socketConnected ? "text-emerald-400" : "text-outline"}`}
                 >
                   UAV-MOUSE-01
                 </span>
                 <span className="text-[9px] text-outline">
-                  RSSI: {isConnected ? `-${connectionProps.latency}dBm` : "---"}
+                  RSSI: {socketConnected ? `-${connectionProps.latency}dBm` : "---"}
                 </span>
               </div>
 
@@ -191,7 +210,7 @@ export function VisualizeDiv({
               {/* Banco de Dados Postgres */}
               <div className="flex flex-col items-center text-center font-mono">
                 <div
-                  className={`p-4 border mb-2 transition-colors ${isConnected ? "border-outline-variant/40 bg-surface-container-low text-on-surface" : "border-outline-variant/20 bg-surface-container-low text-outline/50"}`}
+                  className={`p-4 border mb-2 transition-colors ${socketConnected ? "border-outline-variant/40 bg-surface-container-low text-on-surface" : "border-outline-variant/20 bg-surface-container-low text-outline/50"}`}
                 >
                   <span className="text-xl">
                     <Database />
@@ -201,7 +220,7 @@ export function VisualizeDiv({
                   BANCO_DE_DADOS
                 </span>
                 <span className="text-[9px] text-outline">
-                  {isConnected ? "SINCRONIA ATIVA" : "DESCONECTADO"}
+                  {socketConnected ? "SINCRONIA ATIVA" : "DESCONECTADO"}
                 </span>
               </div>
             </div>

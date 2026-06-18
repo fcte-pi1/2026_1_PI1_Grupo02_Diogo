@@ -15,6 +15,7 @@ interface DashboardViewProps {
   currentView: string;
   connectionProps: { latency: string };
   robotData: TelemetryData | null;
+  sessionSteps?: TelemetryData[];
   isConnected: boolean;
 }
 
@@ -23,6 +24,7 @@ export default function DashboardView({
   currentView,
   connectionProps,
   robotData,
+  sessionSteps = [],
   isConnected
 }: DashboardViewProps) {
   // Se o robô não mandou dados ainda, zeramos usando a estrutura nova plana
@@ -68,7 +70,8 @@ export default function DashboardView({
             activeSession={activeSession}
             currentView={currentView}
             robotData={robotData}
-            isConnected={isConnected}
+            steps={sessionSteps}
+            isSocketConnected={isConnected}
             posX={robotData?.posX ?? 0}
             posY={robotData?.posY ?? 0}
             connectionProps={connectionProps}

@@ -15,6 +15,7 @@ export interface TelemetryData {
 
 export function useWebSocket() {
   const [robotData, setRobotData] = useState<TelemetryData | null>(null);
+  const [sessionSteps, setSessionSteps] = useState<TelemetryData[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const socketRef = useRef<Socket | null>(null);
 
@@ -39,17 +40,23 @@ export function useWebSocket() {
 
     socket.on('disconnect', () => {
       setIsConnected(false);
+      setSessionSteps([]);
     });
 
     // Escuta ativa do pipeline vindo do serviço relacional
     socket.on('telemetry:step', (data: TelemetryData) => {
       setRobotData(data);
+      setSessionSteps((prev) => {
+        if (prev.some((step) => step.stepOrder === data.stepOrder)) return prev;
+        return [...prev, data];
+      });
     });
 
     // Captura o histórico acumulado recente para renderização instantânea ao dar F5
     socket.on('telemetry:history', (historyItems: TelemetryData[]) => {
       if (historyItems.length > 0) {
-        setRobotData(historyItems[historyItems.length - 1]); 
+        setRobotData(historyItems[historyItems.length - 1]);
+        setSessionSteps(historyItems);
       }
     });
 
@@ -64,6 +71,7 @@ export function useWebSocket() {
       socketRef.current.disconnect();
       socketRef.current = null;
       setIsConnected(false);
+      setSessionSteps([]);
     }
   }, []);
 
@@ -79,5 +87,5 @@ export function useWebSocket() {
     }
   }, []);
 
-  return { robotData, isConnected, sendRaceAction, connect, disconnect };
+  return { robotData, sessionSteps, isConnected, sendRaceAction, connect, disconnect };
 }

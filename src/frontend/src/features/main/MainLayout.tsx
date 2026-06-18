@@ -22,7 +22,7 @@ export default function MainLayout({ activeSession }: MainLayoutProps) {
   const [terminalLogs, setTerminalLogs] = useState<string[]>([]);
 
   // O sendRaceAction pode ser removido daqui se não for usado em outro lugar do layout
-  const { robotData, isConnected, connect, disconnect } = useWebSocket();
+  const { robotData, sessionSteps, isConnected, connect, disconnect } = useWebSocket();
 
   useEffect(() => {
     if (robotData) {
@@ -51,6 +51,7 @@ export default function MainLayout({ activeSession }: MainLayoutProps) {
             activeSession={activeSession}
             currentView={currentView}
             robotData={robotData}
+            sessionSteps={sessionSteps}
             isConnected={isConnected}
             connectionProps={connectionProps}
           />
