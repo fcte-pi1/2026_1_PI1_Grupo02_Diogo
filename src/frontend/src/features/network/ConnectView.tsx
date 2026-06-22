@@ -1,18 +1,16 @@
 import { useState, useEffect } from "react";
 import { VisualizeDiv } from "../../components/VisualizeDiv";
+import type { SessionStep } from "../../types/session";
 import {
   Wifi,
   WifiOff,
-  Battery,
-  RefreshCw,
   HeartPulse,
   ShieldCheck,
   AlertTriangle,
   Terminal,
-  Activity,
   Server,
 } from "lucide-react";
-import { useWebSocket } from "../../hooks/useWebSocket";
+import { useWebSocket, TelemetryData } from "../../hooks/useWebSocket";
 
 interface ConnectViewProps {
   currentView: string;
@@ -33,8 +31,7 @@ export default function ConnectView({
   connectionProps,
   isConnected,
 }: ConnectViewProps) {
-  const [latency, setLatency] = useState(42);
-  const currentLatency = isConnected ? latency : 99;
+  const currentLatency = isConnected ? 42 : 99;
   const { robotData } = useWebSocket();
 
   const [servicesHealth, setServicesHealth] = useState<HealthStatus>({
@@ -42,10 +39,8 @@ export default function ConnectView({
     database: "loading",
     broker: "loading",
   });
-  const [isChecking, setIsChecking] = useState(false);
 
-  // 🚀 NOVOS ESTADOS: Controlam o painel de inspeção de dados brutos das rotas
-  const [inspectData, setInspectData] = useState<any>(null);
+  const [inspectData, setInspectData] = useState<unknown>(null);
   const [inspectTarget, setInspectTarget] = useState<
     "none" | "health" | "telemetry"
   >("none");
@@ -54,7 +49,6 @@ export default function ConnectView({
   const y = robotData?.posY ?? 0;
 
   const checkInfrastructureHealth = async () => {
-    setIsChecking(true);
     try {
       const response = await fetch("http://127.0.0.1:3000/api/health");
       if (response.ok) {
@@ -68,10 +62,8 @@ export default function ConnectView({
       } else {
         throw new Error();
       }
-    } catch (err) {
+    } catch {
       setServicesHealth({ api: "error", database: "error", broker: "error" });
-    } finally {
-      setIsChecking(false);
     }
   };
 
@@ -81,7 +73,6 @@ export default function ConnectView({
     return () => clearInterval(interval);
   }, [isConnected]);
 
-  // Atualiza o painel de inspeção instantaneamente se novos pacotes de telemetria entrarem
   useEffect(() => {
     if (inspectTarget === "telemetry" && robotData) {
       setInspectData(robotData);
@@ -103,7 +94,6 @@ export default function ConnectView({
   return (
     <main className="w-full h-full p-6 flex flex-col gap-4 overflow-hidden bg-background select-none">
       <div className="flex-1 grid grid-cols-1 xl:grid-cols-2 gap-4 overflow-y-auto">
-        {/* COLUNA ESQUERDA: Mapa Reativo e Diagrama de Nós */}
         <div className="flex flex-col h-full min-h-0">
           <VisualizeDiv
             activeSession={null}
@@ -116,8 +106,8 @@ export default function ConnectView({
               robotData
                 ? ({
                     ...robotData,
-                    createdAt: new Date(),
-                  } as any)
+                    createdAt: new Date().toISOString(),
+                  } as unknown as SessionStep) // 🚀 CORREÇÃO: Forçado para o tipo esperado pelo componente (SessionStep)
                 : null
             }
             posX={x}
@@ -125,11 +115,8 @@ export default function ConnectView({
           />
         </div>
 
-        {/* COLUNA DIREITA: Centro de Diagnóstico, Handshake e Inspetor JSON */}
         <div className="flex flex-col gap-4 font-mono h-full min-h-0">
-          {/* Grid de Sub-Cards: Sinal Superior e Diagnóstico */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 shrink-0">
-            {/* Sub-Card 1: Força de Sinal */}
             <div className="bg-surface-container-low/60 border border-outline-variant/30 p-4 flex flex-col justify-between">
               <div className="border-b border-outline-variant/20 mb-2">
                 <h2 className="text-label-caps text-xs mb-2 font-bold text-on-surface-variant tracking-widest uppercase flex items-center gap-2">
@@ -175,7 +162,6 @@ export default function ConnectView({
               </div>
             </div>
 
-            {/* Sub-Card 2: Diagnóstico Core de Infraestrutura */}
             <div className="bg-surface-container-low/60 border border-outline-variant/30 p-4 flex flex-col justify-between">
               <div className="border-b border-outline-variant/20 mb-2">
                 <h2 className="text-label-caps text-xs mb-2 font-bold text-on-surface-variant tracking-widest uppercase flex items-center gap-2">
@@ -242,7 +228,6 @@ export default function ConnectView({
               </div>
             </div>
 
-            {/* Caixa de Texto do JSON Estruturado */}
             <div className="flex-1 bg-surface-container-lowest/80 border border-outline-variant/20 p-3 overflow-auto text-[11px] text-neutral-300 font-mono rounded-none">
               {inspectTarget === "none" ? (
                 <div className="h-full flex flex-col justify-center items-center text-center text-outline/40 italic py-8">
@@ -253,10 +238,33 @@ export default function ConnectView({
                   </span>
                 </div>
               ) : (
-                <pre className="whitespace-pre-wrap break-all leading-relaxed text-emerald-400/90 selection:bg-primary/30">
+                <pre className="whitespace-pre-wrap break-all leading-relaxed text-emerald-400/90">
                   {JSON.stringify(inspectData, null, 2)}
                 </pre>
               )}
+            </div>
+          </div>
+
+          <div className="bg-surface-container-low/60 border border-outline-variant/30 p-4 shrink-0 flex flex-col gap-3">
+            <div>
+              <div className="flex justify-between text-[10px] mb-1">
+                <span className="text-outline uppercase tracking-wider">
+                  Barramento Interno Estável (Power Array)
+                </span>
+                <span
+                  className={
+                    isConnected ? "text-emerald-400 font-bold" : "text-outline"
+                  }
+                >
+                  {isConnected ? "92%" : "0%"}
+                </span>
+              </div>
+              <div className="w-full h-1 bg-surface-container-high/40 border border-outline-variant/5">
+                <div
+                  className={`h-full transition-all duration-500 ${isConnected ? "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.3)]" : "bg-transparent"}`}
+                  style={{ width: isConnected ? "92%" : "0%" }}
+                />
+              </div>
             </div>
           </div>
         </div>

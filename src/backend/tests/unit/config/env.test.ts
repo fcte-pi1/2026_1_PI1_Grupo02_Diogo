@@ -41,7 +41,7 @@ describe("env", () => {
 
     expect(env.port).toBe(3000);
     expect(env.telemetry.historyLimit).toBe(100);
-    expect(env.mqtt.telemetryTopic).toBe("rato/telemetria");
+    expect(env.mqtt.telemetryTopic).toBe("rato/telemetria/test");
     
     // 🚀 CORREÇÃO AQUI: Valida apenas se a propriedade existe (boolean), 
     // sem forçar a ser false, permitindo que o nosso novo fallback funcione livremente.

@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Play, Zap, BatteryCharging, Pause, RotateCcw, Sliders, ShieldAlert, Terminal } from "lucide-react";
+import type { SessionStep } from "../../types/session";
 import { VisualizeDiv } from "../../components/VisualizeDiv";
 import SensorGrid from "../telemetry/components/SensorGrid";
 import type { TelemetryData } from "../../hooks/useWebSocket";
@@ -13,7 +14,7 @@ interface TestViewProps {
 export default function TestView({ robotData, sessionSteps, isConnected }: TestViewProps) {
   const [status, setStatus] = useState({ running: false, paused: false, stepOrder: 0 });
   const [voltage, setVoltage] = useState(12.1);
-  const [current, setCurrent] = useState(240);
+  const [current] = useState(240);
   const [sensorFront, setSensorFront] = useState(25);
   const [sensorLeft, setSensorLeft] = useState(25);
   const [sensorRight, setSensorRight] = useState(25);
@@ -174,10 +175,10 @@ export default function TestView({ robotData, sessionSteps, isConnected }: TestV
           {/* MAPA EM TEMPO REAL */}
           <div className="flex-1 min-h-\[250px] relative">
             <VisualizeDiv
-              activeSession={null} // Não precisamos carregar o histórico estático de corridas passadas aqui
-              currentView="dashboard" // Forçamos "dashboard" para ele renderizar o Labirinto
-              robotData={robotData ? ({ ...robotData, createdAt: new Date() } as any) : null}
-              steps={sessionSteps ? (sessionSteps.map(step => ({ ...step, createdAt: new Date() })) as any) : []}
+              activeSession={null} 
+              currentView="dashboard" 
+              robotData={robotData ? ({ ...robotData, createdAt: new Date().toISOString() } as unknown as SessionStep) : null} // 🚀 FIXADO
+              steps={sessionSteps ? (sessionSteps.map(step => ({ ...step, createdAt: new Date().toISOString() })) as unknown as SessionStep[]) : []} // 🚀 FIXADO
               isSocketConnected={isConnected}
               posX={robotData?.posX ?? 0}
               posY={robotData?.posY ?? 0}

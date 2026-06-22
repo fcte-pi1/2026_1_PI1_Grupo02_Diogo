@@ -2,6 +2,7 @@ import BatteryWidget from "./components/BatteryWidget";
 import EngineTelemetryWidget from "./components/EngineTelemetryWidget";
 import RaceTimer from "./components/RaceTimer";
 import SensorGrid from "./components/SensorGrid";
+import type { SessionStep } from "../../types/session";
 import { VisualizeDiv } from "../../components/VisualizeDiv";
 import { TelemetryData } from "../../hooks/useWebSocket";
 
@@ -85,7 +86,7 @@ export default function DashboardView({
                 ? ({
                     ...robotData,
                     createdAt: new Date(robotData.timestamp),
-                  } as any)
+                  } as unknown as SessionStep)
                 : null
             }
             steps={
@@ -93,7 +94,7 @@ export default function DashboardView({
                 ? (sessionSteps.map((step) => ({
                     ...step,
                     createdAt: new Date(step.timestamp),
-                  })) as any)
+                  })) as unknown as SessionStep[])
                 : []
             }
             isSocketConnected={isConnected}

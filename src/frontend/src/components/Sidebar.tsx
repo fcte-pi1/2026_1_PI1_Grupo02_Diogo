@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LayoutDashboard, ScrollText, WifiSync, CircleFadingPlus, ArrowLeftToLine, TestTube2, ListRestartIcon, ListRestart} from 'lucide-react';
+import { LayoutDashboard, ScrollText, WifiSync, ArrowLeftToLine, TestTube2, ListRestart} from 'lucide-react';
 
 interface SidebarProps {
   currentView?: string;
