@@ -9,9 +9,9 @@ import Dashboard from "../telemetry/DashboardScreen";
 import ConnectView from "../network/ConnectView";
 import HistoryScreen from "../history/HistoryScreen";
 import TerminalWidget from "../telemetry/components/TerminalWidget";
+import TestView from "../tests/testView";
 
 interface MainLayoutProps {
-  // 🚀 AJUSTADO: Mudado para aceitar a estrutura flexível/completa da sessão do Prisma
   activeSession: any;
   appState: AppState;
 }
@@ -21,7 +21,6 @@ export default function MainLayout({ activeSession }: MainLayoutProps) {
   const [viewTerminal, setViewTerminal] = useState(true);
   const [terminalLogs, setTerminalLogs] = useState<string[]>([]);
 
-  // O sendRaceAction pode ser removido daqui se não for usado em outro lugar do layout
   const { robotData, sessionSteps, isConnected, connect, disconnect } = useWebSocket();
 
   useEffect(() => {
@@ -39,7 +38,6 @@ export default function MainLayout({ activeSession }: MainLayoutProps) {
   const currentSessionName = activeSession?.sessionName || "Sessão Ativa";
 
   const renderContentView = () => {
-    // Tratamento defensivo de propriedades de rede
     const connectionProps = {
       latency: isConnected ? "42" : "99",
     };
@@ -66,6 +64,14 @@ export default function MainLayout({ activeSession }: MainLayoutProps) {
         );
       case "logs":
         return <HistoryScreen />;
+      case "testes":
+        return (
+          <TestView 
+            robotData={robotData}
+            sessionSteps={sessionSteps}
+            isConnected={isConnected}
+          />
+        );
       default:
         return (
           <div className="p-6 font-mono text-xs text-outline">
@@ -93,16 +99,21 @@ export default function MainLayout({ activeSession }: MainLayoutProps) {
       <div className="flex flex-row flex-1 w-full overflow-hidden relative z-10">
         <Sidebar currentView={currentView} onNavigate={setCurrentView} />
 
-        <div className="flex flex-1 flex-col justify-between h-full">
-          <div className="flex-1 overflow-hidden">{renderContentView()}</div>
+        <div className="flex flex-1 flex-col h-full overflow-hidden">
+          
+          {/* O conteúdo da view ganha rolagem independente para não quebrar com o tamanho do terminal */}
+          <div className="flex-1 overflow-y-auto min-h-0 relative">
+            {renderContentView()}
+          </div>
 
           {viewTerminal && (
-            <div className="p-6 pt-0">
+            <div className="p-6 pt-0 shrink-0 w-full">
               <TerminalWidget
                 activeSession={activeSession}
                 status={isConnected}
                 logs={terminalLogs}
                 onClearLogs={() => setTerminalLogs([])}
+                onClose={() => setViewTerminal(false)}
               />
             </div>
           )}

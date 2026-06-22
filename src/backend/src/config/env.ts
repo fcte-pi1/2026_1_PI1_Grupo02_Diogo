@@ -1,7 +1,8 @@
 import dotenv from "dotenv";
+import path from "path";
 
-// Carrega o arquivo .env da raiz do projeto
-dotenv.config();
+// Força a leitura exata do .env na raiz do projeto
+dotenv.config({ path: path.resolve(__dirname, "../../.env") });
 
 /**
  * Converte uma string de ambiente para número inteiro de forma segura.

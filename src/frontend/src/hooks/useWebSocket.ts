@@ -11,6 +11,17 @@ export interface TelemetryData {
   voltage: number;
   current: number;
   consumption?: number;
+  sensors?: {
+    front: number;
+    left: number;
+    right: number;
+  };
+  walls?: {
+    north: boolean;
+    south: boolean;
+    east: boolean;
+    west: boolean;
+  };
 }
 
 export function useWebSocket() {

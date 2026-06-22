@@ -1,14 +1,13 @@
 import { memo, useMemo } from "react";
 import type { SessionStep } from "../types/session";
 
-const DEFAULT_GRID_SIZE = 16;
+const DEFAULT_GRID_SIZE = 8;
 
 function clampCoord(value: number, max: number): number {
   if (!Number.isFinite(value)) return 0;
   return Math.max(0, Math.min(max, Math.floor(value)));
 }
 
-// Definição da interface Cell exatamente como está no seu Prisma
 interface PrismaCell {
   id: string;
   mazeId: string;
@@ -21,12 +20,12 @@ interface PrismaCell {
 }
 
 interface LabyrinthMapProps {
-  staticCells: PrismaCell[]; // As paredes físicas vindas do model Cell do Prisma
-  steps: SessionStep[];       // Histórico de passos para desenhar o rastro
-  currentX: number;           // Posição X reativa atual do robô
-  currentY: number;           // Posição Y reativa atual do robô
-  width?: number;             // Largura do labirinto (default 16 do Prisma)
-  height?: number;            // Altura do labirinto (default 16 do Prisma)
+  staticCells: PrismaCell[]; 
+  steps: SessionStep[];       
+  currentX: number;           
+  currentY: number;           
+  width?: number;             
+  height?: number;            
 }
 
 export const LabyrinthMap = memo(function LabyrinthMap({
@@ -40,7 +39,6 @@ export const LabyrinthMap = memo(function LabyrinthMap({
   const safeX = clampCoord(currentX, width - 1);
   const safeY = clampCoord(currentY, height - 1);
 
-  // 1. Dicionário indexado para buscar as paredes de uma coordenada em O(1)
   const cellWallsMap = useMemo(() => {
     const map = new Map<string, PrismaCell>();
     staticCells.forEach((cell) => {
@@ -49,7 +47,6 @@ export const LabyrinthMap = memo(function LabyrinthMap({
     return map;
   }, [staticCells]);
 
-  // 2. Mapa do histórico de posições visitadas pelo robô (para o rastro com opacidade gradativa)
   const trailIntensity = useMemo(() => {
     const intensity = new Map<string, number>();
     steps.forEach((step, index) => {
@@ -62,67 +59,65 @@ export const LabyrinthMap = memo(function LabyrinthMap({
 
   const maxTrailIndex = Math.max(0, steps.length - 1);
 
+  const totalCells = width * height;
+  const cellsArray = Array.from({ length: totalCells }, (_, index) => {
+    const rowIndex = Math.floor(index / width);
+    const colIndex = index % width;
+
+    const y = height - 1 - rowIndex;
+    const x = colIndex;
+    const key = `${x},${y}`;
+
+    const cellData = cellWallsMap.get(key);
+
+    const isRobot = safeX === x && safeY === y;
+    const trailIndex = trailIntensity.get(key);
+    const isVisited = trailIndex !== undefined && !isRobot;
+
+    const hasNorth = cellData?.wallNorth ?? false;
+    const hasSouth = cellData?.wallSouth ?? false;
+    const hasEast = cellData?.wallEast ?? false;
+    const hasWest = cellData?.wallWest ?? false;
+
+    const trailOpacity = isVisited
+      ? 0.12 + (trailIndex / maxTrailIndex) * 0.38
+      : undefined;
+
+    return (
+      <div
+        key={key}
+        data-testid={isRobot ? "maze-robot-cell" : undefined}
+        className={`
+          w-full h-full transition-all duration-150 box-border
+          ${hasNorth ? "border-t-[3px] border-t-red-500" : "border-t border-t-outline-variant/10"}
+          ${hasSouth ? "border-b-[3px] border-b-red-500" : "border-b border-b-outline-variant/10"}
+          ${hasEast ? "border-r-[3px] border-r-red-500" : "border-r border-r-outline-variant/10"}
+          ${hasWest ? "border-l-[3px] border-l-red-500" : "border-l border-l-outline-variant/10"}
+          ${
+            isRobot
+              ? "bg-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.5)] scale-110 z-10 animate-pulse"
+              : isVisited
+                ? "bg-primary"
+                : "bg-transparent"
+          }
+        `}
+        style={trailOpacity !== undefined ? { opacity: trailOpacity } : undefined}
+        title={`Coords: (${x}, ${y})`}
+      />
+    );
+  });
+
   return (
     <div
-      // 🚀 CORREÇÃO TAILWIND: Removidas as barras invertidas e setado um aspect-square responsivo
       data-testid="maze-grid"
-      className="grid gap-0 bg-surface-container-lowest border border-outline-variant/50 p-2 shadow-inner w-full max-w-/[600px] aspect-square mx-auto"
+      className="grid gap-0 bg-surface-container-lowest border border-outline-variant/50 p-2 shadow-inner w-fit h-full aspect-square mx-auto"
       style={{
         gridTemplateColumns: `repeat(${width}, minmax(0, 1fr))`,
         gridTemplateRows: `repeat(${height}, minmax(0, 1fr))`,
       }}
       aria-label="Mapeamento do labirinto"
     >
-      {/* Geramos o grid iterando pelas linhas (Y) de cima para baixo. */}
-      {Array.from({ length: height }, (_, rowIndex) => {
-        const y = height - 1 - rowIndex; // Inverte o eixo Y para o Norte ficar no topo visual
-
-        return Array.from({ length: width }, (_, colIndex) => {
-          const x = colIndex;
-          const key = `${x},${y}`;
-
-          // Busca se existem paredes gravadas para essa célula
-          const cellData = cellWallsMap.get(key);
-
-          const isRobot = safeX === x && safeY === y;
-          const trailIndex = trailIntensity.get(key);
-          const isVisited = trailIndex !== undefined && !isRobot;
-
-          // Extração das booleanas do Prisma
-          const hasNorth = cellData?.wallNorth ?? false;
-          const hasSouth = cellData?.wallSouth ?? false;
-          const hasEast = cellData?.wallEast ?? false;
-          const hasWest = cellData?.wallWest ?? false;
-
-          const trailOpacity = isVisited
-            ? 0.12 + (trailIndex / maxTrailIndex) * 0.38
-            : undefined;
-
-          return (
-            <div
-              key={key}
-              // 🚀 CORREÇÃO TAILWIND: w-full e h-full para forçar as células a preencherem o container
-              data-testid={isRobot ? "maze-robot-cell" : undefined}
-              className={`
-                w-full h-full transition-all duration-150 box-border
-                ${hasNorth ? "border-t-[3px] border-t-red-500" : "border-t border-t-outline-variant/10"}
-                ${hasSouth ? "border-b-[3px] border-b-red-500" : "border-b border-b-outline-variant/10"}
-                ${hasEast ? "border-r-[3px] border-r-red-500" : "border-r border-r-outline-variant/10"}
-                ${hasWest ? "border-l-[3px] border-l-red-500" : "border-l border-l-outline-variant/10"}
-                ${
-                  isRobot
-                    ? "bg-primary shadow-[0_0_10px_rgba(var(--primary-rgb),0.5)] scale-110 z-10 animate-pulse"
-                    : isVisited
-                      ? "bg-primary"
-                      : "bg-transparent"
-                }
-              `}
-              style={trailOpacity !== undefined ? { opacity: trailOpacity } : undefined}
-              title={`Coords: (${x}, ${y})`}
-            />
-          );
-        });
-      })}
+      {cellsArray}
     </div>
   );
 });
