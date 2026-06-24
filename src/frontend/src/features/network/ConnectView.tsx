@@ -107,7 +107,7 @@ export default function ConnectView({
                 ? ({
                     ...robotData,
                     createdAt: new Date().toISOString(),
-                  } as unknown as SessionStep) // 🚀 CORREÇÃO: Forçado para o tipo esperado pelo componente (SessionStep)
+                  } as unknown as SessionStep)
                 : null
             }
             posX={x}
@@ -118,17 +118,19 @@ export default function ConnectView({
         <div className="flex flex-col gap-4 font-mono h-full min-h-0">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 shrink-0">
             <div className="bg-surface-container-low/60 border border-outline-variant/30 p-4 flex flex-col justify-between">
-              <div className="border-b border-outline-variant/20 mb-2">
+              <div className="border-b aceborder-outline-variant/20 mb-2">
                 <h2 className="text-label-caps text-xs mb-2 font-bold text-on-surface-variant tracking-widest uppercase flex items-center gap-2">
                   {isConnected ? (
                     <Wifi
                       className="w-3.5 h-3.5 text-primary"
                       strokeWidth={2}
+                      data-testid="wifi-on-icon" // 🚀 RESTAURADO PARA O VITEST
                     />
                   ) : (
                     <WifiOff
                       className="w-3.5 h-3.5 text-red-400"
                       strokeWidth={2}
+                      data-testid="wifi-off-icon" // 🚀 RESTAURADO PARA O VITEST
                     />
                   )}
                   RSSI Uplink
