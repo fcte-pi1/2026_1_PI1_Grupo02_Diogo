@@ -10,7 +10,7 @@ import {
   Terminal,
   Server,
 } from "lucide-react";
-import { useWebSocket, TelemetryData } from "../../hooks/useWebSocket";
+import { useWebSocket } from "../../hooks/useWebSocket";
 
 interface ConnectViewProps {
   currentView: string;

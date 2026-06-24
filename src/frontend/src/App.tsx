@@ -8,7 +8,7 @@ export enum AppState {
   RUNNING = 'RUNNING'
 }
 
-interface SessionData {
+export interface SessionData {
   sessionName: string;
   algorithm: string;
   mode: string;

@@ -4,6 +4,7 @@ import Navbar from "../../components/Navbar";
 import Sidebar from "../../components/Sidebar";
 import Footer from "../../components/Footer";
 import { useWebSocket } from "../../hooks/useWebSocket";
+import type { SessionData } from "../../App";
 
 import Dashboard from "../telemetry/DashboardScreen";
 import ConnectView from "../network/ConnectView";
@@ -12,7 +13,7 @@ import TerminalWidget from "../telemetry/components/TerminalWidget";
 import TestView from "../tests/testView";
 
 interface MainLayoutProps {
-  activeSession: any;
+  activeSession: SessionData | null;
   appState: AppState;
 }
 
