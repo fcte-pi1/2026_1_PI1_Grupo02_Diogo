@@ -31,15 +31,15 @@ export const startSimulator = () => {
 
     try {
       const ioInstance = getSocket();
-      
+
       const mockStepData = {
         id: `mock-uuid-${telemetryFake}`,
         sessionId: "mock-session-active",
         timestamp: new Date().toISOString(),
         stepOrder: telemetryFake,
         // Usa as coordenadas fixadas pelo usuário ou caminha aleatoriamente se estiverem zeradas
-        posX: liveConfig.posX || Math.floor(Math.random() * 8),
-        posY: liveConfig.posY || Math.floor(Math.random() * 8),
+        posX: liveConfig.posX,
+        posY: liveConfig.posY,
         voltage: Number((liveConfig.voltage - telemetryFake * 0.01).toFixed(2)),
         current: Math.floor(Math.random() * 20) + liveConfig.current,
         consumption: 0.05,
