@@ -16,6 +16,7 @@ describe("DashboardScreen", () => {
         currentView="dashboard"
         connectionProps={{ latency: "0" }}
         robotData={null}
+        isConnected
       />
     );
 
@@ -31,6 +32,7 @@ describe("DashboardScreen", () => {
         activeSession={activeSession}
         currentView="dashboard"
         connectionProps={{ latency: "11.5" }}
+        isConnected
         robotData={{
           id: "step-1",
           sessionId: "sess-1",
