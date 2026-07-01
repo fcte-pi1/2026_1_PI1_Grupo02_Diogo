@@ -173,38 +173,37 @@ void loop()
     {
     case EXPLORANDO:
         {
-            // --------------------------------------------------------
-            // LÓGICA REATIVA DOS MOTORES (Desvio de Paredes)
-            // --------------------------------------------------------
-            static unsigned long lastDecision = 0;
+            // 1. O rato para e lê as paredes em seu redor (agora ele está no meio de uma célula)
+            atualizaSensores();
             
-            // O robô avalia o labirinto e ajusta os motores a cada 100ms
-            if (currentMillis - lastDecision >= 100) {
-                lastDecision = currentMillis;
+            // Log para você acompanhar o cérebro dele no computador
+            Serial.printf("[CÉREBRO] Distâncias -> Frente: %.1f | Esq: %.1f | Dir: %.1f\n", 
+                          rato.distancia_frente, rato.distancia_esquerda, rato.distancia_direita);
 
-                // Regra 1: Tem obstáculo muito perto na frente (menos de 12 cm)?
-                if (rato.distancia_frente < 12.0) { 
-                    stopMotors();
-                    delay(200); // Evita derrapar no chão da bancada
-                    
-                    // Regra 2: Olha para os lados e decide o caminho livre
-                    if (rato.distancia_esquerda > 15.0) {
-                        Serial.println("[DECISÃO] Parede na frente! Virando à Esquerda.");
-                        virarEsquerda90();
-                    } else if (rato.distancia_direita > 15.0) {
-                        Serial.println("[DECISÃO] Parede na frente! Virando à Direita.");
-                        virarDireita90();
-                    } else {
-                        Serial.println("[DECISÃO] Beco sem saída! Fazendo Meia-volta.");
-                        meiaVolta180(); 
-                    }
-                } else {
-                    // Regra 3: Frente totalmente limpa, acelera reto!
-                    moveForward();
+            // 2. Decide o que fazer
+            // Se tiver mais de 15 cm livres à frente, significa que não há parede na próxima célula
+            if (rato.distancia_frente > 15.0) {
+                Serial.println("[AÇÃO] Caminho livre! A avançar 1 célula (18cm)...");
+                andarDistancia(18.0); // Chama a nossa nova função com PID!
+                delay(300); // Pausa breve para o rato estabilizar e os sensores não lerem lixo
+            } 
+            else {
+                // Se a distância for menor que 15, tem uma parede na cara dele!
+                if (rato.distancia_esquerda > 15.0) {
+                    Serial.println("[AÇÃO] Parede na frente. A virar à Esquerda 90°.");
+                    virarEsquerda90();
+                } 
+                else if (rato.distancia_direita > 15.0) {
+                    Serial.println("[AÇÃO] Parede na frente. A virar à Direita 90°.");
+                    virarDireita90();
+                } 
+                else {
+                    Serial.println("[AÇÃO] Beco sem saída. A dar meia-volta 180°.");
+                    meiaVolta180(); 
                 }
             }
             
-            // Comentado temporariamente para isolar os testes de hardware/movimento dos motores
+            // passoDFS comentado temporariamente
             /* passoDFS(&rato, &lab, &motorsRunning, &stepCounter,
                      &destinoX, &destinoY, &concluido, &estado); 
             */
