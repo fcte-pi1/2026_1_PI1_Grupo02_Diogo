@@ -22,8 +22,8 @@ const int TRIG_LEFT = 17;   const int ECHO_LEFT = 5;
 const int TRIG_RIGHT = 18;  const int ECHO_RIGHT = 19;
 
 // Motores
-const int MOTOR_LEFT_IN1 = 25;  const int MOTOR_LEFT_IN2 = 26;
-const int MOTOR_RIGHT_IN1 = 27; const int MOTOR_RIGHT_IN2 = 14;
+const int MOTOR_LEFT_IN1 = 26;  const int MOTOR_LEFT_IN2 = 25;
+const int MOTOR_RIGHT_IN1 = 14; const int MOTOR_RIGHT_IN2 = 27;
 
 // encoders
 const int ENCODER_LEFT_A = 34;  const int ENCODER_LEFT_B = 35;
