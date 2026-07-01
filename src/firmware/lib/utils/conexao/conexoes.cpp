@@ -1,10 +1,10 @@
 #include "./conexoes.h"
 
 // -- Definições dos globais declarados (extern) em conexoes.h -----------------
-const char *WIFI_SSID = "SUA_REDE_WIFI";      // troque para o wifi conectado ao computador e à ESP32
-const char *WIFI_PASSWORD = "SUA_SENHA_WIFI"; // sua senha
+const char *WIFI_SSID = "ALLREDE-CASA28";      // troque para o wifi conectado ao computador e à ESP32
+const char *WIFI_PASSWORD = "tata060428"; // sua senha
 
-const char *MQTT_BROKER = "192.168.x.x"; // IP do broker MQTT (Docker) na sua rede
+const char *MQTT_BROKER = "192.168.1.15"; // IP do broker MQTT (Docker) na sua rede
 const int MQTT_PORT = 1883;
 
 WiFiClient wifiClient;
@@ -24,7 +24,7 @@ void connectWiFi()
         Serial.print(".");
     }
 
-    Serial.printf("\nWiFi conectado! IP: %s\n", WiFi.localIP());
+    Serial.printf("\nWiFi conectado! IP: %s\n", WiFi.localIP().toString().c_str());
 }
 
 void connectMQTT()
@@ -43,4 +43,55 @@ void connectMQTT()
             Serial.println(mqttClient.state());
         }
     }
+}
+
+bool isUpdatingOTA = false;
+
+void setupOTA()
+{
+    ArduinoOTA.setHostname("micromouse-esp32");
+
+    ArduinoOTA.onStart([]() {
+        isUpdatingOTA = true;
+        String type;
+        if (ArduinoOTA.getCommand() == U_FLASH) {
+            type = "sketch";
+        } else { // U_SPIFFS
+            type = "filesystem";
+        }
+        Serial.println("Iniciando atualizacao via OTA: " + type);
+    });
+
+    ArduinoOTA.onEnd([]() {
+        isUpdatingOTA = false;
+        Serial.println("\nAtualizacao OTA concluida.");
+    });
+
+    ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
+        Serial.printf("Progresso OTA: %u%%\r", (progress / (total / 100)));
+    });
+
+    ArduinoOTA.onError([](ota_error_t error) {
+        isUpdatingOTA = false;
+        Serial.printf("Erro OTA[%u]: ", error);
+        if (error == OTA_AUTH_ERROR) {
+            Serial.println("Falha de Autenticacao");
+        } else if (error == OTA_BEGIN_ERROR) {
+            Serial.println("Falha de Inicio");
+        } else if (error == OTA_CONNECT_ERROR) {
+            Serial.println("Falha de Conexao");
+        } else if (error == OTA_RECEIVE_ERROR) {
+            Serial.println("Falha de Recepcao");
+        } else if (error == OTA_END_ERROR) {
+            Serial.println("Falha de Fim");
+        }
+    });
+
+    ArduinoOTA.begin();
+    Serial.println("Servico OTA iniciado e pronto.");
+}
+
+void handleOTA()
+{
+    ArduinoOTA.handle();
 }

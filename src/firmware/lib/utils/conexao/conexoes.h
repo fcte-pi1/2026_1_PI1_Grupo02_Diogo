@@ -4,6 +4,7 @@
 #include <WiFi.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
+#include <ArduinoOTA.h>
 
 // Credenciais/configuração (definidas em conexoes.cpp)
 extern const char *WIFI_SSID;
@@ -17,3 +18,6 @@ extern PubSubClient mqttClient;
 
 void connectWiFi();
 void connectMQTT();
+void setupOTA();
+void handleOTA();
+extern bool isUpdatingOTA;

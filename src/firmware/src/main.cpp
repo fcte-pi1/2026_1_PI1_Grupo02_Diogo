@@ -150,6 +150,7 @@ void setup()
 
     // Rede
     connectWiFi();
+    setupOTA();
     connectMQTT();
 
     delay(1000); // só um tempo pra começar dps
@@ -167,6 +168,11 @@ void loop()
 
     if (WiFi.status() != WL_CONNECTED)
         connectWiFi();
+
+    handleOTA();
+    if (isUpdatingOTA)
+        return;
+
     if (!mqttClient.connected())
         connectMQTT();
 
