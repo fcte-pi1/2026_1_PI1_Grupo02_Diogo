@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Database, ComponentIcon, ComputerIcon, Unlink, Play } from "lucide-react";
-import { LabyrinthMap } from "./labirith-map";
+import { MazeGrid } from "./MazeGrid";
 import type { SessionStep } from "../types/session";
 
 interface VisualizeDivProps {
@@ -113,8 +113,8 @@ export function VisualizeDiv({
             {/* Miolo do Labirinto Reativo */}
             <div className="flex flex-col items-center justify-center flex-1 w-full min-h-0 overflow-hidden">
               <div className="w-full flex-1 flex justify-center items-center min-h-0 max-h-[calc(100vh-290px)]">
-                <LabyrinthMap
-                  staticCells={activeSession?.maze?.cells || []}
+                <MazeGrid
+                  cells={activeSession?.maze?.cells || []}
                   steps={resolvedSteps}
                   currentX={safePosX}
                   currentY={safePosY}
