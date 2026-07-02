@@ -1,19 +1,17 @@
 #pragma once
 #include <Arduino.h>
-
 #include <WiFi.h>
 #include <PubSubClient.h>
 #include <ArduinoJson.h>
 
-const char *WIFI_SSID = "SUA_REDE_WIFI";      // troque para o wifi que está conectado ao seu computador e a esp32
-const char *WIFI_PASSWORD = "SUA_SENHA_WIFI"; // passe sua senha
+// estas variáveis estão alocadas na conexoes.cpp
+extern const char* WIFI_SSID;
+extern const char* WIFI_PASSWORD;
+extern const char* MQTT_BROKER;
+extern const int MQTT_PORT; 
 
-const char *MQTT_BROKER = "192.168.x.x"; // ip do docker para conectar-se com mqtt (sua rede wifi)
-const int MQTT_PORT = 1883;
+extern WiFiClient wifiClient;
+extern PubSubClient mqttClient;
 
-WiFiClient wifiClient;
-PubSubClient mqttClient(wifiClient);
-
-void connectWiFi() {}
-
-void connectMQTT() {}
+void connectWiFi();
+void connectMQTT();

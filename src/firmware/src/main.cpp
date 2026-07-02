@@ -152,7 +152,8 @@ void loop()
     if (currentMillis - lastTelemetrySend >= 2000)
     {
         lastTelemetrySend = currentMillis;
-        publishTelemetry(rato, lab, mqttClient, MQTT_TOPIC, ROBOT_ID, stepCounter, motorsRunning, getUltimoMovimentoDFS(), concluido);
+        publishTelemetry(rato, lab, mqttClient, MQTT_TOPIC, ROBOT_ID, stepCounter, motorsRunning, concluido);
+
     }
 
     // Serial (2s)
@@ -165,48 +166,62 @@ void loop()
         Serial.printf("Motores    -> Status: %s\n", motorsRunning ? "EM MOVIMENTO" : "PARADO");
     }
 
-    // Atualiza as distâncias dos sensores na struct 'rato'
-    atualizaSensores();
+  
 
     // Ações baseadas no Estado do Robô
     switch (estado)
     {
     case EXPLORANDO:
         {
-            // 1. O rato para e lê as paredes em seu redor (agora ele está no meio de uma célula)
+            // 1. Lê o ambiente (Apenas uma vez!)
             atualizaSensores();
             
-            // Log para você acompanhar o cérebro dele no computador
             Serial.printf("[CÉREBRO] Distâncias -> Frente: %.1f | Esq: %.1f | Dir: %.1f\n", 
                           rato.distancia_frente, rato.distancia_esquerda, rato.distancia_direita);
 
-            // 2. Decide o que fazer
-            // Se tiver mais de 15 cm livres à frente, significa que não há parede na próxima célula
+            // 2. Lógica de Decisão
             if (rato.distancia_frente > 15.0) {
                 Serial.println("[AÇÃO] Caminho livre! A avançar 1 célula (18cm)...");
-                andarDistancia(18.0); // Chama a nossa nova função com PID!
-                delay(300); // Pausa breve para o rato estabilizar e os sensores não lerem lixo
+                andarDistancia(18.0); 
+                
+                // Atualiza o cérebro! (Se está virado para Norte, o Y sobe, etc.)
+                if(rato.direcao == 'N') rato.y++;
+                else if(rato.direcao == 'S') rato.y--;
+                else if(rato.direcao == 'L') rato.x++;
+                else if(rato.direcao == 'O') rato.x--;
+                
+                stepCounter++; // Regista que deu um passo!
+                delay(300); 
             } 
             else {
-                // Se a distância for menor que 15, tem uma parede na cara dele!
                 if (rato.distancia_esquerda > 15.0) {
-                    Serial.println("[AÇÃO] Parede na frente. A virar à Esquerda 90°.");
+                    Serial.println("[AÇÃO] A virar à Esquerda 90°.");
                     virarEsquerda90();
+                    // Atualiza a bússola do rato (Anti-horário)
+                    if(rato.direcao == 'N') rato.direcao = 'O';
+                    else if(rato.direcao == 'O') rato.direcao = 'S';
+                    else if(rato.direcao == 'S') rato.direcao = 'L';
+                    else if(rato.direcao == 'L') rato.direcao = 'N';
                 } 
                 else if (rato.distancia_direita > 15.0) {
-                    Serial.println("[AÇÃO] Parede na frente. A virar à Direita 90°.");
+                    Serial.println("[AÇÃO] A virar à Direita 90°.");
                     virarDireita90();
+                    // Atualiza a bússola do rato (Horário)
+                    if(rato.direcao == 'N') rato.direcao = 'L';
+                    else if(rato.direcao == 'L') rato.direcao = 'S';
+                    else if(rato.direcao == 'S') rato.direcao = 'O';
+                    else if(rato.direcao == 'O') rato.direcao = 'N';
                 } 
                 else {
                     Serial.println("[AÇÃO] Beco sem saída. A dar meia-volta 180°.");
                     meiaVolta180(); 
+                    // Inverte a bússola
+                    if(rato.direcao == 'N') rato.direcao = 'S';
+                    else if(rato.direcao == 'S') rato.direcao = 'N';
+                    else if(rato.direcao == 'L') rato.direcao = 'O';
+                    else if(rato.direcao == 'O') rato.direcao = 'L';
                 }
             }
-            
-            // passoDFS comentado temporariamente
-            /* passoDFS(&rato, &lab, &motorsRunning, &stepCounter,
-                     &destinoX, &destinoY, &concluido, &estado); 
-            */
             break;
         }
 

@@ -1,4 +1,14 @@
-#include "./conexoes.h"
+#include "conexoes.h"
+
+
+// Cria as variáveis e dá os valores reais 
+const char* WIFI_SSID = "Nome_da_sua_Rede_Aqui"; // troque para o wifi que está conectado ao seu computador e a esp32
+const char* WIFI_PASSWORD = "Senha_da_sua_Rede_Aqui"; // passe sua senha
+const char* MQTT_BROKER = "IP_DO_SEU_DOCKER_AQUI"; // ip do docker para conectar-se com mqtt (sua rede wifi)
+const int MQTT_PORT = 1883;
+
+WiFiClient wifiClient;
+PubSubClient mqttClient(wifiClient);
 
 void connectWiFi()
 {
