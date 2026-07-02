@@ -8,7 +8,7 @@ export enum AppState {
   RUNNING = 'RUNNING'
 }
 
-interface SessionData {
+export interface SessionData {
   sessionName: string;
   algorithm: string;
   mode: string;
@@ -17,22 +17,19 @@ interface SessionData {
 function App() {
   const [currentState, setCurrentState] = useState<AppState>(AppState.LOADING);
   
-  // Como o início é automático, definimos os metadados padrões da sessão passiva
   const [activeSession] = useState<SessionData>({
     sessionName: 'Telemetria em Tempo Real',
     algorithm: 'Mapeamento Ativo',
     mode: 'Cockpit'
   });
 
-  // 🔌 O hook roda globalmente coletando a saúde do sistema
   const { isConnected } = useWebSocket();
 
-  // Passa do Loading para o Dashboard após 3 segundos
   useEffect(() => {
     if (currentState === AppState.LOADING) {
       const timer = setTimeout(() => {
         setCurrentState(AppState.RUNNING);
-      }, 2000); // 2 segundos de loading temático
+      }, 2000);
 
       return () => clearTimeout(timer);
     }
@@ -40,7 +37,6 @@ function App() {
 
   return (
     <div className="min-h-screen bg-background text-on-background">
-      {/* 1º Estado: Tela de Carregamento / Handshake */}
       {currentState === AppState.LOADING && (
         <LoadingScreen 
           sessionName={activeSession.sessionName} 
@@ -48,11 +44,10 @@ function App() {
         />
       )}
       
-      {/* 2º Estado: Dashboard Principal */}
+      {/* 🚀 CORRIGIDO: Alinhado exatamente com a assinatura de tipos de propriedades aceitas */}
       {currentState === AppState.RUNNING && (
         <MainLayout 
           activeSession={activeSession} 
-          setCurrentState={setCurrentState} 
           appState={currentState} 
         />
       )}

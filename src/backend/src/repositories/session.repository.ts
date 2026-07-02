@@ -125,6 +125,24 @@ export const findSessionDetailWithSteps = async (id: string) =>
           timestamp: true,
         },
       },
+      maze: {
+        select: {
+          id: true,
+          name: true,
+          width: true,
+          height: true,
+          cells: {
+            select: {
+              posX: true,
+              posY: true,
+              wallNorth: true,
+              wallSouth: true,
+              wallEast: true,
+              wallWest: true,
+            },
+          },
+        },
+      },
     },
   });
 

@@ -12,3 +12,21 @@ Esta pasta concentra testes automatizados do backend.
 - Espelhe a estrutura de src dentro de tests/unit.
 - Nomeie os arquivos como <modulo>.test.ts.
 - Para testes unitarios, isole dependencias externas usando mocks.
+
+## Cobertura de testes
+
+```bash
+npm run test:coverage
+```
+
+Gera o relatório em `coverage/` (HTML em `coverage/lcov-report/index.html`).
+
+Meta minima configurada no Jest: **70%** (statements, branches, functions e lines).
+
+Para acompanhar em modo watch:
+
+```bash
+npm run test:coverage:watch
+```
+
+Arquivos incluidos: todo `src/**/*.ts`, exceto `src/server.ts` (bootstrap) e `src/lib/prisma.ts` (cliente DB).

@@ -52,6 +52,17 @@ int destinoY = -1;
 
 // -------------------------------------------------------------------------------
 //  ESTADOS
+//
+//  PARADO --> EXPLORANDO --> EXPLORANDO (Volta) --> CORRIDA --> CONCLUIDO
+//
+//  EXPLORANDO : DFS (desconhecido = sem parede)
+//               robô vai de INICIO até DEST descobrindo o labirinto e a posição final
+//                     --> Volta pro começo usando FloodFill
+//
+//  CORRIDA  : Usa caminho descoberto no Floodfill
+//              --> robô volta de DEST a INICIO pelo melhor caminho
+//
+//  O enum Estado é definido em dfs.h (para ser compartilhado com passoDFS).
 // -------------------------------------------------------------------------------
 Estado estado = PARADO;
 
@@ -74,6 +85,8 @@ unsigned long stepCounter = 0;
 
 Rato rato;
 Labirinto lab;
+
+// wifiClient e mqttClient são definidos em conexoes.cpp (declarados em conexoes.h)
 
 #pragma endregion
 

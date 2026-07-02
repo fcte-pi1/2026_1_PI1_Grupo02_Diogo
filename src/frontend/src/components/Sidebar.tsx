@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { LayoutDashboard, Settings, ScrollText, WifiSync, CircleFadingPlus, ArrowLeftToLine } from 'lucide-react';
+import { LayoutDashboard, ScrollText, WifiSync, ArrowLeftToLine, TestTube2, ListRestart} from 'lucide-react';
 
 interface SidebarProps {
   currentView?: string;
@@ -12,7 +12,7 @@ export default function Sidebar({ currentView = 'dashboard', onNavigate }: Sideb
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'network', label: 'Conexão', icon: WifiSync },
     { id: 'logs', label: 'Histórico de sessões', icon: ScrollText },
-    { id: 'config', label: 'Configurações', icon: Settings },
+    { id: 'testes', label: 'Área de testes', icon: TestTube2 },
   ];
 
   // Fica true quando a barra está colapsada (apenas ícones)
@@ -51,7 +51,7 @@ export default function Sidebar({ currentView = 'dashboard', onNavigate }: Sideb
           {/* Esconde o subtexto da UnB/Grupo se colapsado */}
           {!isNavOpen && (
             <span className="text-[10px] font-mono text-on-surface-variant/60 tracking-wider transition-all">
-              GRUPO_02 // RAT_V6R
+              RATOBÔ
             </span>
           )}
         </div>
@@ -93,13 +93,13 @@ export default function Sidebar({ currentView = 'dashboard', onNavigate }: Sideb
       <div className="flex flex-col gap-stack-md border-t border-outline-variant/20 pt-stack-md">
         
         <button 
-          title={isNavOpen ? "Criar labirinto" : undefined}
+          title={isNavOpen ? "Reiniciar aplicação" : undefined}
           className={`btn-primary text-xs flex items-center justify-center gap-stack-md ${
             isNavOpen ? 'w-full p-3' : 'w-full'
-          }`}
+          }`} onClick={() => window.location.reload()}
         >
-          <CircleFadingPlus className="w-3.5 h-3.5 shrink-0" />
-          {!isNavOpen && <span>Criar labirinto</span>}
+          <ListRestart className="w-3.5 h-3.5 shrink-0" />
+          {!isNavOpen && <span>Reiniciar app</span>}
         </button>
 
       </div>

@@ -1,7 +1,5 @@
 #include "./motor.h"
 
-
-
 // -- Pinos e encoders (registrados em inicializaMotores) ----------------------
 static uint8_t _in1L, _in2L;
 static uint8_t _in1R, _in2R;
