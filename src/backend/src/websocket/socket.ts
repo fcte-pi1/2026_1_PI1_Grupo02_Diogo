@@ -1,10 +1,10 @@
 import { Server } from "socket.io";
 import type http from "http";
 import type { TelemetryRaw } from "@prisma/client";
-import { prisma } from '../lib/prisma'
+import { prisma } from '../lib/prisma';
 import { env } from "../config/env";
+import { getOrphanStepsForReplay } from "../services/telemetry.service";
 
-// Contrato de dados padronizado para garantir integração segura.
 export interface IWebSocketLog {
   socketId: string;
   ip: string;
@@ -13,7 +13,6 @@ export interface IWebSocketLog {
   timestamp: Date;
 }
 
-// Função centralizadora de observabilidade.
 export const logWebSocketEvent = async (
   logData: IWebSocketLog, 
   detalhes: string, 
@@ -40,14 +39,28 @@ export const logWebSocketEvent = async (
 
 let io: Server | null = null;
 
+export const resetSocketForTests = (): void => {
+  io = null;
+};
+
 export const initSocket = (server: http.Server): Server => {
   io = new Server(server, {
     cors: {
-      origin: env.cors.origin,
+      // 🚀 CORS ESPELHADO: Aceita conexões de desenvolvimento rebatendo a origem
+      origin: (origin, callback) => {
+        if (!origin || origin.includes("localhost") || origin.includes("127.0.0.1")) {
+          callback(null, origin);
+        } else {
+          callback(new Error("Not allowed by CORS"));
+        }
+      },
+      methods: ["GET", "POST"],
+      credentials: true
     },
+    allowEIO3: true,
+    transports: ["polling", "websocket"] // Garante upgrade suave de transporte no Firefox
   });
 
-  // Mapeamento nativo do ciclo de vida do WebSocket
   io.on("connection", (socket) => {
     const clientIp = socket.handshake.address || 'IP Desconhecido';
 
@@ -58,17 +71,45 @@ export const initSocket = (server: http.Server): Server => {
       timestamp: new Date()
     }, `🔌 Cliente conectado: ID ${socket.id}`);
 
+    socket.on("telemetry:subscribe", async (options: { limit?: number } = {}) => {
+      const limit = typeof options.limit === "number" ? options.limit : env.telemetry.historyLimit;
+
+      logWebSocketEvent({
+        socketId: socket.id,
+        ip: clientIp,
+        event: "SUBSCRIBE",
+        payload: options,
+        timestamp: new Date(),
+      }, `📡 Subscrição de canal: telemetry:subscribe (Limite: ${limit})`);
+
+      try {
+        const orphanSteps = await getOrphanStepsForReplay(limit);
+        socket.emit("telemetry:history", orphanSteps);
+      } catch (error) {
+        console.error("[WS_SERVER_ERROR] Falha ao recuperar histórico:", error);
+      }
+    });
+
+    socket.on("telemetry:unsubscribe", () => {
+      logWebSocketEvent({
+        socketId: socket.id,
+        ip: clientIp,
+        event: "UNSUBSCRIBE",
+        payload: { action: "leave" },
+        timestamp: new Date(),
+      }, `📡 Cancelamento de canal: telemetry:unsubscribe`);
+    });
+
     socket.on('error', (err) => {
       logWebSocketEvent({
         socketId: socket.id,
         ip: clientIp,
         event: 'ERROR',
-        payload: err,
+        payload: { message: err.message }, 
         timestamp: new Date()
       }, `⚠️ Erro interno: ${err.message}`);
     });
 
-    // Captura os dados instantes antes da conexão cair (mantém acesso ao cache de salas/rooms)
     socket.on('disconnecting', (reason) => {
       logWebSocketEvent({
         socketId: socket.id,
@@ -79,7 +120,6 @@ export const initSocket = (server: http.Server): Server => {
       }, `⏳ Cliente saindo (pré-desconexão). Razão <${reason}>`);
     });
 
-    // Queda definitiva da conexão (transport close, ping timeout, etc)
     socket.on('disconnect', (reason) => {
       logWebSocketEvent({
         socketId: socket.id,
@@ -95,15 +135,11 @@ export const initSocket = (server: http.Server): Server => {
 };
 
 export const emitTelemetry = (telemetry: TelemetryRaw): void => {
-  if (!io) {
-    return;
-  }
+  if (!io) return;
   io.emit("telemetry:new", telemetry);
 };
 
 export const getSocket = (): Server => {
-  if (!io) {
-    throw new Error("Socket server not initialized");
-  }
+  if (!io) throw new Error("Socket server not initialized");
   return io;
 };

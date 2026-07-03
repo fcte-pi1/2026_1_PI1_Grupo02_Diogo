@@ -225,7 +225,7 @@ export default function HistoryScreen() {
           </div>
         </section>
 
-        <section className="bg-surface-container-low/60 border border-outline-variant/30 p-6 flex-1 min-h-[280px]">
+        <section className="bg-surface-container-low/60 border border-outline-variant/30 p-6 flex-1 min-h-\[280px\]">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-[10px] font-mono text-outline uppercase tracking-widest">
               Replay do percurso
@@ -258,6 +258,7 @@ export default function HistoryScreen() {
               <SessionReplayGrid
                 steps={selectedSession.steps}
                 activeIndex={replayIndex}
+                maze={selectedSession.maze}
               />
 
               {replayStep && (
@@ -282,7 +283,8 @@ export default function HistoryScreen() {
               )}
 
               <p className="text-center text-[10px] font-mono text-outline uppercase tracking-widest">
-                Quadrado brilhante = robô · tons claros = trilha percorrida
+                Quadrado brilhante = robô · tom mais forte = célula revisitada
+                · borda vermelha = parede
               </p>
             </div>
           )}
