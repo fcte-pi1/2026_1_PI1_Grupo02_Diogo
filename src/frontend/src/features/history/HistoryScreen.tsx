@@ -201,7 +201,7 @@ export default function HistoryScreen() {
           </div>
         )}
 
-        <section className="bg-surface-container-low/60 border border-outline-variant/30 p-6">
+        <section className="bg-surface-container-low/60 border border-outline-variant/30 p-6 overflow-scroll">
           <h2 className="text-label-caps font-bold text-primary tracking-widest uppercase mb-4">
             {selectedSession.name}
           </h2>

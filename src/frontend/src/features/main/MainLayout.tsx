@@ -22,7 +22,56 @@ export default function MainLayout({ activeSession }: MainLayoutProps) {
   const [viewTerminal, setViewTerminal] = useState(true);
   const [terminalLogs, setTerminalLogs] = useState<string[]>([]);
 
+  // 1. Primeiro invocamos o Hook para obter os dados de rede
   const { robotData, sessionSteps, isConnected, connect, disconnect } = useWebSocket();
+
+  // 2. Agora calculamos o Delta do Cronômetro com segurança 🚀
+  const firstStepTime = sessionSteps.length > 0 ? new Date(sessionSteps[0].timestamp).getTime() : null;
+  const currentTime = robotData ? new Date(robotData.timestamp).getTime() : null;
+  const elapsedMs = firstStepTime && currentTime ? Math.max(0, currentTime - firstStepTime) : 0;
+  const stepCount = robotData?.stepOrder ?? 0;
+
+  // ECOSSISTEMA DE ATALHOS (Keyboard Shortcuts Manager)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const isModifier = e.ctrlKey || e.metaKey;
+
+      if (isModifier) {
+        // 1. Alternar Painel do Terminal: Ctrl + '
+        if (e.key === "'" || e.key === "`") {
+          e.preventDefault();
+          setViewTerminal((prev) => !prev);
+        }
+
+        // 2. Atalho para Dashboard: Ctrl + D
+        if (e.key.toLowerCase() === "d") {
+          e.preventDefault();
+          setCurrentView("dashboard");
+        }
+
+        // 3. Atalho para Testes (TestView): Ctrl + T
+        if (e.key.toLowerCase() === "t") {
+          e.preventDefault();
+          setCurrentView("testes");
+        }
+
+        // 4. Atalho para Histórico / Sessões: Ctrl + H ou S
+        if (e.key.toLowerCase() === "h" || e.key.toLowerCase() === "s") {
+          e.preventDefault();
+          setCurrentView("logs");
+        }
+
+        // 5. Atalho para Monitoramento de Rede: Ctrl + N
+        if (e.key.toLowerCase() === "n") {
+          e.preventDefault();
+          setCurrentView("network");
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   useEffect(() => {
     if (robotData) {
@@ -95,14 +144,14 @@ export default function MainLayout({ activeSession }: MainLayoutProps) {
         isSocketConnected={isConnected}
         onConnect={connect}
         onDisconnect={disconnect}
+        elapsedMs={elapsedMs}
+        stepCount={stepCount}
       />
 
       <div className="flex flex-row flex-1 w-full overflow-hidden relative z-10">
         <Sidebar currentView={currentView} onNavigate={setCurrentView} />
 
         <div className="flex flex-1 flex-col h-full overflow-hidden">
-          
-          {/* O conteúdo da view ganha rolagem independente para não quebrar com o tamanho do terminal */}
           <div className="flex-1 overflow-y-auto min-h-0 relative">
             {renderContentView()}
           </div>

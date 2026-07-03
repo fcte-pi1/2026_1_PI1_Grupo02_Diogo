@@ -21,11 +21,6 @@ export default function EngineTelemetryWidget({ motorCurrent, velocity }: Engine
 
       {/* Lista de Dados Técnicos dos Motores */}
       <ul className="flex flex-col gap-unit font-mono text-[12px] text-on-surface-variant">
-        <li className="flex justify-between border-b border-outline-variant/10 py-1">
-          <span>CORRENTE DO MOTOR:</span>
-          {/* 🔧 CORRIGIDO: Variável separada corretamente e unidade alterada de A para mA */}
-          <span className="font-telemetry text-on-surface font-bold">{motorCurrent} mA</span>
-        </li>
         <li className="flex justify-between py-1">
           <span>FORÇA / RPM NOMINAL:</span>
           <span className="font-telemetry text-secondary-fixed">0 / 0</span>

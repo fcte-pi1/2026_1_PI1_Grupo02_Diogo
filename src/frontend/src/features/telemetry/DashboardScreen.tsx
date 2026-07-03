@@ -1,6 +1,5 @@
 import BatteryWidget from "./components/BatteryWidget";
 import EngineTelemetryWidget from "./components/EngineTelemetryWidget";
-import RaceTimer from "./components/RaceTimer";
 import SensorGrid from "./components/SensorGrid";
 import type { SessionStep } from "../../types/session";
 import { VisualizeDiv } from "../../components/VisualizeDiv";
@@ -47,73 +46,21 @@ export default function DashboardView({
     return Math.max(0, Math.min(100, Math.round(pct)));
   };
 
-  // 🚀 O SEGREDO DO CRONÔMETRO: Cálculo de delta matemático baseado nos pacotes recebidos
-  const firstStepTime = sessionSteps.length > 0 ? new Date(sessionSteps[0].timestamp).getTime() : null;
-  const currentTime = robotData ? new Date(robotData.timestamp).getTime() : null;
-  const elapsedMs = firstStepTime && currentTime ? Math.max(0, currentTime - firstStepTime) : 0;
-
   return (
     <main
       data-testid="dashboard"
-      className="w-full h-full px-6 pt-6 flex flex-col justify-between overflow-hidden box-border"
+      className="w-full h-full p-6 flex flex-col overflow-hidden box-border bg-background select-none"
     >
-      <div className="w-full h-full grid grid-cols-1 lg:grid-cols-4 gap-4 items-start overflow-hidden pb-4">
+      <div className="flex-1 grid grid-cols-1 xl:grid-cols-12 gap-5 min-h-0 w-full overflow-hidden">
         
-        {/* Coluna Esquerda: Status de Energia */}
-        <div className="flex flex-col gap-4 lg:col-span-1 w-full min-h-0">
-          <div className="w-full">
+        <div className="xl:col-span-4 flex flex-col gap-4 h-full min-h-0 overflow-auto">
             <BatteryWidget
               voltage={currentStep.voltage}
               percentage={calculatePercentage(currentStep.voltage)}
-              isCritical={currentStep.voltage > 0 && currentStep.voltage < 10.2}
+              isCritical={currentStep.voltage > 0 && currentStep.voltage < 6.75}
             />
-          </div>
-          <div className="w-full">
-            <EngineTelemetryWidget
-              motorCurrent={currentStep.current}
-              velocity={0}
-            />
-          </div>
-        </div>
 
-        {/* Coluna Central: Mapa Gráfico */}
-        <div className="flex flex-col lg:col-span-2 min-h-\[300px] h-full w-full relative overflow-hidden min-h-0">
-          <VisualizeDiv
-            activeSession={activeSession}
-            currentView={currentView}
-            robotData={
-              robotData
-                ? ({
-                    ...robotData,
-                    createdAt: new Date(robotData.timestamp),
-                  } as unknown as SessionStep)
-                : null
-            }
-            steps={
-              sessionSteps
-                ? (sessionSteps.map((step) => ({
-                    ...step,
-                    createdAt: new Date(step.timestamp),
-                  })) as unknown as SessionStep[])
-                : []
-            }
-            isSocketConnected={isConnected}
-            posX={robotData?.posX ?? 0}
-            posY={robotData?.posY ?? 0}
-            connectionProps={connectionProps}
-          />
-        </div>
-
-        {/* Coluna Direita: Tempo e Percepção */}
-        <div className="flex flex-col gap-4 lg:col-span-1 w-full min-h-0">
-          <div className="shrink-0 w-full">
-            <RaceTimer 
-              elapsedMs={elapsedMs} 
-              stepCount={currentStep.stepOrder} 
-              isActive={isConnected && currentStep.stepOrder > 0} 
-            />
-          </div>
-          <div className="w-full">
+          {/* Malha de Sensores de Distância (Infravermelhos) */}
             <SensorGrid
               sensorData={{
                 front: currentStep.sensors?.front ?? 0,
@@ -121,8 +68,44 @@ export default function DashboardView({
                 right: currentStep.sensors?.right ?? 0,
               }}
             />
+
+          {/* Telemetria de Corrente e Consumo dos Motores */}
+            <EngineTelemetryWidget
+              motorCurrent={currentStep.current}
+              velocity={0}
+            />
+
+        </div>
+
+        <div className="xl:col-span-8 flex flex-col h-full min-h-0 overflow-hidden">
+          <div className="flex-1 w-full relative overflow-hidden rounded-none">
+            <VisualizeDiv
+              activeSession={activeSession}
+              currentView={currentView}
+              robotData={
+                robotData
+                  ? ({
+                      ...robotData,
+                      createdAt: new Date(robotData.timestamp),
+                    } as unknown as SessionStep)
+                  : null
+              }
+              steps={
+                sessionSteps
+                  ? (sessionSteps.map((step) => ({
+                      ...step,
+                      createdAt: new Date(step.timestamp),
+                    })) as unknown as SessionStep[])
+                  : []
+              }
+              isSocketConnected={isConnected}
+              posX={robotData?.posX ?? 0}
+              posY={robotData?.posY ?? 0}
+              connectionProps={connectionProps}
+            />
           </div>
         </div>
+
       </div>
     </main>
   );

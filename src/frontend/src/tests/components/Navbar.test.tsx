@@ -73,7 +73,7 @@ describe('Navbar Component', () => {
     const { rerender } = render(<Navbar {...defaultProps} currentView="network" isSocketConnected={false} />);
     
     const connectBtn = screen.getByRole('button', { name: /conectar/i });
-    const disconnectBtn = screen.getByRole('button', { name: /encerrar conexão/i });
+    const disconnectBtn = screen.getByRole('button', { name: /encerrar/i });
 
     expect(connectBtn).not.toBeDisabled();
     expect(disconnectBtn).toBeDisabled(); // Fica opaco e travado
