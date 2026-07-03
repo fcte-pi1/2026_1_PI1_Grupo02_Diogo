@@ -1,9 +1,8 @@
 interface EngineTelemetryProps {
-  motorCurrent: number; // Corrente do motor vinda do INA219 (em mA)
   velocity: number;     // Para o gráfico de velocidade que você citou
 }
 
-export default function EngineTelemetryWidget({ motorCurrent, velocity }: EngineTelemetryProps) {
+export default function EngineTelemetryWidget({ velocity }: EngineTelemetryProps) {
   return (
     <div className="bg-surface-container-low/60 border border-outline-variant/30 backdrop-blur-md p-stack-md flex flex-col gap-stack-md rounded-none h-full">
       
