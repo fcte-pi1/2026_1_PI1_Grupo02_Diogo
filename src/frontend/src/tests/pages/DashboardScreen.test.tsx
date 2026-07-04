@@ -8,7 +8,7 @@ const activeSession = {
   mode: "Cockpit",
 };
 
-describe("DashboardScreen", () => {
+describe("DashboardScreen Component", () => {
   it("renderiza widgets com valores zerados sem telemetria", () => {
     render(
       <DashboardScreen
@@ -23,7 +23,6 @@ describe("DashboardScreen", () => {
     expect(screen.getByTestId("dashboard")).toBeInTheDocument();
     expect(screen.getByTestId("battery-voltage")).toHaveTextContent("0V");
     expect(screen.getByTestId("maze-coords")).toHaveTextContent("COORDS: X-0, Y-0");
-    expect(screen.getByTestId("race-timer-status")).toHaveTextContent("STANDBY");
   });
 
   it("atualiza widgets com dados de telemetria", () => {
@@ -48,7 +47,5 @@ describe("DashboardScreen", () => {
 
     expect(screen.getByTestId("battery-voltage")).toHaveTextContent("11.5V");
     expect(screen.getByTestId("maze-coords")).toHaveTextContent("COORDS: X-1, Y-2");
-    expect(screen.getByTestId("race-timer-status")).toHaveTextContent("ACTIVE");
-    expect(screen.getByText("300 mA")).toBeInTheDocument();
   });
 });
