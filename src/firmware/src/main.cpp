@@ -165,7 +165,7 @@ void loop()
     if (currentMillis - lastTelemetrySend >= 2000)
     {
         lastTelemetrySend = currentMillis;
-        publishTelemetry(rato, lab, mqttClient, MQTT_TOPIC, ROBOT_ID, stepCounter, motorsRunning, concluido);
+        publishTelemetry(rato, lab, mqttClient, MQTT_TOPIC, ROBOT_ID, stepCounter, estado, motorsRunning, getUltimoMovimentoDFS(), concluido);
 
     }
 
