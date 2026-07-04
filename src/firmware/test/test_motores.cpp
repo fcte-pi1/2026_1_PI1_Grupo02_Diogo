@@ -119,8 +119,8 @@ void loop() {
             }
         } else {
             moveForward();
+        }
     }
 }
 
 #endif
-}
