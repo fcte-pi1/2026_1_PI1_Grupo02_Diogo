@@ -8,15 +8,16 @@
 #include "../lib/output/motor/motor.h"
 #include "../lib/utils/conexao/conexoes.h"
 #include "../lib/utils/telemetria/telemetria.h"
-#include "../lib/utils/volta/volta.h"
+#include "../lib/utils/floodfill/floodfill.h"
 #include "../lib/utils/dfs/dfs.h"
 
 #pragma region Variáveis
 
-enum Modo
+enum Modo // algoritmos de percorrer
 {
     DFS,
-    FLOODFILL,
+    FLOODFILL,  // volta: centro -> início (estado = EXPLORANDO)
+    CORRIDA_FF, // Corrida: inicio -> centro (estado = CORRIDA)
 };
 
 const char *MQTT_TOPIC = "rato/telemetria";
@@ -91,6 +92,11 @@ bool motorsRunning = false;
 bool ledState = false;
 bool concluido = false;
 unsigned long stepCounter = 0;
+
+// Pausa entre FF (entre volta e corrida)
+bool aguardandoCorrida = false;
+unsigned long inicioEspera = 0;
+const unsigned long TEMPO_ESPERA_CORRIDA_MS = 10000;
 
 Rato rato;
 Labirinto lab;
@@ -187,10 +193,10 @@ void loop()
     if (currentMillis - lastTelemetrySend >= 2000)
     {
         lastTelemetrySend = currentMillis;
-        if(modo == DFS)
+        if (modo == DFS)
             publishTelemetry(rato, lab, mqttClient, MQTT_TOPIC, ROBOT_ID, stepCounter, motorsRunning, getUltimoMovimentoDFS(), concluido);
-        else if(modo == FLOODFILL)
-            publishTelemetry(rato, lab, mqttClient, MQTT_TOPIC, ROBOT_ID, stepCounter, motorsRunning, getUltimoMovimentoVolta(), concluido);
+        else // FLOODFILL (volta) ou CORRIDA_FF usam a mesma escolha de caminho
+            publishTelemetry(rato, lab, mqttClient, MQTT_TOPIC, ROBOT_ID, stepCounter, motorsRunning, getUltimoMovimentoFloodFill(), concluido);
     }
 
     // Serial (2s)
@@ -211,27 +217,59 @@ void loop()
         switch (modo)
         {
         case DFS:
-        passoDFS(&rato, &lab, &motorsRunning, &stepCounter,
-                 &destinoX, &destinoY, &concluido, &estado);
+            passoDFS(&rato, &lab, &motorsRunning, &stepCounter,
+                     &destinoX, &destinoY, &concluido, &estado);
             break;
         case FLOODFILL:
-            passoVolta(&rato, &lab, &motorsRunning,
-           destinoX, destinoY,           
-           &concluido, &estado);
-                break;
+            // Volta: do centro (posição atual) até o início do labirinto
+            passoFloodFill(&rato, &lab, &motorsRunning,
+                           INICIO_X, INICIO_Y,
+                           &concluido, &estado);
+            break;
         default:
             break;
         }
         break;
     case CORRIDA:
-        // Falta fazer o de corrida
+        // Corrida: do início até o centro (destinoX/Y já descobertos pelo DFS)
+        passoFloodFill(&rato, &lab, &motorsRunning,
+                       destinoX, destinoY,
+                       &concluido, &estado);
         break;
     case CONCLUIDO:
-        // if(modo == DFS)
-        //     modo = FLOODFILL;
+        if (modo == DFS)
+        {
+            // Achou o centro 2x2 -> prepara e inicia a volta pro início
+            modo = FLOODFILL;
+            concluido = false;
+            resetFloodFill();
+            estado = EXPLORANDO;
+        }
+        else if (modo == FLOODFILL)
+        {
+            if (!aguardandoCorrida)
+            {
+                // Voltou pro início -> espera 10s
+                aguardandoCorrida = true;
+                inicioEspera = currentMillis;
+                motorsRunning = false;
+            }
+            else if (currentMillis - inicioEspera >= TEMPO_ESPERA_CORRIDA_MS)
+            {
+                // Esperou os 10s -> começa corrida (início -> centro)
+                aguardandoCorrida = false;
+                modo = CORRIDA_FF;
+                concluido = false;
+                resetFloodFill();
+                estado = CORRIDA;
+            }
+        }
+        atualizaSensores();
+        break;
     case PARADO:
     default:
         atualizaSensores();
         break;
+
     }
 }

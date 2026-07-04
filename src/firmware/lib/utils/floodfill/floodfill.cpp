@@ -1,8 +1,8 @@
-#include "./volta.h"
+#include "./floodfill.h"
 
 static const char _dirs[] = {'N', 'L', 'S', 'O'};
 
-static bool _temParede(Labirinto *lab, int x, int y, char dir)  // true/false de parede "na direção"
+static bool _temParede(Labirinto *lab, int x, int y, char dir) // true/false de parede "na direção"
 {
     switch (dir)
     {
@@ -18,7 +18,7 @@ static bool _temParede(Labirinto *lab, int x, int y, char dir)  // true/false de
     return true;
 }
 
-static void _vizinho(int x, int y, char dir, int *nx, int *ny)  // {[nx][ny]} tem a celula "da direção"
+static void _vizinho(int x, int y, char dir, int *nx, int *ny) // {[nx][ny]} tem a celula "da direção"
 {
     *nx = x;
     *ny = y;
@@ -45,7 +45,7 @@ static int _inicio = 0;
 static int _fim = 0;
 static int _quantidade = 0;
 
-static void _push(PosicaoFloodFill p)  // _fila.emplace_back(pair<int, int>)
+static void _push(PosicaoFloodFill p) // _fila.emplace_back(pair<int, int>)
 {
     _fila[_fim] = p;
     _fim = (_fim + 1) % (LAB_TAM * LAB_TAM);
@@ -72,10 +72,10 @@ void executaFloodFill(Labirinto *lab, const PosicaoFloodFill destinos[], int qua
         for (int y = 0; y < LAB_TAM; y++)
             lab->celula[x][y].distancia = DIST_INFINITA;
 
-    for (int i = 0; i < quantidadeDestinos; i++)    // na volta é 1x1 na ida é 2x2, por isso um vetor de destino
+    for (int i = 0; i < quantidadeDestinos; i++) // na volta é 1x1, na corrida é 2x2, por isso um vetor de destino
     {
-        lab->celula[destinos[i].x][destinos[i].y].distancia = 0;    // destino tem distancia 0
-        _push(destinos[i]); // adiciona o pair<x, y> para a queue
+        lab->celula[destinos[i].x][destinos[i].y].distancia = 0; // destino tem distancia 0
+        _push(destinos[i]);                                      // adiciona o pair<x, y> para a queue
     }
 
     while (_quantidade > 0) // while(!queue.empty())
@@ -87,14 +87,14 @@ void executaFloodFill(Labirinto *lab, const PosicaoFloodFill destinos[], int qua
         {
             char dir = _dirs[d];
             if (_temParede(lab, atual.x, atual.y, dir)) //  Pula iteração se tiver parede na direção
-                continue;   
+                continue;
 
             int nx, ny;
             _vizinho(atual.x, atual.y, dir, &nx, &ny);
             if (nx < 0 || ny < 0 || nx >= LAB_TAM || ny >= LAB_TAM) // pra nao sair do mapa
                 continue;
 
-            if (lab->celula[nx][ny].distancia > distAtual + 1)  // se: celula da direção > autual+1
+            if (lab->celula[nx][ny].distancia > distAtual + 1) // se: celula da direção > autual+1
             {
                 lab->celula[nx][ny].distancia = distAtual + 1; //   atualiza o valor dela pra atual + 1
                 _push({nx, ny});
@@ -128,21 +128,21 @@ char escolheProximoMovimento(Labirinto *lab, int x, int y, char direcaoAtual)
         }
     }
 
-    return melhorDirecao;   // passa a direção para celula mais proxima do fim
+    return melhorDirecao; // passa a direção para celula mais proxima do fim
 }
 
-static bool        _floodFillPronto       = false;
-static const char *_ultimoMovimentoVolta  = "parado";   // para telemetria
- 
-const char *getUltimoMovimentoVolta()
+static bool _floodFillPronto = false;
+static const char *_ultimoMovimentoFF = "parado"; // para telemetria
+
+const char *getUltimoMovimentoFloodFill()
 {
-    return _ultimoMovimentoVolta;
+    return _ultimoMovimentoFF;
 }
- 
-void resetVolta()   // tem q usar entre um floodfill e outro (volta - corrida)
+
+void resetFloodFill() // tem q usar entre um floodfill e outro (volta - corrida)
 {
-    _floodFillPronto      = false;
-    _ultimoMovimentoVolta = "parado";
+    _floodFillPronto = false;
+    _ultimoMovimentoFF = "parado";
 }
 
 static int _indiceDir(char d)
@@ -157,9 +157,8 @@ static char _dirRelativa(char direcaoAtual, int relativa)
 {
     return _dirs[(_indiceDir(direcaoAtual) + relativa + 4) % 4];
 }
- 
 
-static const char *_virarPara(Rato *rato, char alvo)    // vira para direção de menor distancia
+static const char *_virarPara(Rato *rato, char alvo) // vira para direção de menor distancia
 {
     int diff = (_indiceDir(alvo) - _indiceDir(rato->direcao) + 4) % 4;
     switch (diff)
@@ -178,76 +177,74 @@ static const char *_virarPara(Rato *rato, char alvo)    // vira para direção d
     }
 }
 
-
-void passoVolta(Rato *rato, Labirinto *lab, bool *motorsRunning,
-                int origemX, int origemY,
-                bool *conclusao, EstadoFF *estado)
+void passoFloodFill(Rato *rato, Labirinto *lab, bool *motorsRunning,
+                    int destinoX, int destinoY,
+                    bool *conclusao, Estado *estado)
 {
-    // flood fill na 1° iteração (destino = célula de origem do DFS)
     if (!_floodFillPronto)
     {
-        PosicaoFloodFill origem = {origemX, origemY};
-        executaFloodFill(lab, &origem, 1);
+        PosicaoFloodFill alvo = {destinoX, destinoY};
+        executaFloodFill(lab, &alvo, 1);
         _floodFillPronto = true;
     }
- 
-    // Verifica se chegou no destino do FF
-    if (rato->x == origemX && rato->y == origemY)
+
+    // Verifica se chegou no destino
+    if (rato->x == destinoX && rato->y == destinoY)
     {
-        *motorsRunning        = false;
-        *estado               = CONCLUIDO;
-        *conclusao            = true;
-        _ultimoMovimentoVolta = "parado";
+        *motorsRunning = false;
+        *estado = CONCLUIDO;
+        *conclusao = true;
+        _ultimoMovimentoFF = "parado";
         return;
     }
- 
+
     // Sensores pra detectar paredes ainda não encontradas pelo DFS
     atualizaSensores();
     lerDistancias(rato);
- 
-    char dirFrente   = _dirRelativa(rato->direcao, 0);
-    char dirDireita  = _dirRelativa(rato->direcao, 1);
+
+    char dirFrente = _dirRelativa(rato->direcao, 0);
+    char dirDireita = _dirRelativa(rato->direcao, 1);
     char dirEsquerda = _dirRelativa(rato->direcao, 3);
- 
+
     bool novaParede = false;
- 
-    if (temParedeFrente()   && !_temParede(lab, rato->x, rato->y, dirFrente))   // se tem parede na frente mas não no mapa
+
+    if (temParedeFrente() && !_temParede(lab, rato->x, rato->y, dirFrente)) // se tem parede na frente mas não no mapa
     {
         registrarParede(lab, rato->x, rato->y, dirFrente);
         novaParede = true;
     }
-    if (temParedeDireita()  && !_temParede(lab, rato->x, rato->y, dirDireita))  // se tem parede na direita mas não no mapa
+    if (temParedeDireita() && !_temParede(lab, rato->x, rato->y, dirDireita)) // se tem parede na direita mas não no mapa
     {
         registrarParede(lab, rato->x, rato->y, dirDireita);
         novaParede = true;
     }
-    if (temParedeEsquerda() && !_temParede(lab, rato->x, rato->y, dirEsquerda))// se tem parede na esquerda mas não no mapa
+    if (temParedeEsquerda() && !_temParede(lab, rato->x, rato->y, dirEsquerda)) // se tem parede na esquerda mas não no mapa
     {
         registrarParede(lab, rato->x, rato->y, dirEsquerda);
         novaParede = true;
     }
- 
+
     // Se teve atualização de parede refaz o calculo da rota
     if (novaParede)
     {
-        PosicaoFloodFill origem = {origemX, origemY};
-        executaFloodFill(lab, &origem, 1);
+        PosicaoFloodFill alvo = {destinoX, destinoY};
+        executaFloodFill(lab, &alvo, 1);
     }
- 
-    // Pega a direa~çao do melhor movimento
+
+    // Pega a direção do melhor movimento
     char proxDir = escolheProximoMovimento(lab, rato->x, rato->y, rato->direcao);
- 
-    if (proxDir == 'X')   // So entra se tiver erro (nao encontrou caminho)
+
+    if (proxDir == 'X') // So entra se tiver erro (nao encontrou caminho)
     {
-        *motorsRunning        = false;
-        *estado               = CONCLUIDO;
-        *conclusao            = true;
-        _ultimoMovimentoVolta = "parado";
+        *motorsRunning = false;
+        *estado = CONCLUIDO;
+        *conclusao = true;
+        _ultimoMovimentoFF = "parado";
         return;
     }
- 
+
     // vira para o caminho escolhido e anda pra frente
-    _ultimoMovimentoVolta = _virarPara(rato, proxDir);
-    Andar(rato);          
+    _ultimoMovimentoFF = _virarPara(rato, proxDir);
+    Andar(rato);
     *motorsRunning = true;
 }
