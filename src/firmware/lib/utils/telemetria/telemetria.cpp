@@ -49,8 +49,8 @@ void publishTelemetry(
     sensores["direitaCm"] = rato.distancia_direita;
 
     JsonObject energia = doc.createNestedObject("energia");
-    energia["tensaoV"] = 0.0;
-    energia["correnteMa"] = 0.0;
+    energia["tensaoV"] = rato.tensao;
+    energia["correnteMa"] = rato.corrente;
 
     doc["conclusao"] = concluded;
 
