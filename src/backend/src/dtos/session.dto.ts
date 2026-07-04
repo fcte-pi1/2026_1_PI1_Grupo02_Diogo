@@ -21,8 +21,26 @@ export type SessionStepDto = {
   createdAt: string;
 };
 
+export type MazeCellDto = {
+  posX: number;
+  posY: number;
+  wallNorth: boolean;
+  wallSouth: boolean;
+  wallEast: boolean;
+  wallWest: boolean;
+};
+
+export type MazeDto = {
+  id: string;
+  name: string;
+  width: number;
+  height: number;
+  cells: MazeCellDto[];
+};
+
 export type SessionDetailDto = SessionMetadataDto & {
   steps: SessionStepDto[];
+  maze?: MazeDto;
 };
 
 type SessionMetadataSource = Pick<
@@ -53,6 +71,22 @@ export const toSessionMetadataDto = (
   durationMs: session.durationMs,
   initialVoltage: session.initialVoltage,
   finalVoltage: session.finalVoltage,
+});
+
+type MazeSource = {
+  id: string;
+  name: string;
+  width: number;
+  height: number;
+  cells: MazeCellDto[];
+};
+
+export const toMazeDto = (maze: MazeSource): MazeDto => ({
+  id: maze.id,
+  name: maze.name,
+  width: maze.width,
+  height: maze.height,
+  cells: maze.cells,
 });
 
 export const toSessionStepDto = (step: SessionStepSource): SessionStepDto => ({

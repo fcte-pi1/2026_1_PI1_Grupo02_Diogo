@@ -7,6 +7,7 @@
 
 #include "../rato/rato.h"
 #include "../mapa/labirinto.h"
+#include "../dfs/dfs.h"
 
 void publishTelemetry(
     const Rato &rato,
@@ -15,6 +16,7 @@ void publishTelemetry(
     const char *mqttTopic,
     const char *robotId,
     unsigned long &stepCounter,
+    Estado estado,
     bool motorsRunning,
     const char *ultimoMovimento,
     bool concluded);

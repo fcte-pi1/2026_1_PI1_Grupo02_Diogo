@@ -42,7 +42,7 @@ const uint8_t MOTOR_LEFT_IN2 = 26;
 const uint8_t MOTOR_RIGHT_IN1 = 27;
 const uint8_t MOTOR_RIGHT_IN2 = 14;
 
-// encoders
+// Encoders
 const uint8_t ENCODER_LEFT_A = 34;
 const uint8_t ENCODER_LEFT_B = 35;
 const uint8_t ENCODER_RIGHT_A = 32;
@@ -88,7 +88,6 @@ unsigned long lastMotorToggle = 0;
 unsigned long lastLedBlink = 0;
 unsigned long lastSerialLog = 0;
 
-bool motorsRunning = false;
 bool ledState = false;
 bool concluido = false;
 unsigned long stepCounter = 0;
@@ -108,11 +107,9 @@ Labirinto lab;
 #pragma region Encoders
 // -------------------------------------------------------------------------------
 //  ISRs - ENCODERS
-//  Ficam aqui pq encoderLeftCount/encoderRightCount são globais do main e
-//  passados por ponteiro para inicializaMotores()
 // -------------------------------------------------------------------------------
 void IRAM_ATTR encoderLeftISR()
-{ // IRAM_ATTR coloca na RAM no lugar da flash
+{ 
     encoderLeftCount++;
 }
 
@@ -123,17 +120,9 @@ void IRAM_ATTR encoderRightISR()
 
 #pragma endregion
 
-#pragma region Telemetria
 // -------------------------------------------------------------------------------
-//  TELEMETRIA
+// SETUP
 // -------------------------------------------------------------------------------
-
-#pragma endregion
-
-// -------------------------------------------------------------------------------
-// -------------------------------------------------------------------------------
-// -------------------------------------------------------------------------------
-
 void setup()
 {
     Serial.begin(115200);
@@ -142,31 +131,33 @@ void setup()
     // LED
     pinMode(LED_PIN, OUTPUT);
 
-    // Encoders - ISRs definidas neste arquivo, ponteiros passados para a lib
+    // Encoders
     pinMode(ENCODER_LEFT_A, INPUT_PULLUP);
     pinMode(ENCODER_RIGHT_A, INPUT_PULLUP);
     attachInterrupt(digitalPinToInterrupt(ENCODER_LEFT_A), encoderLeftISR, RISING);
     attachInterrupt(digitalPinToInterrupt(ENCODER_RIGHT_A), encoderRightISR, RISING);
 
-    // Sensores (pinos + ISRs no ECHO configurados internamente)
+    // Sensores
     inicializaSensores(TRIG_FRONT, ECHO_FRONT,
                        TRIG_LEFT, ECHO_LEFT,
                        TRIG_RIGHT, ECHO_RIGHT);
 
-    // Motores (pinos + referência aos contadores de encoder)
+    // Motores (Lógica estrutural da equipe)
     inicializaMotores(MOTOR_LEFT_IN1, MOTOR_LEFT_IN2,
                       MOTOR_RIGHT_IN1, MOTOR_RIGHT_IN2,
                       &encoderLeftCount, &encoderRightCount);
 
-    inicializaRato(&rato);
+    // Ativa o controle PWM analógico  no motor.cpp
+    setupMotores(); 
 
+    inicializaRato(&rato);
     inicializaLabirinto(&lab);
 
     // Rede
     connectWiFi();
     connectMQTT();
 
-    delay(1000); // só um tempo pra começar dps
+    delay(1000); // tempo de estabilização
 
     resetDFS();          // garante pilha/flags zeradas antes de explorar
     estado = EXPLORANDO; // inicia a exploração por DFS
@@ -174,16 +165,12 @@ void setup()
 }
 
 // -------------------------------------------------------------------------------
+// LOOP
 // -------------------------------------------------------------------------------
-// -------------------------------------------------------------------------------
-
 void loop()
 {
-
-    if (WiFi.status() != WL_CONNECTED)
-        connectWiFi();
-    if (!mqttClient.connected())
-        connectMQTT();
+    if (WiFi.status() != WL_CONNECTED) connectWiFi();
+    if (!mqttClient.connected()) connectMQTT();
 
     mqttClient.loop();
 
@@ -194,9 +181,9 @@ void loop()
     {
         lastTelemetrySend = currentMillis;
         if (modo == DFS)
-            publishTelemetry(rato, lab, mqttClient, MQTT_TOPIC, ROBOT_ID, stepCounter, motorsRunning, getUltimoMovimentoDFS(), concluido);
+            publishTelemetry(rato, lab, mqttClient, MQTT_TOPIC, ROBOT_ID, stepCounter, estado, motorsRunning, getUltimoMovimentoDFS(), concluido);
         else // FLOODFILL (volta) ou CORRIDA_FF usam a mesma escolha de caminho
-            publishTelemetry(rato, lab, mqttClient, MQTT_TOPIC, ROBOT_ID, stepCounter, motorsRunning, getUltimoMovimentoFloodFill(), concluido);
+            publishTelemetry(rato, lab, mqttClient, MQTT_TOPIC, ROBOT_ID, stepCounter, estado, motorsRunning, getUltimoMovimentoFloodFill(), concluido);
     }
 
     // Serial (2s)
@@ -209,8 +196,9 @@ void loop()
         Serial.printf("Motores    -> Status: %s\n", motorsRunning ? "EM MOVIMENTO" : "PARADO");
     }
 
-    // Cada chamada executa 1 passo. atualizaSensores()/lerDistancias() são
-    // chamados dentro de passoDFS().
+  
+
+    // Ações baseadas no Estado do Robô
     switch (estado)
     {
     case EXPLORANDO:
@@ -236,6 +224,7 @@ void loop()
                        destinoX, destinoY,
                        &concluido, &estado);
         break;
+
     case CONCLUIDO:
         if (modo == DFS)
         {
@@ -268,7 +257,7 @@ void loop()
         break;
     case PARADO:
     default:
-        atualizaSensores();
+        stopMotors();
         break;
 
     }

@@ -258,6 +258,7 @@ export default function HistoryScreen() {
               <SessionReplayGrid
                 steps={selectedSession.steps}
                 activeIndex={replayIndex}
+                maze={selectedSession.maze}
               />
 
               {replayStep && (
@@ -282,7 +283,8 @@ export default function HistoryScreen() {
               )}
 
               <p className="text-center text-[10px] font-mono text-outline uppercase tracking-widest">
-                Quadrado brilhante = robô · tons claros = trilha percorrida
+                Quadrado brilhante = robô · tom mais forte = célula revisitada
+                · borda vermelha = parede
               </p>
             </div>
           )}
