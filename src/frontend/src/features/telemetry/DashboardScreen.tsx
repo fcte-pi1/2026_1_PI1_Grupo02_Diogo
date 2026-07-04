@@ -32,7 +32,7 @@ export default function DashboardView({
   
   // Estados locais para controle do Pop-up (Issue #100) inseridos no local correto
   const [isChallengeFinished, setIsChallengeFinished] = useState(false);
-  const [hasDbError, setHasDbError] = useState(false);
+  const [hasDbError] = useState(false);
 
   // Gatilho de teste para abrir o modal quando a corrida encerrar
   useEffect(() => {
