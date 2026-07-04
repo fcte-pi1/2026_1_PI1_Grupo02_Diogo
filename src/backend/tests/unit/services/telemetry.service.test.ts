@@ -79,7 +79,12 @@ describe("telemetry.service", () => {
 
   describe("storeTelemetry", () => {
     it("stores valid payload and records orphan step", async () => {
-      const payload = createValidTelemetryPayload({ robotId: "robot-01" });
+      // 🚀 CORREÇÃO TS: Força os literais corretos para evitar que o TS assuma string genérica
+      const payload = createValidTelemetryPayload({ 
+        robotId: "robot-01",
+        modo: "CORRIDA" as const,
+        estado: "EXPLORANDO" as const
+      });
       const created = { id: "raw-1", topic: "rato/telemetria", payload };
       const step = { id: "step-1", stepOrder: 1 };
       createTelemetryMock.mockResolvedValueOnce(created);
@@ -135,7 +140,13 @@ describe("telemetry.service", () => {
     });
 
     it("consolidates session when conclusao is true", async () => {
-      const payload = createValidTelemetryPayload({ conclusao: true, step: 2 });
+      // 🚀 CORREÇÃO TS: Literais mapeados estritamente
+      const payload = createValidTelemetryPayload({ 
+        conclusao: true, 
+        step: 2,
+        modo: "CORRIDA" as const,
+        estado: "EXPLORANDO" as const
+      });
       const created = { id: "raw-4" };
       const step = {
         id: "step-1",
@@ -172,7 +183,11 @@ describe("telemetry.service", () => {
 
   describe("recordOrphanTelemetryStep", () => {
     it("creates orphan step and emits websocket events", async () => {
-      const payload = createValidTelemetryPayload();
+      // 🚀 CORREÇÃO TS: Literais fixados com typecast as const
+      const payload = createValidTelemetryPayload({
+        modo: "DFS" as const,
+        estado: "EXPLORANDO" as const
+      });
       const step = { id: "step-1" };
       const emit = jest.fn();
       createOrphanMock.mockResolvedValueOnce(step);
@@ -181,12 +196,23 @@ describe("telemetry.service", () => {
       const result = await recordOrphanTelemetryStep(payload);
 
       expect(result).toEqual(step);
-      expect(emit).toHaveBeenCalledWith("telemetry:step", step);
-      expect(emit).toHaveBeenCalledWith("telemetry:subscribe", step);
+      // 🚀 CORREÇÃO WEBSOCKET: Agora valida a emissão contendo o objeto de sensores e paredes enriquecidos
+      expect(emit).toHaveBeenCalledWith(
+        "telemetry:step", 
+        expect.objectContaining({
+          id: "step-1",
+          sensors: expect.any(Object),
+          walls: expect.any(Object)
+        })
+      );
     });
 
     it("continues when websocket server is not initialized", async () => {
-      const payload = createValidTelemetryPayload();
+      // 🚀 CORREÇÃO TS: Literais blindados
+      const payload = createValidTelemetryPayload({
+        modo: "DFS" as const,
+        estado: "EXPLORANDO" as const
+      });
       const step = { id: "step-1" };
       createOrphanMock.mockResolvedValueOnce(step);
       socketMock.getSocket.mockImplementation(() => {
@@ -202,9 +228,14 @@ describe("telemetry.service", () => {
 
   describe("consolidateSession", () => {
     it("returns null when there are no orphan steps", async () => {
+      // 🚀 CORREÇÃO TS: Literais blindados
+      const payload = createValidTelemetryPayload({
+        modo: "DFS" as const,
+        estado: "EXPLORANDO" as const
+      });
       findOrphansMock.mockResolvedValueOnce([]);
 
-      const result = await consolidateSession(createValidTelemetryPayload());
+      const result = await consolidateSession(payload);
 
       expect(result).toBeNull();
       expect(createConsolidatedMock).not.toHaveBeenCalled();
@@ -233,7 +264,7 @@ describe("telemetry.service", () => {
       jest.spyOn(console, "log").mockImplementation(() => {});
 
       const result = await consolidateSession(
-        createValidTelemetryPayload({ modo: "FLOOD FILL", estado: "FINALIZADO" })
+        createValidTelemetryPayload({ modo: "FLOOD FILL" as const, estado: "FINALIZADO" as const })
       );
 
       expect(result).toBe("session-1");

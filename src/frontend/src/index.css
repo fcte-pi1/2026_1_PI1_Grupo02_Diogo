@@ -182,7 +182,6 @@
   background-position: center;
 }
 
-/* 🚀 CORREÇÃO 3: Removido a palavra avulsa 'base' e injetado o reset global usando a estrutura correta de escopo nativo */
 html, body {
   margin: 0;
   padding: 0;
@@ -194,6 +193,34 @@ html, body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   overflow-x: hidden;
+}
+
+/* Define a largura da barra vertical e altura da horizontal */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+/* Fundo da pista do scroll (Track) - combinando com o background mais escuro */
+::-webkit-scrollbar-track {
+  background: var(--color-surface-container-lowest);
+}
+
+/* O "trilho"/puxador do scroll (Thumb) - usando a outline variant do cockpit */
+::-webkit-scrollbar-thumb {
+  background: var(--color-outline-variant);
+  border-radius: 0px; /* Mantém os cantos retos industriais */
+}
+
+/* Efeito ao passar o mouse por cima do puxador */
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-outline);
+}
+
+/* Suporte inicial para Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-outline-variant) var(--color-surface-container-lowest);
 }
 
 *, ::before, ::after {

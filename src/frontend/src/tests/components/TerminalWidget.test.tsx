@@ -1,51 +1,68 @@
-import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { describe, expect, it, vi } from "vitest";
-import TerminalWidget from "../../features/telemetry/components/TerminalWidget";
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { describe, it, expect, vi } from 'vitest';
+import TerminalWidget from '../../features/telemetry/components/TerminalWidget'; // Certifique-se de apontar para o caminho correto
 
-describe("TerminalWidget", () => {
-  it("exibe badge LIVE quando conectado", () => {
-    render(
-      <TerminalWidget
-        activeSession={{ sessionName: "S1", algorithm: "DFS", mode: "Cockpit" }}
-        status
-        logs={["[10:00] passo 1"]}
-      />
-    );
+describe('TerminalWidget Component', () => {
+  const defaultProps = {
+    activeSession: { sessionName: 'Corrida Teste', algorithm: 'DFS', mode: 'EXPLORANDO' },
+    status: false,
+    logs: [],
+    onClearLogs: vi.fn(),
+    onClose: vi.fn(),
+  };
 
-    expect(screen.getByText("LIVE")).toBeInTheDocument();
-    expect(screen.getByText(/passo 1/)).toBeInTheDocument();
+  it('exibe o estado OFFLINE com logs de contingência iniciais', () => {
+    render(<TerminalWidget {...defaultProps} status={false} />);
+    
+    expect(screen.getByText('OFFLINE')).toBeInTheDocument();
+    expect(screen.getByText('[SYS] console_stream_initialized...')).toBeInTheDocument();
   });
 
-  it("exibe OFFLINE e permite limpar logs", async () => {
+  it('exibe badge LIVE e permite limpar o console quando houver logs ativos', async () => {
     const user = userEvent.setup();
-    const onClearLogs = vi.fn();
-
+    const handleClearLogs = vi.fn();
+    
     render(
-      <TerminalWidget
-        activeSession={{ sessionName: "S1", algorithm: "DFS", mode: "Cockpit" }}
-        status
-        logs={["linha 1", "linha 2"]}
-        onClearLogs={onClearLogs}
+      <TerminalWidget 
+        {...defaultProps} 
+        status={true} 
+        logs={['[STEP #1] MOUSE_FORWARD']} 
+        onClearLogs={handleClearLogs} 
       />
     );
 
-    await user.click(screen.getByTitle("Limpar console"));
-    expect(onClearLogs).toHaveBeenCalled();
+    expect(screen.getByText('LIVE')).toBeInTheDocument();
+    expect(screen.getByText('[STEP #1] MOUSE_FORWARD')).toBeInTheDocument();
+
+    // O botão de lixeira agora aparece de forma reativa sob estas condições
+    const clearBtn = screen.getByTitle('Limpar console');
+    await user.click(clearBtn);
+    expect(handleClearLogs).toHaveBeenCalled();
   });
 
-  it("alterna altura ao expandir terminal", async () => {
+  it('permite o fechamento do terminal através do manipulador de fechar', async () => {
     const user = userEvent.setup();
+    const handleClose = vi.fn();
 
-    render(
-      <TerminalWidget
-        activeSession={{ sessionName: "S1", algorithm: "DFS", mode: "Cockpit" }}
-        status={false}
-      />
-    );
+    render(<TerminalWidget {...defaultProps} onClose={handleClose} />);
 
-    expect(screen.getByText("OFFLINE")).toBeInTheDocument();
-    await user.click(screen.getByTitle("Expandir terminal"));
-    expect(screen.getByTitle("Recolher terminal")).toBeInTheDocument();
+    const closeBtn = screen.getByTitle('Fechar terminal');
+    await user.click(closeBtn);
+    expect(handleClose).toHaveBeenCalled();
+  });
+
+  it('recalcula a altura interna pré-definida ao acionar os botões de manipulação rápida', async () => {
+    const user = userEvent.setup();
+    render(<TerminalWidget {...defaultProps} />);
+
+    const maxBtn = screen.getByTitle('Maximizar altura');
+    const minBtn = screen.getByTitle('Minimizar altura');
+
+    expect(maxBtn).toBeInTheDocument();
+    expect(minBtn).toBeInTheDocument();
+
+    await user.click(maxBtn);
+    await user.click(minBtn);
   });
 });

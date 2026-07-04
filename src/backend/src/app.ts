@@ -8,12 +8,28 @@ import { telemetryRouter } from "./routes/telemetry.routes";
 
 const app = express();
 
-app.use(helmet());
+// Configura o Helmet sem bloquear requisições de upgrade de protocolo locais no Firefox em dev
 app.use(
-  cors({
-    origin: env.cors.origin,
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    contentSecurityPolicy: false, 
   })
 );
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || origin.includes("localhost") || origin.includes("127.0.0.1")) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    credentials: true,
+  })
+);
+
 app.use(express.json({ limit: "1mb" }));
 
 app.use("/health", healthRouter);
