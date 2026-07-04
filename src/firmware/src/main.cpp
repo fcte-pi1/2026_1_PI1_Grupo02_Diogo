@@ -8,9 +8,16 @@
 #include "../lib/output/motor/motor.h"
 #include "../lib/utils/conexao/conexoes.h"
 #include "../lib/utils/telemetria/telemetria.h"
+#include "../lib/utils/volta/volta.h"
 #include "../lib/utils/dfs/dfs.h"
 
 #pragma region Variáveis
+
+enum Modo
+{
+    DFS,
+    FLOODFILL,
+};
 
 const char *MQTT_TOPIC = "rato/telemetria";
 const char *ROBOT_ID = "UAV-MOUSE-01";
@@ -65,6 +72,7 @@ int destinoY = -1;
 //  O enum Estado é definido em dfs.h (para ser compartilhado com passoDFS).
 // -------------------------------------------------------------------------------
 Estado estado = PARADO;
+Modo modo = DFS;
 
 // -------------------------------------------------------------------------------
 //  GLOBAIS
@@ -156,6 +164,7 @@ void setup()
 
     resetDFS();          // garante pilha/flags zeradas antes de explorar
     estado = EXPLORANDO; // inicia a exploração por DFS
+    modo = DFS;
 }
 
 // -------------------------------------------------------------------------------
@@ -178,7 +187,10 @@ void loop()
     if (currentMillis - lastTelemetrySend >= 2000)
     {
         lastTelemetrySend = currentMillis;
-        publishTelemetry(rato, lab, mqttClient, MQTT_TOPIC, ROBOT_ID, stepCounter, motorsRunning, getUltimoMovimentoDFS(), concluido);
+        if(modo == DFS)
+            publishTelemetry(rato, lab, mqttClient, MQTT_TOPIC, ROBOT_ID, stepCounter, motorsRunning, getUltimoMovimentoDFS(), concluido);
+        else if(modo == FLOODFILL)
+            publishTelemetry(rato, lab, mqttClient, MQTT_TOPIC, ROBOT_ID, stepCounter, motorsRunning, getUltimoMovimentoVolta(), concluido);
     }
 
     // Serial (2s)
@@ -196,13 +208,27 @@ void loop()
     switch (estado)
     {
     case EXPLORANDO:
+        switch (modo)
+        {
+        case DFS:
         passoDFS(&rato, &lab, &motorsRunning, &stepCounter,
                  &destinoX, &destinoY, &concluido, &estado);
+            break;
+        case FLOODFILL:
+            passoVolta(&rato, &lab, &motorsRunning,
+           destinoX, destinoY,           
+           &concluido, &estado);
+                break;
+        default:
+            break;
+        }
         break;
     case CORRIDA:
-        // FloodFill — não implementar agora
+        // Falta fazer o de corrida
         break;
     case CONCLUIDO:
+        // if(modo == DFS)
+        //     modo = FLOODFILL;
     case PARADO:
     default:
         atualizaSensores();
