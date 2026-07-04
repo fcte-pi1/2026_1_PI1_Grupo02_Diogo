@@ -96,10 +96,11 @@ export const recordOrphanTelemetryStep = async (
     const io = getSocket();
     const enrichedPayload = {
       ...stepRecord,
-      // Garante os sensores vindos da ESP ou do Simulador
       sensors: espData.sensores || { front: 0, left: 0, right: 0 },
-      // Garante as paredes vindo do DTO
-      walls: espData.paredes || { north: false, south: false, east: false, west: false }
+      walls: espData.paredes || { north: false, south: false, east: false, west: false },
+      conclusao: espData.conclusao,
+      estado: espData.estado,
+      modo: espData.modo,
     };
 
     // Emite o payload completo enriquecido para o useWebSocket do React escutar

@@ -34,12 +34,16 @@ export default function DashboardView({
   const [isChallengeFinished, setIsChallengeFinished] = useState(false);
   const [hasDbError] = useState(false);
 
-  // Gatilho de teste para abrir o modal quando a corrida encerrar
   useEffect(() => {
-    if (sessionSteps.length > 0 && isConnected === false) {
+    const lastStep = sessionSteps[sessionSteps.length - 1];
+    if (
+      lastStep?.conclusao === true &&
+      lastStep?.estado === "FINALIZADO" &&
+      lastStep?.modo === "CORRIDA"
+    ) {
       setIsChallengeFinished(true);
     }
-  }, [sessionSteps, isConnected]);
+  }, [sessionSteps]);
 
   const currentStep = robotData || {
     stepOrder: 0,
