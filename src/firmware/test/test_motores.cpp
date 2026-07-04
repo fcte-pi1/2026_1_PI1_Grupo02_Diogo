@@ -1,3 +1,5 @@
+#ifdef ARDUINO
+
 #include <Arduino.h>
 
 // Pinos dos Sensores
@@ -117,6 +119,8 @@ void loop() {
             }
         } else {
             moveForward();
-        }
     }
+}
+
+#endif
 }
