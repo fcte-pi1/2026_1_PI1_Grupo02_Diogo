@@ -22,6 +22,9 @@ export interface TelemetryData {
     east: boolean;
     west: boolean;
   };
+  conclusao?: boolean;
+  estado?: string;
+  modo?: string;
 }
 
 export function useWebSocket() {
