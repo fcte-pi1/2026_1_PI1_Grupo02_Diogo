@@ -9,6 +9,7 @@
 #include "../lib/utils/conexao/conexoes.h"
 #include "../lib/utils/telemetria/telemetria.h"
 #include "../lib/utils/dfs/dfs.h"
+#include <Adafruit_INA219.h>
 
 #pragma region Variáveis
 
@@ -19,6 +20,11 @@ const char *ROBOT_ID = "UAV-MOUSE-01";
 //  PINOS
 // -------------------------------------------------------------------------------
 const uint8_t LED_PIN = 2;
+
+// INA219
+const uint8_t INA219_SDA = 21;
+const uint8_t INA219_SCL = 15;
+Adafruit_INA219 ina219;
 
 // Ultrassônicos
 const uint8_t TRIG_FRONT = 4;
@@ -119,68 +125,75 @@ void IRAM_ATTR encoderRightISR()
 // -------------------------------------------------------------------------------
 // -------------------------------------------------------------------------------
 // -------------------------------------------------------------------------------
+#pragma region Setup
 
 void setup()
 {
     Serial.begin(115200);
     mqttClient.setBufferSize(1024);
-
+    
     // LED
     pinMode(LED_PIN, OUTPUT);
-
+    
     // Encoders - ISRs definidas neste arquivo, ponteiros passados para a lib
     pinMode(ENCODER_LEFT_A, INPUT_PULLUP);
     pinMode(ENCODER_RIGHT_A, INPUT_PULLUP);
     attachInterrupt(digitalPinToInterrupt(ENCODER_LEFT_A), encoderLeftISR, RISING);
     attachInterrupt(digitalPinToInterrupt(ENCODER_RIGHT_A), encoderRightISR, RISING);
-
+    
     // Sensores (pinos + ISRs no ECHO configurados internamente)
     inicializaSensores(TRIG_FRONT, ECHO_FRONT,
-                       TRIG_LEFT, ECHO_LEFT,
-                       TRIG_RIGHT, ECHO_RIGHT);
-
+        TRIG_LEFT, ECHO_LEFT,
+        TRIG_RIGHT, ECHO_RIGHT);
+        
     // Motores (pinos + referência aos contadores de encoder)
     inicializaMotores(MOTOR_LEFT_IN1, MOTOR_LEFT_IN2,
-                      MOTOR_RIGHT_IN1, MOTOR_RIGHT_IN2,
-                      &encoderLeftCount, &encoderRightCount);
-
+        MOTOR_RIGHT_IN1, MOTOR_RIGHT_IN2,
+        &encoderLeftCount, &encoderRightCount);
+            
+    inicializaIna(INA219_SCL, INA219_SDA, &ina219);
+            
     inicializaRato(&rato);
-
+    
     inicializaLabirinto(&lab);
-
+    
     // Rede
     connectWiFi();
     connectMQTT();
-
+    
     delay(1000); // só um tempo pra começar dps
 
     resetDFS();          // garante pilha/flags zeradas antes de explorar
     estado = EXPLORANDO; // inicia a exploração por DFS
 }
+#pragma endregion
 
 // -------------------------------------------------------------------------------
 // -------------------------------------------------------------------------------
 // -------------------------------------------------------------------------------
+#pragma region Loop
 
 void loop()
 {
-
+    
     if (WiFi.status() != WL_CONNECTED)
-        connectWiFi();
+    connectWiFi();
     if (!mqttClient.connected())
-        connectMQTT();
-
+    connectMQTT();
+    
     mqttClient.loop();
-
+    
     unsigned long currentMillis = millis();
-
+    
     // Telemetria MQTT (2s)
     if (currentMillis - lastTelemetrySend >= 2000)
     {
         lastTelemetrySend = currentMillis;
+
+        lerDadosEnergeticos(&rato, &ina219);
         publishTelemetry(rato, lab, mqttClient, MQTT_TOPIC, ROBOT_ID, stepCounter, motorsRunning, getUltimoMovimentoDFS(), concluido);
     }
-
+    
     // Serial (2s)
     if (currentMillis - lastSerialLog >= 2000)
     {
@@ -190,22 +203,24 @@ void loop()
         Serial.printf("Encoders   -> L: %ld | R: %ld\n", encoderLeftCount, encoderRightCount);
         Serial.printf("Motores    -> Status: %s\n", motorsRunning ? "EM MOVIMENTO" : "PARADO");
     }
-
+    
     // Cada chamada executa 1 passo. atualizaSensores()/lerDistancias() são
     // chamados dentro de passoDFS().
     switch (estado)
     {
-    case EXPLORANDO:
+        case EXPLORANDO:
         passoDFS(&rato, &lab, &motorsRunning, &stepCounter,
-                 &destinoX, &destinoY, &concluido, &estado);
-        break;
-    case CORRIDA:
-        // FloodFill — não implementar agora
-        break;
-    case CONCLUIDO:
-    case PARADO:
-    default:
-        atualizaSensores();
-        break;
+            &destinoX, &destinoY, &concluido, &estado);
+            break;
+            case CORRIDA:
+            // FloodFill — não implementar agora
+            break;
+            case CONCLUIDO:
+            case PARADO:
+            default:
+            atualizaSensores();
+            break;
     }
 }
+
+#pragma endregion
