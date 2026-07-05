@@ -1,7 +1,6 @@
 #pragma once
 #include <Arduino.h>
 #include "../../utils/rato/rato.h"
-
 // -- Constantes ---------------------------------------------------------------
 #define DISTANCIA_LIVRE_CM 400.0f // quando não ve nada
 #define DISTANCIA_PAREDE_CM 12.0f // < 12 = parede
@@ -29,3 +28,4 @@ float getDistanciaDireita();
 bool temParedeFrente();
 bool temParedeEsquerda();
 bool temParedeDireita();
+

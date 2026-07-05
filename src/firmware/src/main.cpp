@@ -4,11 +4,12 @@
 #include <ArduinoJson.h>
 #include "../lib/utils/rato/rato.h"
 #include "../lib/utils/mapa/labirinto.h"
-#include "../lib/input/ultrassonico/sensores.h"
+#include "../lib/input/infravermelho/sensores_ir.h"
 #include "../lib/output/motor/motor.h"
 #include "../lib/utils/conexao/conexoes.h"
 #include "../lib/utils/telemetria/telemetria.h"
 #include "../lib/utils/dfs/dfs.h"
+#include "../lib/input/energia/energia.h"
 
 #pragma region Variáveis
 
@@ -20,13 +21,15 @@ const char *ROBOT_ID = "UAV-MOUSE-01";
 // -------------------------------------------------------------------------------
 const uint8_t LED_PIN = 2;
 
-// Ultrassônicos
-const uint8_t TRIG_FRONT = 4;
-const uint8_t ECHO_FRONT = 16;
-const uint8_t TRIG_LEFT = 17;
-const uint8_t ECHO_LEFT = 5;
-const uint8_t TRIG_RIGHT = 18;
-const uint8_t ECHO_RIGHT = 19;
+// INA219
+const uint8_t INA219_SDA = 21;
+const uint8_t INA219_SCL = 15;
+Adafruit_INA219 ina219;
+
+// Sensores Infravermelho (VL53L0X + VL6180X) - pinos XSHUT
+const uint8_t XSHUT_FRONT = 4;
+const uint8_t XSHUT_LEFT = 17;
+const uint8_t XSHUT_RIGHT = 18;
 
 // Motores
 const uint8_t MOTOR_LEFT_IN1 = 25;
@@ -109,66 +112,79 @@ void IRAM_ATTR encoderRightISR()
 // -------------------------------------------------------------------------------
 // SETUP
 // -------------------------------------------------------------------------------
+
+#pragma endregion
+
+// -------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------
+#pragma region Setup
+
 void setup()
 {
     Serial.begin(115200);
     mqttClient.setBufferSize(1024);
-
+    
     // LED
     pinMode(LED_PIN, OUTPUT);
-
-    // Encoders
+    
+    // Encoders - ISRs definidas neste arquivo, ponteiros passados para a lib
     pinMode(ENCODER_LEFT_A, INPUT_PULLUP);
     pinMode(ENCODER_RIGHT_A, INPUT_PULLUP);
     attachInterrupt(digitalPinToInterrupt(ENCODER_LEFT_A), encoderLeftISR, RISING);
     attachInterrupt(digitalPinToInterrupt(ENCODER_RIGHT_A), encoderRightISR, RISING);
 
-    // Sensores
-    inicializaSensores(TRIG_FRONT, ECHO_FRONT,
-                       TRIG_LEFT, ECHO_LEFT,
-                       TRIG_RIGHT, ECHO_RIGHT);
-
-    // Motores (Lógica estrutural da equipe)
+    // Sensores Infravermelho (I2C - XSHUT)
+    inicializaSensores(XSHUT_FRONT, XSHUT_LEFT, XSHUT_RIGHT);
+    // Motores (pinos + referência aos contadores de encoder)
     inicializaMotores(MOTOR_LEFT_IN1, MOTOR_LEFT_IN2,
-                      MOTOR_RIGHT_IN1, MOTOR_RIGHT_IN2,
-                      &encoderLeftCount, &encoderRightCount);
-
-    // Ativa o controle PWM analógico  no motor.cpp
-    setupMotores(); 
-
+        MOTOR_RIGHT_IN1, MOTOR_RIGHT_IN2,
+        &encoderLeftCount, &encoderRightCount);
+            
+    inicializaIna(&ina219);
+            
     inicializaRato(&rato);
+    
     inicializaLabirinto(&lab);
-
+    
     // Rede
     connectWiFi();
     connectMQTT();
-
-    delay(1000); // tempo de estabilização
+    
+    delay(1000); // só um tempo pra começar dps
 
     resetDFS();          // garante pilha/flags zeradas antes de explorar
     estado = EXPLORANDO; // inicia a exploração por DFS
 }
+#pragma endregion
 
 // -------------------------------------------------------------------------------
 // LOOP
 // -------------------------------------------------------------------------------
+// -------------------------------------------------------------------------------
+#pragma region Loop
+
 void loop()
 {
-    if (WiFi.status() != WL_CONNECTED) connectWiFi();
-    if (!mqttClient.connected()) connectMQTT();
-
+    
+    if (WiFi.status() != WL_CONNECTED)
+    connectWiFi();
+    if (!mqttClient.connected())
+    connectMQTT();
+    
     mqttClient.loop();
-
+    
     unsigned long currentMillis = millis();
-
+    
     // Telemetria MQTT (2s)
     if (currentMillis - lastTelemetrySend >= 2000)
     {
         lastTelemetrySend = currentMillis;
+
+        lerDadosEnergeticos(&rato, &ina219);
         publishTelemetry(rato, lab, mqttClient, MQTT_TOPIC, ROBOT_ID, stepCounter, estado, motorsRunning, getUltimoMovimentoDFS(), concluido);
-
     }
-
+    
     // Serial (2s)
     if (currentMillis - lastSerialLog >= 2000)
     {
@@ -250,3 +266,5 @@ void loop()
         break;
     }
 }
+
+#pragma endregion
