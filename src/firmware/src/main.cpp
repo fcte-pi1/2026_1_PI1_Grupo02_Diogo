@@ -37,7 +37,7 @@ const uint8_t MOTOR_LEFT_IN2 = 26;
 const uint8_t MOTOR_RIGHT_IN1 = 27;
 const uint8_t MOTOR_RIGHT_IN2 = 14;
 
-// encoders
+// Encoders
 const uint8_t ENCODER_LEFT_A = 34;
 const uint8_t ENCODER_LEFT_B = 35;
 const uint8_t ENCODER_RIGHT_A = 32;
@@ -82,7 +82,6 @@ unsigned long lastMotorToggle = 0;
 unsigned long lastLedBlink = 0;
 unsigned long lastSerialLog = 0;
 
-bool motorsRunning = false;
 bool ledState = false;
 bool concluido = false;
 unsigned long stepCounter = 0;
@@ -97,11 +96,9 @@ Labirinto lab;
 #pragma region Encoders
 // -------------------------------------------------------------------------------
 //  ISRs - ENCODERS
-//  Ficam aqui pq encoderLeftCount/encoderRightCount são globais do main e
-//  passados por ponteiro para inicializaMotores()
 // -------------------------------------------------------------------------------
 void IRAM_ATTR encoderLeftISR()
-{ // IRAM_ATTR coloca na RAM no lugar da flash
+{ 
     encoderLeftCount++;
 }
 
@@ -112,9 +109,8 @@ void IRAM_ATTR encoderRightISR()
 
 #pragma endregion
 
-#pragma region Telemetria
 // -------------------------------------------------------------------------------
-//  TELEMETRIA
+// SETUP
 // -------------------------------------------------------------------------------
 
 #pragma endregion
@@ -163,6 +159,7 @@ void setup()
 #pragma endregion
 
 // -------------------------------------------------------------------------------
+// LOOP
 // -------------------------------------------------------------------------------
 // -------------------------------------------------------------------------------
 #pragma region Loop
@@ -197,23 +194,76 @@ void loop()
         Serial.printf("Encoders   -> L: %ld | R: %ld\n", encoderLeftCount, encoderRightCount);
         Serial.printf("Motores    -> Status: %s\n", motorsRunning ? "EM MOVIMENTO" : "PARADO");
     }
-    
-    // Cada chamada executa 1 passo. atualizaSensores()/lerDistancias() são
-    // chamados dentro de passoDFS().
+
+  
+
+    // Ações baseadas no Estado do Robô
     switch (estado)
     {
-        case EXPLORANDO:
-        passoDFS(&rato, &lab, &motorsRunning, &stepCounter,
-            &destinoX, &destinoY, &concluido, &estado);
-            break;
-            case CORRIDA:
-            // FloodFill — não implementar agora
-            break;
-            case CONCLUIDO:
-            case PARADO:
-            default:
+    case EXPLORANDO:
+        {
+            // 1. Lê o ambiente (Apenas uma vez!)
             atualizaSensores();
+            
+            Serial.printf("[CÉREBRO] Distâncias -> Frente: %.1f | Esq: %.1f | Dir: %.1f\n", 
+                          rato.distancia_frente, rato.distancia_esquerda, rato.distancia_direita);
+
+            // 2. Lógica de Decisão
+            if (rato.distancia_frente > 15.0) {
+                Serial.println("[AÇÃO] Caminho livre! A avançar 1 célula (18cm)...");
+                andarDistancia(18.0); 
+                
+                // Atualiza o cérebro! (Se está virado para Norte, o Y sobe, etc.)
+                if(rato.direcao == 'N') rato.y++;
+                else if(rato.direcao == 'S') rato.y--;
+                else if(rato.direcao == 'L') rato.x++;
+                else if(rato.direcao == 'O') rato.x--;
+                
+                stepCounter++; // Regista que deu um passo!
+                delay(300); 
+            } 
+            else {
+                if (rato.distancia_esquerda > 15.0) {
+                    Serial.println("[AÇÃO] A virar à Esquerda 90°.");
+                    virarEsquerda90();
+                    // Atualiza a bússola do rato (Anti-horário)
+                    if(rato.direcao == 'N') rato.direcao = 'O';
+                    else if(rato.direcao == 'O') rato.direcao = 'S';
+                    else if(rato.direcao == 'S') rato.direcao = 'L';
+                    else if(rato.direcao == 'L') rato.direcao = 'N';
+                } 
+                else if (rato.distancia_direita > 15.0) {
+                    Serial.println("[AÇÃO] A virar à Direita 90°.");
+                    virarDireita90();
+                    // Atualiza a bússola do rato (Horário)
+                    if(rato.direcao == 'N') rato.direcao = 'L';
+                    else if(rato.direcao == 'L') rato.direcao = 'S';
+                    else if(rato.direcao == 'S') rato.direcao = 'O';
+                    else if(rato.direcao == 'O') rato.direcao = 'N';
+                } 
+                else {
+                    Serial.println("[AÇÃO] Beco sem saída. A dar meia-volta 180°.");
+                    meiaVolta180(); 
+                    // Inverte a bússola
+                    if(rato.direcao == 'N') rato.direcao = 'S';
+                    else if(rato.direcao == 'S') rato.direcao = 'N';
+                    else if(rato.direcao == 'L') rato.direcao = 'O';
+                    else if(rato.direcao == 'O') rato.direcao = 'L';
+                }
+            }
             break;
+        }
+
+    case CORRIDA:
+        // FloodFill — não implementar agora
+        stopMotors();
+        break;
+
+    case CONCLUIDO:
+    case PARADO:
+    default:
+        stopMotors();
+        break;
     }
 }
 
