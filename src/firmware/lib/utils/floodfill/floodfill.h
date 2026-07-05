@@ -3,8 +3,8 @@
 
 #include "../rato/rato.h"
 #include "../mapa/labirinto.h"
-#include "../output/motor/motor.h"
-#include "../input/ultrassonico/sensores.h"
+#include "../../output/motor/motor.h"
+#include "../../input/infravermelho/sensores_ir.h"
 #include "../dfs/dfs.h" // pra usar o ENUN de Estado
 
 struct PosicaoFloodFill
