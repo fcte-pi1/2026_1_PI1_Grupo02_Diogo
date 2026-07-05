@@ -1,13 +1,9 @@
 #include "./sensores.h"
-#include "sensores.h"
-#include <Adafruit_INA219.h>
 
-// -- Pinos (preenchidos em inicializaSensores e inicializaIna) --------------------------------
+// -- Pinos (preenchidos em inicializaSensores) --------------------------------
 static uint8_t _trigF, _echoF;
 static uint8_t _trigE, _echoE;
 static uint8_t _trigD, _echoD;
-
-static uint8_t _inaSda, _inaScl;
 
 // -- Estado de cada sensor ----------------------------------------------------
 // Volatile: escritas na ISR, leituras no loop principal
@@ -163,28 +159,3 @@ bool temParedeFrente() { return _distF < DISTANCIA_PAREDE_CM; }
 bool temParedeEsquerda() { return _distE < DISTANCIA_PAREDE_CM; }
 bool temParedeDireita() { return _distD < DISTANCIA_PAREDE_CM; }
 
-void inicializaIna(uint8_t ina_scl, uint8_t ina_sda, Adafruit_INA219 *ina219)
-{
-    _inaSda = ina_sda;
-    _inaScl = ina_scl;
-
-    Wire.begin(_inaSda, _inaScl);
-
-    if (!ina219->begin())
-    {
-        Serial.println("Erro ao iniciar INA219");
-    }
-    else
-    {
-        Serial.println("INA219 iniciado");
-    }
-}
-
-void lerDadosEnergeticos(Rato *rato, Adafruit_INA219 *ina219)
-{
-    float busVoltage = ina219->getBusVoltage_V();
-    float current_mA = ina219->getCurrent_mA();
-
-    rato->corrente = current_mA;
-    rato->tensao = busVoltage;
-}

@@ -1,7 +1,7 @@
 #include "./telemetria.h"
 
 static const char* _estadoParaDto(Estado estado){
-    swtich(estado)
+    switch(estado)
     {
         case CONCLUIDO:
             return "FINALIZADO";
