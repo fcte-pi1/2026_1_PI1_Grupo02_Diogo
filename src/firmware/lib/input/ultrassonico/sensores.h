@@ -1,9 +1,6 @@
 #pragma once
 #include <Arduino.h>
 #include "../../utils/rato/rato.h"
-
-class Adafruit_INA219;
-
 // -- Constantes ---------------------------------------------------------------
 #define DISTANCIA_LIVRE_CM 400.0f // quando não ve nada
 #define DISTANCIA_PAREDE_CM 12.0f // < 12 = parede
@@ -32,6 +29,3 @@ bool temParedeFrente();
 bool temParedeEsquerda();
 bool temParedeDireita();
 
-void inicializaIna( uint8_t ina_scl, uint8_t ina_sda, Adafruit_INA219 *ina219);
-
-void lerDadosEnergeticos(Rato *rato, Adafruit_INA219 *ina219);
