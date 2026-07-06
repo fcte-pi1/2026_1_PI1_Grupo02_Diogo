@@ -7,6 +7,7 @@ const char *WIFI_PASSWORD = "SUA_SENHA_WIFI"; // sua senha
 const char *MQTT_BROKER = "192.168.x.x"; // IP do broker MQTT (Docker) na sua rede
 const int MQTT_PORT = 1883;
 
+#if defined(ARDUINO)
 WiFiClient wifiClient;
 PubSubClient mqttClient(wifiClient);
 
@@ -44,3 +45,10 @@ void connectMQTT()
         }
     }
 }
+#else
+WiFiClient wifiClient;
+PubSubClient mqttClient(wifiClient);
+
+void connectWiFi() {}
+void connectMQTT() {}
+#endif
