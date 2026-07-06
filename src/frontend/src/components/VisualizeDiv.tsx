@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { Database, ComponentIcon, ComputerIcon, Unlink, Play } from "lucide-react";
-import { LabyrinthMap } from "./labirith-map";
+import { MazeGrid } from "./MazeGrid";
 import type { SessionStep } from "../types/session";
+import { computeMazeOffset } from "../utils/maze-translation";
 
 interface VisualizeDivProps {
   activeSession: {
@@ -58,10 +59,14 @@ export function VisualizeDiv({
 
   const mazeWidth = activeSession?.maze?.width ?? 8;
   const mazeHeight = activeSession?.maze?.height ?? 8;
-  const safePosX = clampCoord(posX, mazeWidth - 1);
-  const safePosY = clampCoord(posY, mazeHeight - 1);
 
   const resolvedSteps = steps ?? liveSteps;
+
+  // Mesma translação aplicada pelo MazeGrid, para o badge de coordenadas
+  // acompanhar a matriz deslocada quando o robô não parte de (0,0)
+  const { offsetX, offsetY } = computeMazeOffset(resolvedSteps, posX, posY);
+  const safePosX = clampCoord(posX + offsetX, mazeWidth - 1);
+  const safePosY = clampCoord(posY + offsetY, mazeHeight - 1);
 
   useEffect(() => {
     if (steps !== undefined) return;
@@ -113,11 +118,11 @@ export function VisualizeDiv({
             {/* Miolo do Labirinto Reativo */}
             <div className="flex flex-col items-center justify-center flex-1 w-full min-h-0 overflow-hidden">
               <div className="w-full flex-1 flex justify-center items-center min-h-0 max-h-[calc(100vh-290px)]">
-                <LabyrinthMap
-                  staticCells={activeSession?.maze?.cells || []}
+                <MazeGrid
+                  cells={activeSession?.maze?.cells || []}
                   steps={resolvedSteps}
-                  currentX={safePosX}
-                  currentY={safePosY}
+                  currentX={posX}
+                  currentY={posY}
                   width={mazeWidth}
                   height={mazeHeight}
                 />

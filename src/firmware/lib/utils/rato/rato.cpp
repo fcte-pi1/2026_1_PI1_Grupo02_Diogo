@@ -15,4 +15,7 @@ void inicializaRato(Rato *rato)
 
     rato->encoder_esquerdo = 0;
     rato->encoder_direito = 0;
+
+    rato->tensao = 0.0f;
+    rato->corrente = 0.0f;
 }

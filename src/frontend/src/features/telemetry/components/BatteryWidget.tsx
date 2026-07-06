@@ -39,7 +39,7 @@ export default function BatteryWidget({ voltage, percentage, isCritical }: Batte
           <span data-testid="battery-voltage" className="font-telemetry text-on-surface font-bold">{voltage}V</span>
         </li>
         <li className="flex justify-between py-1">
-          <span>TENSÃO:</span>
+          <span>CORRENTE:</span>
           <span className="font-telemetry text-primary-fixed">0.00A</span>
         </li>
       </ul>

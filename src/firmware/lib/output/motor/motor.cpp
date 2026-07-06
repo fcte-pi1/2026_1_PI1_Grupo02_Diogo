@@ -9,7 +9,6 @@ static volatile long *_encDir;
 // -------------------------------------------------------------------------------
 //  Inicializa motores
 // -------------------------------------------------------------------------------
-
 void inicializaMotores(uint8_t in1L, uint8_t in2L,
                        uint8_t in1R, uint8_t in2R,
                        volatile long *encEsq, volatile long *encDir)
@@ -36,7 +35,6 @@ void inicializaMotores(uint8_t in1L, uint8_t in2L,
 // -------------------------------------------------------------------------------
 // Funções de motor (auxiliar)
 // -------------------------------------------------------------------------------
-
 static void _stopMotors()
 {
     digitalWrite(_in1L, LOW);
@@ -85,15 +83,7 @@ static void _esperarEncoder(long pulsos)
 
 // -------------------------------------------------------------------------------
 //  ATUALIZAÇÃO DE POSIÇÃO E DIREÇÃO
-//
-//  Sistema de coordenadas:
-//      Norte → y+1 | Sul → y-1 | Leste → x+1 | Oeste → x-1
-//
-//  Ordem horária para o índice de direção:
-//      dirs[0]='N'  dirs[1]='L'  dirs[2]='S'  dirs[3]='O'
-//      Girar direita (+1) | Girar esquerda (+3) | Meia volta (+2)
 // -------------------------------------------------------------------------------
-
 static const char _dirs[] = {'N', 'L', 'S', 'O'};
 
 static int _indiceDirecao(char d)
@@ -129,9 +119,8 @@ static void _atualizaPosicao(Rato *rato)
 }
 
 // -------------------------------------------------------------------------------
-//  MOVIMENTOS PÚBLICOS
+//  MOVIMENTOS PÚBLICOS (Antigos)
 // -------------------------------------------------------------------------------
-
 void Andar(Rato *rato)
 {
     _fowardMotors();
@@ -162,4 +151,189 @@ void Virar180(Rato *rato)
     _rotateRightMotors();
     _esperarEncoder(PULSOS_GIRO_90 * 2);
     _atualizaDirecao(rato, +2); // N↔S | L↔O
+}
+
+
+// -------------------------------------------------------------------------------
+// CONFIGURAÇÕES PWM, ODOMETRIA E CONTROLE PID 
+// -------------------------------------------------------------------------------
+
+// Configurações PWM da ESP32
+const int FREQUENCIA_PWM = 5000; 
+const int RESOLUCAO_PWM = 8;     
+const int CANAL_ESQ_IN1 = 0; const int CANAL_ESQ_IN2 = 1;
+const int CANAL_DIR_IN1 = 2; const int CANAL_DIR_IN2 = 3;
+
+// Constantes de Manobra
+const int TEMPO_CURVA_90 = 600;  
+const int VELOCIDADE_GIRO = 150; 
+
+int velocidadeEsquerdaAtual = 0;
+int velocidadeDireitaAtual = 0;
+bool motorsRunning = false;
+
+// -------------------------------------------------------------------------------
+// FÍSICA DO ROBÔ E CONSTANTES DE ODOMETRIA
+// -------------------------------------------------------------------------------
+const float DIAMETRO_RODA_CM = 4.4;
+const float PULSOS_POR_VOLTA = 146.0;
+const float CM_POR_PULSO = (DIAMETRO_RODA_CM * PI) / PULSOS_POR_VOLTA;
+
+// Variáveis para cálculo de velocidade
+float velocidadeEsqCmS = 0.0;
+float velocidadeDirCmS = 0.0;
+float distanciaPercorridaCm = 0.0;
+
+long ultimosPulsosEsq = 0;
+long ultimosPulsosDir = 0;
+unsigned long ultimoTempoOdometria = 0;
+
+// -------------------------------------------------------------------------------
+// CONSTANTES DO PID 
+// -------------------------------------------------------------------------------
+float Kp = 1.2;  // Corrige o erro atual (força da correção de desvio)
+float Kd = 0.5;  // Evita que o robô balance (freio da correção)
+float Ki = 0.0;  // Corrige erros acumulados (geralmente começa em 0)
+
+long erroAnteriorPID = 0;
+long integralPID = 0;
+
+// -------------------------------------------------------------------------------
+// FUNÇÕES PWM BASE
+// -------------------------------------------------------------------------------
+void setupMotores() {
+    ledcSetup(CANAL_ESQ_IN1, FREQUENCIA_PWM, RESOLUCAO_PWM); ledcAttachPin(_in1L, CANAL_ESQ_IN1);
+    ledcSetup(CANAL_ESQ_IN2, FREQUENCIA_PWM, RESOLUCAO_PWM); ledcAttachPin(_in2L, CANAL_ESQ_IN2);
+    ledcSetup(CANAL_DIR_IN1, FREQUENCIA_PWM, RESOLUCAO_PWM); ledcAttachPin(_in1R, CANAL_DIR_IN1);
+    ledcSetup(CANAL_DIR_IN2, FREQUENCIA_PWM, RESOLUCAO_PWM); ledcAttachPin(_in2R, CANAL_DIR_IN2);
+    stopMotors();
+}
+
+void acionarMotores(int velEsquerda, int velDireita) {
+    velocidadeEsquerdaAtual = velEsquerda;
+    velocidadeDireitaAtual = velDireita;
+
+    // Motor Esquerdo
+    if (velEsquerda > 0) {
+        ledcWrite(CANAL_ESQ_IN1, velEsquerda); ledcWrite(CANAL_ESQ_IN2, 0);           
+    } else if (velEsquerda < 0) {
+        ledcWrite(CANAL_ESQ_IN1, 0); ledcWrite(CANAL_ESQ_IN2, abs(velEsquerda)); 
+    } else {
+        ledcWrite(CANAL_ESQ_IN1, 0); ledcWrite(CANAL_ESQ_IN2, 0);
+    }
+
+    // Motor Direito
+    if (velDireita > 0) {
+        ledcWrite(CANAL_DIR_IN1, velDireita); ledcWrite(CANAL_DIR_IN2, 0);
+    } else if (velDireita < 0) {
+        ledcWrite(CANAL_DIR_IN1, 0); ledcWrite(CANAL_DIR_IN2, abs(velDireita));
+    } else {
+        ledcWrite(CANAL_DIR_IN1, 0); ledcWrite(CANAL_DIR_IN2, 0);
+    }
+    
+    motorsRunning = (velEsquerda != 0 || velDireita != 0);
+}
+
+void stopMotors() { acionarMotores(0, 0); }
+void moveForward() { acionarMotores(140, 140); }
+
+void virarDireita90() {
+    acionarMotores(VELOCIDADE_GIRO, -VELOCIDADE_GIRO);
+    delay(TEMPO_CURVA_90);
+    stopMotors();
+    delay(200); 
+}
+
+void virarEsquerda90() {
+    acionarMotores(-VELOCIDADE_GIRO, VELOCIDADE_GIRO);
+    delay(TEMPO_CURVA_90);
+    stopMotors();
+    delay(200);
+}
+
+void meiaVolta180() {
+    acionarMotores(VELOCIDADE_GIRO, -VELOCIDADE_GIRO);
+    delay(TEMPO_CURVA_90 * 2); 
+    stopMotors();
+    delay(200);
+}
+
+
+// -------------------------------------------------------------------------------
+// CÁLCULO DE VELOCIDADE E ALINHAMENTO PID EM TEMPO REAL
+// -------------------------------------------------------------------------------
+void atualizarOdometriaEPID() {
+    unsigned long tempoAtual = millis();
+    unsigned long deltaTempo = tempoAtual - ultimoTempoOdometria;
+
+    // Calcula a cada 50ms para ter uma leitura limpa dos pulsos
+    if (deltaTempo >= 50) {
+        
+        long pulsosAtuaisEsq = *_encEsq; 
+        long pulsosAtuaisDir = *_encDir;
+
+        long deltaPulsosEsq = pulsosAtuaisEsq - ultimosPulsosEsq;
+        long deltaPulsosDir = pulsosAtuaisDir - ultimosPulsosDir;
+
+        // Calcula a velocidade (v = distância / tempo) em cm/s
+        velocidadeEsqCmS = (deltaPulsosEsq * CM_POR_PULSO) / (deltaTempo / 1000.0);
+        velocidadeDirCmS = (deltaPulsosDir * CM_POR_PULSO) / (deltaTempo / 1000.0);
+
+        ultimosPulsosEsq = pulsosAtuaisEsq;
+        ultimosPulsosDir = pulsosAtuaisDir;
+        ultimoTempoOdometria = tempoAtual;
+
+        // Só aplica PID se o robô estiver mandado a ir a direito
+        if (velocidadeEsquerdaAtual > 0 && velocidadeDireitaAtual > 0) {
+            
+            // O erro é a diferença de pulsos totais desde que começou a andar
+            long erro = pulsosAtuaisEsq - pulsosAtuaisDir; 
+            
+            integralPID += erro;
+            long derivativa = erro - erroAnteriorPID;
+            erroAnteriorPID = erro;
+
+            // Fórmula do PID
+            int ajustePWM = (Kp * erro) + (Ki * integralPID) + (Kd * derivativa);
+
+            int basePWM = 140; // O nosso PWM base de aceleração
+
+            // Aplica a correção: Se o esquerdo corre mais, o ajustePWM é positivo, logo diminui o Esq e aumenta o Dir
+            int novoPwmEsq = basePWM - ajustePWM;
+            int novoPwmDir = basePWM + ajustePWM;
+
+            // Trava os valores para não ultrapassar a energia máxima (0 a 255)
+            novoPwmEsq = constrain(novoPwmEsq, 0, 255);
+            novoPwmDir = constrain(novoPwmDir, 0, 255);
+
+            // Envia a energia corrigida direto para a Ponte H
+            ledcWrite(CANAL_ESQ_IN1, novoPwmEsq); 
+            ledcWrite(CANAL_DIR_IN1, novoPwmDir);
+        }
+    }
+}
+
+// -------------------------------------------------------------------------------
+// FUNÇÃO INTELIGENTE: ANDAR DISTÂNCIA COM PID
+// -------------------------------------------------------------------------------
+void andarDistancia(float distanciaCm) {
+    // Transforma os centímetros que queremos andar em pulsos de encoder
+    long pulsosAlvo = distanciaCm / CM_POR_PULSO;
+    
+    long baseEsq = *_encEsq;
+    long baseDir = *_encDir;
+
+    // Reseta o PID antes de cada viagem para não trazer lixo da viagem anterior
+    erroAnteriorPID = 0;
+    integralPID = 0;
+
+    moveForward(); // Dá o arranque inicial a direito (PWM 140,140)
+
+    // Fica a rodar neste loop (enquanto corrige a direção) até atingir o número de pulsos desejado
+    while ((*_encEsq - baseEsq) < pulsosAlvo || (*_encDir - baseDir) < pulsosAlvo) {
+        atualizarOdometriaEPID(); // Aciona o PID para manter as rodas alinhadas
+        yield(); // Impede o Watchdog Timer da ESP32 de reiniciar o robô por loop preso
+    }
+
+    stopMotors(); // Trava a direito quando bate a meta
 }

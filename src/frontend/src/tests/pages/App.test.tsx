@@ -5,6 +5,7 @@ import App from "../../App";
 vi.mock("../../hooks/useWebSocket", () => ({
   useWebSocket: () => ({
     robotData: null,
+    sessionSteps: [],
     isConnected: true,
     sendRaceAction: vi.fn(),
     connect: vi.fn(),
@@ -12,7 +13,7 @@ vi.mock("../../hooks/useWebSocket", () => ({
   }),
 }));
 
-describe("App", () => {
+describe("App Base Container", () => {
   beforeEach(() => {
     vi.useFakeTimers();
   });

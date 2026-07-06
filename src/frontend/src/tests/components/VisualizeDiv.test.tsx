@@ -43,6 +43,19 @@ describe('VisualizeDiv Component', () => {
     expect(screen.getByTestId('maze-coords')).toHaveTextContent('COORDS: X-7, Y-5');
   });
 
+  it('deve transladar as coordenadas do badge quando o robô sai para valores negativos', () => {
+    render(
+      <VisualizeDiv
+        {...defaultProps}
+        posX={-2} // Robô partiu de outro canto: offset +2 desloca a matriz
+        posY={1}
+      />
+    );
+
+    expect(screen.getByTestId('maze-coords')).toHaveTextContent('COORDS: X-0, Y-1');
+    expect(screen.getByTestId('maze-grid')).toHaveAttribute('data-offset-x', '2');
+  });
+
   it('deve renderizar a topologia de rede correta se a view ativa for a network', () => {
     render(<VisualizeDiv {...defaultProps} currentView="network" />);
 

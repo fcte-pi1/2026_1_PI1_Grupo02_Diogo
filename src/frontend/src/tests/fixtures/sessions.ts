@@ -1,4 +1,8 @@
-import type { SessionDetail, SessionMetadata } from "../../types/session";
+import type {
+  MazeData,
+  SessionDetail,
+  SessionMetadata,
+} from "../../types/session";
 
 export const sessionMetadataFixture: SessionMetadata = {
   id: "sess-1",
@@ -11,8 +15,42 @@ export const sessionMetadataFixture: SessionMetadata = {
   finalVoltage: 10.5,
 };
 
+export const mazeFixture: MazeData = {
+  id: "maze-1",
+  name: "Labirinto Teste",
+  width: 8,
+  height: 8,
+  cells: [
+    {
+      posX: 0,
+      posY: 0,
+      wallNorth: false,
+      wallSouth: true,
+      wallEast: false,
+      wallWest: true,
+    },
+    {
+      posX: 1,
+      posY: 0,
+      wallNorth: true,
+      wallSouth: true,
+      wallEast: false,
+      wallWest: false,
+    },
+    {
+      posX: 1,
+      posY: 1,
+      wallNorth: false,
+      wallSouth: false,
+      wallEast: true,
+      wallWest: true,
+    },
+  ],
+};
+
 export const sessionDetailFixture: SessionDetail = {
   ...sessionMetadataFixture,
+  maze: mazeFixture,
   steps: [
     {
       id: "step-1",
