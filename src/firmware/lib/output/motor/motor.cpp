@@ -1,4 +1,6 @@
 #include "./motor.h"
+#include "../../input/infravermelho/sensores_ir.h"
+#include "correcao_parede.h"
 
 // -- Pinos e encoders (registrados em inicializaMotores) ----------------------
 static uint8_t _in1L, _in2L;
@@ -178,6 +180,10 @@ bool motorsRunning = false;
 const float DIAMETRO_RODA_CM = 4.4;
 const float PULSOS_POR_VOLTA = 146.0;
 const float CM_POR_PULSO = (DIAMETRO_RODA_CM * PI) / PULSOS_POR_VOLTA;
+const float LIMIAR_PAREDE_CM = 3.0f;
+const float DIFERENCA_MINIMA_CM = 1.5f;
+const int AJUSTE_PAREDE_PWM = 12;
+const int AJUSTE_CURVA_PWM = 6;
 
 // Variáveis para cálculo de velocidade
 float velocidadeEsqCmS = 0.0;
@@ -260,6 +266,15 @@ void meiaVolta180() {
 
 
 // -------------------------------------------------------------------------------
+// CORREÇÃO REATIVA PARA CENTRALIZAÇÃO JUNTO ÀS PAREDES
+// -------------------------------------------------------------------------------
+static void _corrigirCentralizacao(int &pwmEsq, int &pwmDir)
+{
+    bool emCurva = (velocidadeEsquerdaAtual != velocidadeDireitaAtual);
+    aplicarCorrecaoParede(getDistanciaEsquerda(), getDistanciaDireita(), pwmEsq, pwmDir, emCurva);
+}
+
+// -------------------------------------------------------------------------------
 // CÁLCULO DE VELOCIDADE E ALINHAMENTO PID EM TEMPO REAL
 // -------------------------------------------------------------------------------
 void atualizarOdometriaEPID() {
@@ -301,6 +316,9 @@ void atualizarOdometriaEPID() {
             // Aplica a correção: Se o esquerdo corre mais, o ajustePWM é positivo, logo diminui o Esq e aumenta o Dir
             int novoPwmEsq = basePWM - ajustePWM;
             int novoPwmDir = basePWM + ajustePWM;
+
+            // Ajusta a direção com base nas distâncias dos sensores laterais
+            _corrigirCentralizacao(novoPwmEsq, novoPwmDir);
 
             // Trava os valores para não ultrapassar a energia máxima (0 a 255)
             novoPwmEsq = constrain(novoPwmEsq, 0, 255);
