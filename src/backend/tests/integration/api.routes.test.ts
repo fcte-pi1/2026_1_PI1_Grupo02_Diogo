@@ -12,9 +12,19 @@ jest.mock("../../src/lib/prisma", () => ({
   },
 }));
 
+const socketEmitMock = jest.fn();
+jest.mock("../../src/websocket/socket", () => {
+  const actual = jest.requireActual("../../src/websocket/socket");
+  return {
+    ...actual,
+    getSocket: jest.fn(() => ({ emit: socketEmitMock })),
+  };
+});
+
 import request from "supertest";
 import { app } from "../../src/app";
 import { prisma } from "../../src/lib/prisma";
+import { stopSimulator } from "../../src/services/simulator.service";
 
 const telemetryRawFindMany = prisma.telemetryRaw.findMany as jest.Mock;
 const telemetryRawFindUnique = prisma.telemetryRaw.findUnique as jest.Mock;
@@ -25,6 +35,11 @@ const sessionDelete = prisma.session.delete as jest.Mock;
 describe("API integration", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    stopSimulator();
+  });
+
+  afterEach(() => {
+    stopSimulator();
   });
 
   describe("GET /health", () => {
@@ -199,6 +214,96 @@ describe("API integration", () => {
 
       expect(response.status).toBe(500);
       expect(response.body).toEqual({ error: "internal_error" });
+    });
+  });
+
+  describe("POST /api/telemetry/simulator", () => {
+    it("starts, pauses and stops the simulator", async () => {
+      const start = await request(app)
+        .post("/api/telemetry/simulator")
+        .send({ action: "start" });
+
+      expect(start.status).toBe(200);
+      expect(start.body).toEqual(
+        expect.objectContaining({
+          message: "Simulador iniciado/retomado.",
+          running: true,
+          paused: false,
+        })
+      );
+
+      const pause = await request(app)
+        .post("/api/telemetry/simulator")
+        .send({ action: "pause" });
+
+      expect(pause.status).toBe(200);
+      expect(pause.body).toEqual(
+        expect.objectContaining({
+          message: "Simulador pausado.",
+          running: true,
+          paused: true,
+        })
+      );
+
+      const stop = await request(app)
+        .post("/api/telemetry/simulator")
+        .send({ action: "stop" });
+
+      expect(stop.status).toBe(200);
+      expect(stop.body).toEqual({
+        message: "Simulador parado e zerado.",
+        running: false,
+        paused: false,
+      });
+    });
+
+    it("returns 400 for invalid simulator action", async () => {
+      const response = await request(app)
+        .post("/api/telemetry/simulator")
+        .send({ action: "invalid" });
+
+      expect(response.status).toBe(400);
+      expect(response.body).toEqual({
+        error: "Ação inválida. Use 'start', 'pause' ou 'stop'.",
+      });
+    });
+  });
+
+  describe("POST /api/telemetry/simulator/update", () => {
+    it("updates simulator variables", async () => {
+      const response = await request(app)
+        .post("/api/telemetry/simulator/update")
+        .send({ posX: 2, posY: 4, voltage: 11.8, wallNorth: true });
+
+      expect(response.status).toBe(200);
+      expect(response.body.message).toBe("Variáveis do barramento atualizadas.");
+      expect(response.body.config).toEqual(
+        expect.objectContaining({
+          posX: 2,
+          posY: 4,
+          voltage: 11.8,
+          wallNorth: true,
+        })
+      );
+    });
+  });
+
+  describe("GET /api/telemetry/simulator/status", () => {
+    it("returns current simulator status", async () => {
+      await request(app)
+        .post("/api/telemetry/simulator")
+        .send({ action: "start" });
+
+      const response = await request(app).get("/api/telemetry/simulator/status");
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          running: true,
+          paused: false,
+          stepOrder: 0,
+        })
+      );
     });
   });
 });

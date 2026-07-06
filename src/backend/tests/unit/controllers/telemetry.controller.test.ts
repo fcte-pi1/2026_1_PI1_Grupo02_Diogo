@@ -40,20 +40,77 @@ describe("telemetry.controller", () => {
     });
 
     it("passes the custom limit directly when valid", async () => {
-      // Arrange - Testa se o Number(req.query.limit) funciona
       const req = createMockRequest({ query: { limit: "150" } });
       const res = createMockResponse();
       const items = new Array(150).fill({ id: "x" });
 
       telemetryServiceMock.getRecentTelemetry.mockResolvedValueOnce(items);
 
-      // Act
       await listTelemetryHandler(req, res);
 
-      // Assert
       expect(telemetryServiceMock.getRecentTelemetry).toHaveBeenCalledWith(150);
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith({ items, count: 150 });
+    });
+
+    it("uses default limit when query limit is not a string", async () => {
+      const req = createMockRequest({ query: { limit: 150 as unknown as string } });
+      const res = createMockResponse();
+      const items = [{ id: "a" }];
+
+      telemetryServiceMock.getRecentTelemetry.mockResolvedValueOnce(items);
+
+      await listTelemetryHandler(req, res);
+
+      expect(telemetryServiceMock.getRecentTelemetry).toHaveBeenCalledWith(50);
+    });
+
+    it("uses default limit when query limit is not numeric", async () => {
+      const req = createMockRequest({ query: { limit: "abc" } });
+      const res = createMockResponse();
+      const items = [{ id: "a" }];
+
+      telemetryServiceMock.getRecentTelemetry.mockResolvedValueOnce(items);
+
+      await listTelemetryHandler(req, res);
+
+      expect(telemetryServiceMock.getRecentTelemetry).toHaveBeenCalledWith(50);
+    });
+
+    it("clamps limit to minimum of 1", async () => {
+      const req = createMockRequest({ query: { limit: "0" } });
+      const res = createMockResponse();
+      const items = [{ id: "a" }];
+
+      telemetryServiceMock.getRecentTelemetry.mockResolvedValueOnce(items);
+
+      await listTelemetryHandler(req, res);
+
+      expect(telemetryServiceMock.getRecentTelemetry).toHaveBeenCalledWith(1);
+    });
+
+    it("clamps limit to maximum of 1000", async () => {
+      const req = createMockRequest({ query: { limit: "5000" } });
+      const res = createMockResponse();
+      const items = [{ id: "a" }];
+
+      telemetryServiceMock.getRecentTelemetry.mockResolvedValueOnce(items);
+
+      await listTelemetryHandler(req, res);
+
+      expect(telemetryServiceMock.getRecentTelemetry).toHaveBeenCalledWith(1000);
+    });
+
+    it("returns empty list with count zero", async () => {
+      const req = createMockRequest({ query: {} });
+      const res = createMockResponse();
+
+      telemetryServiceMock.getRecentTelemetry.mockResolvedValueOnce([]);
+
+      await listTelemetryHandler(req, res);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({ items: [], count: 0 });
     });
 
     it("returns 500 internal_error on service rejection", async () => {
