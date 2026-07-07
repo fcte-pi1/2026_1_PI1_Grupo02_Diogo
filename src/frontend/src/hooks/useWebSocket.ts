@@ -37,7 +37,7 @@ export function useWebSocket() {
   const connect = useCallback(() => {
     if (socketRef.current?.connected) return;
 
-    const serverUrl = 'http://127.0.0.1:3000';
+    const serverUrl = import.meta.env.VITE_WS_URL ?? import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:3000';
     
     // Configuração com suporte inicial a polling para contornar restrições rígidas do Firefox
     const socket = io(serverUrl, {
@@ -74,6 +74,12 @@ export function useWebSocket() {
       }
     });
 
+    // 🚀 O SEGREDO MÁGICO: Escuta o comando de reset para despintar o labirinto!
+    socket.on('session_reset', () => {
+      setSessionSteps([]);
+      setRobotData(null);
+    });
+
     socketRef.current = socket;
   }, []);
 
@@ -82,6 +88,7 @@ export function useWebSocket() {
     if (socketRef.current) {
       socketRef.current.off('telemetry:step');
       socketRef.current.off('telemetry:history');
+      socketRef.current.off('session_reset'); // Limpeza do ouvinte de reset
       socketRef.current.disconnect();
       socketRef.current = null;
       setIsConnected(false);

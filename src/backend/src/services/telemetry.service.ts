@@ -96,8 +96,21 @@ export const recordOrphanTelemetryStep = async (
     const io = getSocket();
     const enrichedPayload = {
       ...stepRecord,
-      sensors: espData.sensores || { front: 0, left: 0, right: 0 },
-      walls: espData.paredes || { north: false, south: false, east: false, west: false },
+      sensors: espData.sensores
+        ? {
+            front: espData.sensores.frenteCm,
+            left: espData.sensores.esquerdaCm,
+            right: espData.sensores.direitaCm,
+          }
+        : { front: 0, left: 0, right: 0 },
+      walls: espData.paredes
+        ? {
+            north: espData.paredes.norte,
+            south: espData.paredes.sul,
+            east: espData.paredes.leste,
+            west: espData.paredes.oeste,
+          }
+        : { north: false, south: false, east: false, west: false },
       conclusao: espData.conclusao,
       estado: espData.estado,
       modo: espData.modo,
@@ -129,12 +142,15 @@ export const consolidateSession = async (
 
     const firstStep = orphanSteps[0];
     const lastStep = orphanSteps[orphanSteps.length - 1];
-    const durationMs =
-      lastStep.timestamp.getTime() - firstStep.timestamp.getTime();
+    const durationMs = lastStep.timestamp.getTime() - firstStep.timestamp.getTime();
+
+    // 🚀 ADICIONADO: Pega o sessionName customizado se existir no payload (ex: "Teste - 1234")
+    // Fazemos um casting para any pois o sessionName é injetado pelo simulador, não está no DTO oficial
+    const customSessionName = (espData as any).sessionName;
 
     const session = await createConsolidatedSession(
       {
-        sessionName: `Corrida - ${new Date().toLocaleString("pt-BR")}`,
+        sessionName: customSessionName || `Corrida - ${new Date().toLocaleString("pt-BR")}`,
         algorithm: runContext.algorithm,
         mode: runContext.mode,
         mazeId: runContext.mazeId,
@@ -148,12 +164,9 @@ export const consolidateSession = async (
     );
 
     await linkOrphanStepsToSession(session.id, tx);
-
     activeRunContext = null;
 
-    console.log(
-      `[CONSOLIDATE] 🏁 Sessão [${session.id}] gerada em lote com ${orphanSteps.length} passos.`
-    );
+    console.log(`[CONSOLIDATE] 🏁 Sessão [${session.id}] gerada em lote com ${orphanSteps.length} passos.`);
 
     return session.id;
   });
