@@ -1,4 +1,4 @@
-#include "./conexoes.h"
+#include "conexoes.h"
 
 // -- Definições dos globais declarados (extern) em conexoes.h -----------------
 const char *WIFI_SSID = "ALLREDE-CASA28"; // troque para o wifi conectado ao computador e à ESP32

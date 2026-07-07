@@ -26,6 +26,12 @@ vi.mock("../../hooks/useWebSocket", () => ({
   }),
 }));
 
+const mockFetch = vi.fn().mockResolvedValue({
+  ok: true,
+  json: async () => ({ running: false, paused: false, stepOrder: 0 }),
+});
+vi.stubGlobal("fetch", mockFetch);
+
 vi.mock("../../api/sessions", () => ({
   listSessions: vi.fn().mockResolvedValue({ items: [], count: 0 }),
   getSessionById: vi.fn(),
@@ -70,5 +76,25 @@ describe("MainLayout Component", () => {
     expect(
       screen.getByText("Corridas consolidadas salvas no banco de dados."),
     ).toBeInTheDocument();
+  });
+
+  it("navega para conexão e área de testes", async () => {
+    const user = userEvent.setup();
+    render(<MainLayout activeSession={activeSession} appState={AppState.RUNNING} />);
+
+    await user.click(screen.getByText("Conexão"));
+    expect(screen.getByText("OFFLINE")).toBeInTheDocument();
+
+    await user.click(screen.getByText("Área de testes"));
+    expect(screen.getByText("LOOP DE REPRODUÇÃO:")).toBeInTheDocument();
+  });
+
+  it("fecha o terminal pelo botão de fechar", async () => {
+    const user = userEvent.setup();
+    render(<MainLayout activeSession={activeSession} appState={AppState.RUNNING} />);
+
+    await user.click(screen.getByTitle("Fechar terminal"));
+
+    expect(screen.queryByTitle("Fechar terminal")).not.toBeInTheDocument();
   });
 });
