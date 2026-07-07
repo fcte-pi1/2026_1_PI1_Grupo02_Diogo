@@ -184,30 +184,17 @@ void passoDFS(Rato *rato, Labirinto *lab, bool *motorsRunning,
         _inicializado = true;
     }
 
-    // 1) Sensores
-    atualizaSensores();
-    lerDistancias(rato);
+    // 1) Mapear paredes girando o robô com o VL6180X frontal
+    mapearParedes(rato, lab);
 
-    // 2) Registrar paredes vistas na célula atual (converte relativo -> absoluto)
-    char dirFrente = _dirRelativa(rato->direcao, 0);
-    char dirDireita = _dirRelativa(rato->direcao, 1);
-    char dirEsquerda = _dirRelativa(rato->direcao, 3);
-
-    if (temParedeFrente())
-        registrarParede(lab, rato->x, rato->y, dirFrente);
-    if (temParedeDireita())
-        registrarParede(lab, rato->x, rato->y, dirDireita);
-    if (temParedeEsquerda())
-        registrarParede(lab, rato->x, rato->y, dirEsquerda);
-
-    // 3) Marcar célula atual
+    // 2) Marcar célula atual
     lab->celula[rato->x][rato->y].explorado = true;
     lab->celula[rato->x][rato->y].visitado = true;
 
-    // 4) Contabilizar o passo
+    // 3) Contabilizar o passo
     (*stepCounter)++;
 
-    // 5) Chegou no centro 2x2?
+    // 4) Chegou no centro 2x2?
     if (_verificaCentro(lab, rato->x, rato->y, destinoX, destinoY))
     {
         *conclusao = true;
@@ -217,8 +204,11 @@ void passoDFS(Rato *rato, Labirinto *lab, bool *motorsRunning,
         return;
     }
 
-    // 6/7) Escolher próximo movimento: frente -> direita -> esquerda
+    // 5) Escolher próximo movimento: frente -> direita -> esquerda
     //      Só anda para vizinha que NÃO foi visitada e sem parede entre elas.
+    char dirFrente = _dirRelativa(rato->direcao, 0);
+    char dirDireita = _dirRelativa(rato->direcao, 1);
+    char dirEsquerda = _dirRelativa(rato->direcao, 3);
     char ordem[3] = {dirFrente, dirDireita, dirEsquerda};
     for (int i = 0; i < 3; i++)
     {
