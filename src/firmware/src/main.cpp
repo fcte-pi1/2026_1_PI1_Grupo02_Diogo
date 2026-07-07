@@ -132,6 +132,7 @@ void setup()
     inicializaMotores(MOTOR_LEFT_IN1, MOTOR_LEFT_IN2,
         MOTOR_RIGHT_IN1, MOTOR_RIGHT_IN2,
         &encoderLeftCount, &encoderRightCount);
+    setupMotores(); // inicializa os canais LEDC (PWM) — OBRIGATÓRIO antes de qualquer acionarMotores()
             
     inicializaIna(&ina219);
             
@@ -141,6 +142,7 @@ void setup()
     
     // Rede
     connectWiFi();
+    initMQTT();    // configura servidor + buffer uma única vez
     connectMQTT();
     
     delay(1000); // só um tempo pra começar dps
@@ -172,8 +174,8 @@ void loop()
     
     unsigned long currentMillis = millis();
     
-    // Telemetria MQTT (2s)
-    if (currentMillis - lastTelemetrySend >= 2000)
+    // Telemetria MQTT (1s)
+    if (currentMillis - lastTelemetrySend >= 1000)
     {
         lastTelemetrySend = currentMillis;
 
@@ -181,8 +183,8 @@ void loop()
         publishTelemetry(rato, lab, mqttClient, MQTT_TOPIC, ROBOT_ID, stepCounter, estado, motorsRunning, getUltimoMovimentoDFS(), concluido);
     }
     
-    // Serial (2s)
-    if (currentMillis - lastSerialLog >= 2000)
+    // Serial (1s)
+    if (currentMillis - lastSerialLog >= 1000)
     {
         lastSerialLog = currentMillis;
         Serial.println("\n--- [TELEMETRIA LOCAL] ---");
