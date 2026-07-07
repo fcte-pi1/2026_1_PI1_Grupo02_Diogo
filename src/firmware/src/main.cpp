@@ -20,13 +20,11 @@ const char *ROBOT_ID = "UAV-MOUSE-01";
 // -------------------------------------------------------------------------------
 const uint8_t LED_PIN = 2;
 
-// Ultrassônicos
-const uint8_t TRIG_FRONT = 4;
-const uint8_t ECHO_FRONT = 16;
-const uint8_t TRIG_LEFT = 17;
-const uint8_t ECHO_LEFT = 5;
-const uint8_t TRIG_RIGHT = 18;
-const uint8_t ECHO_RIGHT = 19;
+Adafruit_INA219 ina219;
+
+// Sensores Infravermelho (VL53L0X + VL6180X) - pinos XSHUT
+const uint8_t XSHUT_LEFT = 19;
+const uint8_t XSHUT_RIGHT = 18;
 
 // Motores
 const uint8_t MOTOR_LEFT_IN1 = 25;
@@ -134,11 +132,8 @@ void setup()
     attachInterrupt(digitalPinToInterrupt(ENCODER_LEFT_A), encoderLeftISR, RISING);
     attachInterrupt(digitalPinToInterrupt(ENCODER_RIGHT_A), encoderRightISR, RISING);
 
-    // Sensores (pinos + ISRs no ECHO configurados internamente)
-    inicializaSensores(TRIG_FRONT, ECHO_FRONT,
-                       TRIG_LEFT, ECHO_LEFT,
-                       TRIG_RIGHT, ECHO_RIGHT);
-
+    // Sensores Infravermelho (I2C - XSHUT)
+    inicializaSensores(XSHUT_LEFT, XSHUT_RIGHT);
     // Motores (pinos + referência aos contadores de encoder)
     inicializaMotores(MOTOR_LEFT_IN1, MOTOR_LEFT_IN2,
                       MOTOR_RIGHT_IN1, MOTOR_RIGHT_IN2,
