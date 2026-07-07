@@ -23,17 +23,16 @@ const uint8_t LED_PIN = 2;
 
 Adafruit_INA219 ina219;
 
-// Motores
-const uint8_t MOTOR_LEFT_IN1 = 25;
-const uint8_t MOTOR_LEFT_IN2 = 26;
-const uint8_t MOTOR_RIGHT_IN1 = 27;
-const uint8_t MOTOR_RIGHT_IN2 = 14;
+const uint8_t MOTOR_LEFT_IN1  = 26;
+const uint8_t MOTOR_LEFT_IN2  = 25;
+const uint8_t MOTOR_RIGHT_IN1 = 14;
+const uint8_t MOTOR_RIGHT_IN2 = 27;
 
 // Encoders
-const uint8_t ENCODER_LEFT_A = 34;
-const uint8_t ENCODER_LEFT_B = 35;
-const uint8_t ENCODER_RIGHT_A = 32;
-const uint8_t ENCODER_RIGHT_B = 33;
+const uint8_t ENCODER_LEFT_A = 32;
+const uint8_t ENCODER_LEFT_B = 33;
+const uint8_t ENCODER_RIGHT_A = 34;
+const uint8_t ENCODER_RIGHT_B = 35;
 
 // -------------------------------------------------------------------------------
 //  LABIRINTO - posições de início e destino

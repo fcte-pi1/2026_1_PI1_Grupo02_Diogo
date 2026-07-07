@@ -6,10 +6,10 @@
 // Pinos SDA/SCL individuais de cada sensor infravermelho
 // Cada sensor está num par físico dedicado → Wire1 é reconfigurado entre leituras
 #define FRENTE_SDA   21
-#define FRENTE_SCL    3
+#define FRENTE_SCL    19
 #define ESQUERDA_SDA  4
 #define ESQUERDA_SCL 16
-#define DIREITA_SDA  18
+#define DIREITA_SDA  5
 #define DIREITA_SCL  17
 
 #define INTERVALO_LEITURA_MS 50
@@ -116,18 +116,26 @@ void atualizaSensores()
         _selecionarBus(ESQUERDA_SDA, ESQUERDA_SCL);
         uint16_t mmE = _vlEsquerdo.readRangeSingleMillimeters();
         bool toE = _vlEsquerdo.timeoutOccurred();
-        // 8190+ = sentinel 0x1FFF do VL53L0X (sem alvo no alcance)
-        _distE = (toE || mmE >= 8190) ? DISTANCIA_LIVRE_CM : mmE / 10.0f;
-        Serial.printf("[DBG] Esq raw=%u to=%d dist=%.1f\n", mmE, toE, _distE);
+        if (toE || mmE >= 8190) {
+            _distE = DISTANCIA_LIVRE_CM;
+        } else {
+            int corr = (int)mmE - VL53L0X_OFFSET_MM;
+            _distE = (corr <= 0) ? 0.0f : corr / 10.0f;
+        }
+        Serial.printf("[DBG] Esq raw=%u corr=%.1fcm\n", mmE, _distE);
     }
 
     if (_direita_ok) {
         _selecionarBus(DIREITA_SDA, DIREITA_SCL);
         uint16_t mmD = _vlDireito.readRangeSingleMillimeters();
         bool toD = _vlDireito.timeoutOccurred();
-        // 8190+ = sentinel 0x1FFF do VL53L0X (sem alvo no alcance)
-        _distD = (toD || mmD >= 8190) ? DISTANCIA_LIVRE_CM : mmD / 10.0f;
-        Serial.printf("[DBG] Dir raw=%u to=%d dist=%.1f\n", mmD, toD, _distD);
+        if (toD || mmD >= 8190) {
+            _distD = DISTANCIA_LIVRE_CM;
+        } else {
+            int corr = (int)mmD - VL53L0X_OFFSET_MM;
+            _distD = (corr <= 0) ? 0.0f : corr / 10.0f;
+        }
+        Serial.printf("[DBG] Dir raw=%u corr=%.1fcm\n", mmD, _distD);
     }
 }
 

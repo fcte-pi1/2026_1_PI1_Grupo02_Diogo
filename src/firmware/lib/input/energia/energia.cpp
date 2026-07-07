@@ -3,7 +3,7 @@
 
 void inicializaIna(Adafruit_INA219 *ina219)
 {
-    Wire.begin(19, 2);
+    Wire.begin(18, 2);
     if (!ina219->begin())
     {
         Serial.println("Erro ao iniciar INA219");
