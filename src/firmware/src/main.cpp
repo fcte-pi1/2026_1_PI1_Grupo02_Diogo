@@ -4,11 +4,12 @@
 #include <ArduinoJson.h>
 #include "../lib/utils/rato/rato.h"
 #include "../lib/utils/mapa/labirinto.h"
-#include "../lib/input/ultrassonico/sensores.h"
+#include "../lib/input/infravermelho/sensores_ir.h"
 #include "../lib/output/motor/motor.h"
 #include "../lib/utils/conexao/conexoes.h"
 #include "../lib/utils/telemetria/telemetria.h"
 #include "../lib/utils/dfs/dfs.h"
+#include "../lib/input/energia/energia.h"
 
 #pragma region Variáveis
 
@@ -20,13 +21,15 @@ const char *ROBOT_ID = "UAV-MOUSE-01";
 // -------------------------------------------------------------------------------
 const uint8_t LED_PIN = 2;
 
-// Ultrassônicos
-const uint8_t TRIG_FRONT = 4;
-const uint8_t ECHO_FRONT = 16;
-const uint8_t TRIG_LEFT = 17;
-const uint8_t ECHO_LEFT = 5;
-const uint8_t TRIG_RIGHT = 18;
-const uint8_t ECHO_RIGHT = 19;
+// INA219
+const uint8_t INA219_SDA = 21;
+const uint8_t INA219_SCL = 15;
+Adafruit_INA219 ina219;
+
+// Sensores Infravermelho (VL53L0X + VL6180X) - pinos XSHUT
+const uint8_t XSHUT_FRONT = 4;
+const uint8_t XSHUT_LEFT = 17;
+const uint8_t XSHUT_RIGHT = 18;
 
 // Motores
 const uint8_t MOTOR_LEFT_IN1 = 25;
@@ -34,7 +37,7 @@ const uint8_t MOTOR_LEFT_IN2 = 26;
 const uint8_t MOTOR_RIGHT_IN1 = 27;
 const uint8_t MOTOR_RIGHT_IN2 = 14;
 
-// encoders
+// Encoders
 const uint8_t ENCODER_LEFT_A = 34;
 const uint8_t ENCODER_LEFT_B = 35;
 const uint8_t ENCODER_RIGHT_A = 32;
@@ -79,7 +82,6 @@ unsigned long lastMotorToggle = 0;
 unsigned long lastLedBlink = 0;
 unsigned long lastSerialLog = 0;
 
-bool motorsRunning = false;
 bool ledState = false;
 bool concluido = false;
 unsigned long stepCounter = 0;
@@ -94,11 +96,9 @@ Labirinto lab;
 #pragma region Encoders
 // -------------------------------------------------------------------------------
 //  ISRs - ENCODERS
-//  Ficam aqui pq encoderLeftCount/encoderRightCount são globais do main e
-//  passados por ponteiro para inicializaMotores()
 // -------------------------------------------------------------------------------
 void IRAM_ATTR encoderLeftISR()
-{ // IRAM_ATTR coloca na RAM no lugar da flash
+{ 
     encoderLeftCount++;
 }
 
@@ -109,9 +109,8 @@ void IRAM_ATTR encoderRightISR()
 
 #pragma endregion
 
-#pragma region Telemetria
 // -------------------------------------------------------------------------------
-//  TELEMETRIA
+// SETUP
 // -------------------------------------------------------------------------------
 
 #pragma endregion
@@ -119,68 +118,73 @@ void IRAM_ATTR encoderRightISR()
 // -------------------------------------------------------------------------------
 // -------------------------------------------------------------------------------
 // -------------------------------------------------------------------------------
+#pragma region Setup
 
 void setup()
 {
     Serial.begin(115200);
     mqttClient.setBufferSize(1024);
-
+    
     // LED
     pinMode(LED_PIN, OUTPUT);
-
+    
     // Encoders - ISRs definidas neste arquivo, ponteiros passados para a lib
     pinMode(ENCODER_LEFT_A, INPUT_PULLUP);
     pinMode(ENCODER_RIGHT_A, INPUT_PULLUP);
     attachInterrupt(digitalPinToInterrupt(ENCODER_LEFT_A), encoderLeftISR, RISING);
     attachInterrupt(digitalPinToInterrupt(ENCODER_RIGHT_A), encoderRightISR, RISING);
 
-    // Sensores (pinos + ISRs no ECHO configurados internamente)
-    inicializaSensores(TRIG_FRONT, ECHO_FRONT,
-                       TRIG_LEFT, ECHO_LEFT,
-                       TRIG_RIGHT, ECHO_RIGHT);
-
+    // Sensores Infravermelho (I2C - XSHUT)
+    inicializaSensores(XSHUT_FRONT, XSHUT_LEFT, XSHUT_RIGHT);
     // Motores (pinos + referência aos contadores de encoder)
     inicializaMotores(MOTOR_LEFT_IN1, MOTOR_LEFT_IN2,
-                      MOTOR_RIGHT_IN1, MOTOR_RIGHT_IN2,
-                      &encoderLeftCount, &encoderRightCount);
-
+        MOTOR_RIGHT_IN1, MOTOR_RIGHT_IN2,
+        &encoderLeftCount, &encoderRightCount);
+            
+    inicializaIna(&ina219);
+            
     inicializaRato(&rato);
-
+    
     inicializaLabirinto(&lab);
-
+    
     // Rede
     connectWiFi();
     connectMQTT();
-
+    
     delay(1000); // só um tempo pra começar dps
 
     resetDFS();          // garante pilha/flags zeradas antes de explorar
     estado = EXPLORANDO; // inicia a exploração por DFS
 }
+#pragma endregion
 
 // -------------------------------------------------------------------------------
+// LOOP
 // -------------------------------------------------------------------------------
 // -------------------------------------------------------------------------------
+#pragma region Loop
 
 void loop()
 {
-
+    
     if (WiFi.status() != WL_CONNECTED)
-        connectWiFi();
+    connectWiFi();
     if (!mqttClient.connected())
-        connectMQTT();
-
+    connectMQTT();
+    
     mqttClient.loop();
-
+    
     unsigned long currentMillis = millis();
-
+    
     // Telemetria MQTT (2s)
     if (currentMillis - lastTelemetrySend >= 2000)
     {
         lastTelemetrySend = currentMillis;
-        publishTelemetry(rato, lab, mqttClient, MQTT_TOPIC, ROBOT_ID, stepCounter, motorsRunning, getUltimoMovimentoDFS(), concluido);
-    }
 
+        lerDadosEnergeticos(&rato, &ina219);
+        publishTelemetry(rato, lab, mqttClient, MQTT_TOPIC, ROBOT_ID, stepCounter, estado, motorsRunning, getUltimoMovimentoDFS(), concluido);
+    }
+    
     // Serial (2s)
     if (currentMillis - lastSerialLog >= 2000)
     {
@@ -191,21 +195,76 @@ void loop()
         Serial.printf("Motores    -> Status: %s\n", motorsRunning ? "EM MOVIMENTO" : "PARADO");
     }
 
-    // Cada chamada executa 1 passo. atualizaSensores()/lerDistancias() são
-    // chamados dentro de passoDFS().
+  
+
+    // Ações baseadas no Estado do Robô
     switch (estado)
     {
     case EXPLORANDO:
-        passoDFS(&rato, &lab, &motorsRunning, &stepCounter,
-                 &destinoX, &destinoY, &concluido, &estado);
-        break;
+        {
+            // 1. Lê o ambiente (Apenas uma vez!)
+            atualizaSensores();
+            
+            Serial.printf("[CÉREBRO] Distâncias -> Frente: %.1f | Esq: %.1f | Dir: %.1f\n", 
+                          rato.distancia_frente, rato.distancia_esquerda, rato.distancia_direita);
+
+            // 2. Lógica de Decisão
+            if (rato.distancia_frente > 15.0) {
+                Serial.println("[AÇÃO] Caminho livre! A avançar 1 célula (18cm)...");
+                andarDistancia(18.0); 
+                
+                // Atualiza o cérebro! (Se está virado para Norte, o Y sobe, etc.)
+                if(rato.direcao == 'N') rato.y++;
+                else if(rato.direcao == 'S') rato.y--;
+                else if(rato.direcao == 'L') rato.x++;
+                else if(rato.direcao == 'O') rato.x--;
+                
+                stepCounter++; // Regista que deu um passo!
+                delay(300); 
+            } 
+            else {
+                if (rato.distancia_esquerda > 15.0) {
+                    Serial.println("[AÇÃO] A virar à Esquerda 90°.");
+                    virarEsquerda90();
+                    // Atualiza a bússola do rato (Anti-horário)
+                    if(rato.direcao == 'N') rato.direcao = 'O';
+                    else if(rato.direcao == 'O') rato.direcao = 'S';
+                    else if(rato.direcao == 'S') rato.direcao = 'L';
+                    else if(rato.direcao == 'L') rato.direcao = 'N';
+                } 
+                else if (rato.distancia_direita > 15.0) {
+                    Serial.println("[AÇÃO] A virar à Direita 90°.");
+                    virarDireita90();
+                    // Atualiza a bússola do rato (Horário)
+                    if(rato.direcao == 'N') rato.direcao = 'L';
+                    else if(rato.direcao == 'L') rato.direcao = 'S';
+                    else if(rato.direcao == 'S') rato.direcao = 'O';
+                    else if(rato.direcao == 'O') rato.direcao = 'N';
+                } 
+                else {
+                    Serial.println("[AÇÃO] Beco sem saída. A dar meia-volta 180°.");
+                    meiaVolta180(); 
+                    // Inverte a bússola
+                    if(rato.direcao == 'N') rato.direcao = 'S';
+                    else if(rato.direcao == 'S') rato.direcao = 'N';
+                    else if(rato.direcao == 'L') rato.direcao = 'O';
+                    else if(rato.direcao == 'O') rato.direcao = 'L';
+                }
+            }
+            break;
+        }
+
     case CORRIDA:
         // FloodFill — não implementar agora
+        stopMotors();
         break;
+
     case CONCLUIDO:
     case PARADO:
     default:
-        atualizaSensores();
+        stopMotors();
         break;
     }
 }
+
+#pragma endregion

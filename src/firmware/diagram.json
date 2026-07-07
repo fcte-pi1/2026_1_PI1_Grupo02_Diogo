@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "author": "Pedro",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 0, "left": 0, "attrs": {} },
+    
+    { "type": "wokwi-hc-sr04", "id": "front", "top": -150, "left": 10, "attrs": {} },
+    { "type": "wokwi-hc-sr04", "id": "left", "top": 40, "left": -230, "attrs": {} },
+    { "type": "wokwi-hc-sr04", "id": "right", "top": 40, "left": 230, "attrs": {} },
+    
+    { "type": "wokwi-led", "id": "led_m1", "top": 200, "left": -20, "attrs": { "color": "red" } },
+    { "type": "wokwi-led", "id": "led_m2", "top": 200, "left": 20, "attrs": { "color": "green" } },
+    { "type": "wokwi-led", "id": "led_m3", "top": 200, "left": 60, "attrs": { "color": "blue" } },
+    { "type": "wokwi-led", "id": "led_m4", "top": 200, "left": 100, "attrs": { "color": "yellow" } }
+  ],
+  "connections": [
+    [ "esp:TX", "$serialMonitor:RX", "", [] ],
+    [ "esp:RX", "$serialMonitor:TX", "", [] ],
+    
+    [ "esp:4", "front:TRIG", "green", [] ],
+    [ "esp:16", "front:ECHO", "green", [] ],
+    [ "esp:17", "left:TRIG", "blue", [] ],
+    [ "esp:5", "left:ECHO", "blue", [] ],
+    [ "esp:18", "right:TRIG", "purple", [] ],
+    [ "esp:19", "right:ECHO", "purple", [] ],
+    
+    [ "esp:5V", "front:VCC", "red", [] ],
+    [ "esp:GND", "front:GND", "black", [] ],
+    [ "esp:5V", "left:VCC", "red", [] ],
+    [ "esp:GND", "left:GND", "black", [] ],
+    [ "esp:5V", "right:VCC", "red", [] ],
+    [ "esp:GND", "right:GND", "black", [] ],
+    
+    [ "esp:25", "led_m1:A", "green", [] ],
+    [ "esp:GND", "led_m1:C", "black", [] ],
+    [ "esp:26", "led_m2:A", "green", [] ],
+    [ "esp:GND", "led_m2:C", "black", [] ],
+    [ "esp:27", "led_m3:A", "green", [] ],
+    [ "esp:GND", "led_m3:C", "black", [] ],
+    [ "esp:14", "led_m4:A", "green", [] ],
+    [ "esp:GND", "led_m4:C", "black", [] ]
+  ]
+}

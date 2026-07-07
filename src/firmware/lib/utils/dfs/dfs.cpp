@@ -1,6 +1,6 @@
 #include "./dfs.h"
 #include "../../output/motor/motor.h"
-#include "../../input/ultrassonico/sensores.h"
+#include "../../input/infravermelho/sensores_ir.h"
 
 // -------------------------------------------------------------------------------
 //  ESTADO INTERNO DO DFS (escopo de arquivo para permitir reset via resetDFS())

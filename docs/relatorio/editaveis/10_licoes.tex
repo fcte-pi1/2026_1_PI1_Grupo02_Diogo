@@ -1,33 +1,5 @@
 \chapter{Lições Aprendidas}
 
-\textcolor{red}{Documentar as lições aprendidas de modo a aperfeiçoar os processos e evitar que os erros e problemas encontrados se repitam em futuros projetos.}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -47,9 +19,6 @@
 
 \section{Análise SWOT}
 
-\textcolor{red}{A análise SWOT (\textit{Strengths}, \textit{Weaknesses}, \textit{Opportunities}, \textit{Threats}) é usada para identificar os pontos fortes e fracos do produto, e as principais oportunidades e ameaças normalmente associadas aos pontos fortes e fracos identificados. Preencha a Tabela \ref{tab:swot} de forma correspondente.}
-
-
 
 
 
@@ -65,41 +34,58 @@
 
 
 \begin{table}[ht]
-% \label{tab:swot}
 \centering
 \caption{Análise SWOT do produto.}
-\begin{tabular}{|c|c|c|} \hline
- & \textbf{Pontos fortes} & \textbf{Pontos fracos}  \\ \hline 
-    {\parbox{0.1\textwidth}{ \textbf{Fatores \\ internos}}}  &
-    {\parbox{0.4\textwidth}{ Forças: 
-        \\ \textcolor{red}{Descreva seus diferenciais competitivos: aquilo que faz de você melhor que seus concorrentes.}
-        \begin{itemize}
-            \item Lorem ipsum
-            \item Lorem ipsum
-        \end{itemize} }} & 
-    {\parbox{0.4\textwidth}{ Fraquezas:
-        \\ \textcolor{red}{Descreva suas principais deficiências: aquilo que faz de você pior que seus concorrentes, e pontos a serem melhorados ou revistos.}
-        \begin{itemize}
-            \item Lorem ipsum
-            \item Lorem ipsum
-        \end{itemize} }}\\ \hline
-    {\parbox{0.1\textwidth}{ \textbf{Fatores \\ externos}}}  &
-    {\parbox{0.4\textwidth}{ Oportunidades:
-        \\ \textcolor{red}{Descreva as principais oportunidades identificadas: eventos potenciais que podem gerar grandes benefícios.}
-        \begin{itemize}
-            \item Lorem ipsum 
-            \item Lorem ipsum
-        \end{itemize} }} & 
-    {\parbox{0.4\textwidth}{ Ameaças:
-        \\ \textcolor{red}{Descreva as principais ameaças identificadas: eventos potenciais que podem causar um grande estrago ao seu negócio.}
-        \begin{itemize}
-            \item Lorem ipsum 
-            \item Lorem ipsum
-        \end{itemize} }}\\ \hline
-\end{tabular}
 \label{tab:swot}
-\end{table}
 
+\begin{tabular}{|c|c|c|}
+\hline
+ & \textbf{Pontos fortes} & \textbf{Pontos fracos} \\ \hline
+
+\parbox{0.1\textwidth}{\centering\textbf{Fatores \\ internos}} &
+\parbox{0.4\textwidth}{
+\textbf{Forças:}
+\begin{itemize}
+    \item Projeto compacto, facilitando curvas em labirintos.
+    \item Baixo consumo de energia.
+    \item Projeto fácil de entender e montar.
+\end{itemize}
+}
+&
+\parbox{0.4\textwidth}{
+\textbf{Fraquezas:}
+\begin{itemize}
+    \item Depende da precisão dos sensores para funcionar de maneira eficaz.
+    \item Por utilizar solda, o projeto não permite alterações rápidas nos componentes.
+    \item A substituição de sensores queimados aumentou um pouco o orçamento previsto.
+\end{itemize}
+}
+\\ \hline
+
+\parbox{0.1\textwidth}{\centering\textbf{Fatores \\ externos}} &
+\parbox{0.4\textwidth}{
+\textbf{Oportunidades:}
+\begin{itemize}
+    \item Obter um bom desempenho na competição.
+    \item Adicionar futuramente sensores mais precisos para melhorar a navegação.
+    \item Reaproveitar o projeto em disciplinas e pesquisas futuras.
+    \item Utilizar o conhecimento adquirido em projetos mais complexos.
+\end{itemize}
+}
+&
+\parbox{0.4\textwidth}{
+\textbf{Ameaças:}
+\begin{itemize}
+    \item O protótipo não concluir o percurso durante a competição.
+    \item Interferências na leitura dos sensores causadas pela iluminação ou pelo ambiente.
+    \item Componentes eletrônicos podem sofrer desgaste ou danos.
+    \item Falhas de comunicação entre hardware e software podem comprometer o desempenho do protótipo.
+\end{itemize}
+}
+\\ \hline
+
+\end{tabular}
+\end{table}
 
 
 
@@ -595,13 +581,13 @@
 
 \section{Questões em aberto}
 
-\textcolor{red}{Usar caso haja alguma questão pendente em relação às entregas do projeto (Ex.: Requisitos não entregues, melhoria na programação do software, troca de sensores, entre outros.}
 
 \begin{enumerate}
-	\item \textcolor{red}{Até 200 caracteres, considerando os espaços.}
-	\item \textcolor{red}{Até 200 caracteres, considerando os espaços.}
-	\item \textcolor{red}{Até 200 caracteres, considerando os espaços.}
-	\item \textcolor{red}{Até 200 caracteres, considerando os espaços.}
+	\item O nosso projeto foi necessário trocar os sensores ultrassonicos por sensores infravermelhos.
+	\item Colocamos um regulador de tensão para a ESP 32.
+	\item Foi necessário colocar um filtro capacitivo para filtrar picos da bateria.
+	\item Faltam testes de firmware para o sistema de controle do motor.
+	\item Teste de calibração de sensores e motores com controle PID.
 \end{enumerate}
 
 
