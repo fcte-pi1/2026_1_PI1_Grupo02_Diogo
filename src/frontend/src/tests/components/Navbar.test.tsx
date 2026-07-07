@@ -1,6 +1,6 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import Navbar from '../../components/Navbar'; // Ajuste o caminho relativo se necessário
+import Navbar from '../../components/Navbar';
 import { AppState } from '../../App';
 
 describe('Navbar Component', () => {
@@ -10,10 +10,11 @@ describe('Navbar Component', () => {
     setViewTerminal: vi.fn(),
     appState: AppState.RUNNING,
     currentView: 'dashboard',
-    onRaceAction: vi.fn(),
     isSocketConnected: true,
     onConnect: vi.fn(),
     onDisconnect: vi.fn(),
+    elapsedMs: 0,
+    stepCount: 0,
   };
 
   beforeEach(() => {
@@ -54,7 +55,7 @@ describe('Navbar Component', () => {
 
     // Rerenderiza mudando para a aba de redes
     rerender(<Navbar {...defaultProps} currentView="network" />);
-    expect(screen.getByRole('button', { name: /encerrar conexão/i })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /encerrar/i })).toBeInTheDocument();
   });
 
   it('deve habilitar e disparar a ação onConnect quando o socket estiver offline na view de network', () => {
@@ -73,7 +74,7 @@ describe('Navbar Component', () => {
     const { rerender } = render(<Navbar {...defaultProps} currentView="network" isSocketConnected={false} />);
     
     const connectBtn = screen.getByRole('button', { name: /conectar/i });
-    const disconnectBtn = screen.getByRole('button', { name: /encerrar conexão/i });
+    const disconnectBtn = screen.getByRole('button', { name: /encerrar/i });
 
     expect(connectBtn).not.toBeDisabled();
     expect(disconnectBtn).toBeDisabled(); // Fica opaco e travado
@@ -81,7 +82,6 @@ describe('Navbar Component', () => {
     // 2. Quando o socket conecta (true)
     rerender(<Navbar {...defaultProps} currentView="network" isSocketConnected={true} />);
     
-    // 🚀 CORREÇÃO CRÍTICA: Em vez de sumir do DOM, ele deve ficar desativado (disabled)
     expect(connectBtn).toBeDisabled();
     expect(connectBtn.className).toContain('opacity-40');
     expect(disconnectBtn).not.toBeDisabled();
@@ -90,7 +90,7 @@ describe('Navbar Component', () => {
   it('deve gerenciar a desconexão chamando onDisconnect mediante confirmação do usuário', () => {
     render(<Navbar {...defaultProps} currentView="network" isSocketConnected={true} />);
 
-    const disconnectBtn = screen.getByRole('button', { name: /encerrar conexão/i });
+    const disconnectBtn = screen.getByRole('button', { name: /encerrar/i });
     expect(disconnectBtn).not.toBeDisabled();
 
     fireEvent.click(disconnectBtn);

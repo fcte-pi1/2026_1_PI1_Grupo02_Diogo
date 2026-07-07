@@ -94,8 +94,17 @@ export const recordOrphanTelemetryStep = async (
 
   try {
     const io = getSocket();
-    io.emit("telemetry:step", stepRecord);
-    io.emit("telemetry:subscribe", stepRecord);
+    const enrichedPayload = {
+      ...stepRecord,
+      sensors: espData.sensores || { front: 0, left: 0, right: 0 },
+      walls: espData.paredes || { north: false, south: false, east: false, west: false },
+      conclusao: espData.conclusao,
+      estado: espData.estado,
+      modo: espData.modo,
+    };
+
+    // Emite o payload completo enriquecido para o useWebSocket do React escutar
+    io.emit("telemetry:step", enrichedPayload);
   } catch (wsError) {
     console.error(
       "[WS_STREAM_ERROR] Servidor WS não inicializado ou falhou ao emitir:",

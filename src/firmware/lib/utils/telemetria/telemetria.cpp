@@ -1,5 +1,20 @@
 #include "./telemetria.h"
 
+static const char* _estadoParaDto(Estado estado){
+    switch(estado)
+    {
+        case CONCLUIDO:
+            return "FINALIZADO";
+        case CORRIDA:
+            return "EXPLORANDO";
+        case EXPLORANDO:
+            return "EXPLORANDO";
+        case PARADO:
+        default:
+            return "PARADO";
+    }
+}
+
 void publishTelemetry(
     const Rato &rato,
     const Labirinto &lab,
@@ -7,6 +22,7 @@ void publishTelemetry(
     const char *mqttTopic,
     const char *robotId,
     unsigned long &stepCounter,
+    Estado estado,
     bool motorsRunning,
     const char *ultimoMovimento,
     bool concluded)
@@ -20,7 +36,7 @@ void publishTelemetry(
     doc["step"] = stepCounter; // incremento fica a cargo do passoDFS()
     doc["tempoMs"] = millis();
     doc["modo"] = "DFS";
-    doc["estado"] = motorsRunning ? "EXPLORANDO" : "PARADO";
+    doc["estado"] = _estadoParaDto(estado);
 
     JsonObject posicao = doc.createNestedObject("posicao");
     posicao["x"] = rato.x;
@@ -49,8 +65,8 @@ void publishTelemetry(
     sensores["direitaCm"] = rato.distancia_direita;
 
     JsonObject energia = doc.createNestedObject("energia");
-    energia["tensaoV"] = 0.0;
-    energia["correnteMa"] = 0.0;
+    energia["tensaoV"] = rato.tensao;
+    energia["correnteMa"] = rato.corrente;
 
     doc["conclusao"] = concluded;
 

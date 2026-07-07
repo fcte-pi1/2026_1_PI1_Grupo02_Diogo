@@ -18,6 +18,10 @@ typedef struct Rato
     // Contagem dos encoders
     long encoder_esquerdo;
     long encoder_direito;
+
+    // Energia
+    float corrente;
+    float tensao;
 } Rato;
 
 void inicializaRato(Rato *rato);
