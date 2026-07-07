@@ -23,10 +23,6 @@ const uint8_t LED_PIN = 2;
 
 Adafruit_INA219 ina219;
 
-// Sensores Infravermelho (VL53L0X + VL6180X) - pinos XSHUT
-const uint8_t XSHUT_LEFT = 19;
-const uint8_t XSHUT_RIGHT = 18;
-
 // Motores
 const uint8_t MOTOR_LEFT_IN1 = 25;
 const uint8_t MOTOR_LEFT_IN2 = 26;
@@ -130,8 +126,8 @@ void setup()
     attachInterrupt(digitalPinToInterrupt(ENCODER_LEFT_A), encoderLeftISR, RISING);
     attachInterrupt(digitalPinToInterrupt(ENCODER_RIGHT_A), encoderRightISR, RISING);
 
-    // Sensores Infravermelho (I2C - XSHUT)
-    inicializaSensores(XSHUT_LEFT, XSHUT_RIGHT);
+    // Sensores Infravermelho (Wire1 alterna entre os 3 pares SDA/SCL)
+    inicializaSensores();
     // Motores (pinos + referência aos contadores de encoder)
     inicializaMotores(MOTOR_LEFT_IN1, MOTOR_LEFT_IN2,
         MOTOR_RIGHT_IN1, MOTOR_RIGHT_IN2,
@@ -170,6 +166,10 @@ void loop()
     
     mqttClient.loop();
     
+    // Lê sensores e propaga distâncias para o struct rato
+    atualizaSensores();
+    lerDistancias(&rato);
+    
     unsigned long currentMillis = millis();
     
     // Telemetria MQTT (2s)
@@ -198,9 +198,6 @@ void loop()
     {
     case EXPLORANDO:
         {
-            // 1. Lê o ambiente (Apenas uma vez!)
-            atualizaSensores();
-            
             Serial.printf("[CÉREBRO] Distâncias -> Frente: %.1f | Esq: %.1f | Dir: %.1f\n", 
                           rato.distancia_frente, rato.distancia_esquerda, rato.distancia_direita);
 

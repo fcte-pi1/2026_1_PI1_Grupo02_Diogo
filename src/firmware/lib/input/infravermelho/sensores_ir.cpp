@@ -3,21 +3,16 @@
 #include <VL53L0X.h>
 #include <VL6180X.h>
 
-// Barramento do sensor frontal (VL6180X) + INA219
-#define FRENTE_SDA  4
-#define FRENTE_SCL  16
-
-// Barramento compartilhado dos sensores laterais (VL53L0X)
-#define LATERAIS_SDA  17
-#define LATERAIS_SCL  5
-
-// Endereços I2C remapeados para os VL53L0X (compartilham o mesmo barramento)
-#define ENDERECO_VL53L0X_ESQ  0x2A
-#define ENDERECO_VL53L0X_DIR  0x31
+// Pinos SDA/SCL individuais de cada sensor infravermelho
+#define FRENTE_SDA  21
+#define FRENTE_SCL  3
+#define ESQUERDA_SDA  4
+#define ESQUERDA_SCL  16
+#define DIREITA_SDA  18
+#define DIREITA_SCL  17
 
 #define INTERVALO_LEITURA_MS 50
 
-static uint8_t _xshutE, _xshutD;
 static VL53L0X _vlEsquerdo;
 static VL53L0X _vlDireito;
 static VL6180X _vlFrente;
@@ -26,47 +21,30 @@ static float _distF = DISTANCIA_LIVRE_CM;
 static float _distE = DISTANCIA_LIVRE_CM;
 static float _distD = DISTANCIA_LIVRE_CM;
 
-void inicializaSensores(uint8_t xshutEsquerda, uint8_t xshutDireita)
+void inicializaSensores()
 {
-    _xshutE = xshutEsquerda;
-    _xshutD = xshutDireita;
-
-    // --- Inicializa barramentos I2C ---
-    Wire.begin(FRENTE_SDA, FRENTE_SCL);       // I2C0: sensor frontal + INA219
-    Wire1.begin(LATERAIS_SDA, LATERAIS_SCL);  // I2C1: sensores laterais (VL53L0X)
-
-    // --- Sensor frontal: VL6180X (sozinho no Wire, addr 0x29) ---
-    _vlFrente.setBus(&Wire);
+    // --- Sensor frontal: VL6180X ---
+    Wire1.begin(FRENTE_SDA, FRENTE_SCL);
+    _vlFrente.setBus(&Wire1);
     _vlFrente.init();
 
-    // --- Sensores laterais: VL53L0X compartilham Wire1 via XSHUT ---
-    pinMode(_xshutE, OUTPUT);
-    pinMode(_xshutD, OUTPUT);
-    digitalWrite(_xshutE, LOW);
-    digitalWrite(_xshutD, LOW);
-    delay(10);
-
-    // Ativa esquerda primeiro, remapeia para 0x2A
-    digitalWrite(_xshutE, HIGH);
-    delay(10);
+    // --- Sensor esquerda: VL53L0X ---
+    Wire1.begin(ESQUERDA_SDA, ESQUERDA_SCL);
     _vlEsquerdo.setBus(&Wire1);
     if (!_vlEsquerdo.init())
     {
         Serial.println("[ERRO] VL53L0X esquerdo nao detectado");
     }
-    _vlEsquerdo.setAddress(ENDERECO_VL53L0X_ESQ);
 
-    // Ativa direita (addr 0x29) — não conflita porque esquerda já está em 0x2A
-    digitalWrite(_xshutD, HIGH);
-    delay(10);
+    // --- Sensor direita: VL53L0X ---
+    Wire1.begin(DIREITA_SDA, DIREITA_SCL);
     _vlDireito.setBus(&Wire1);
     if (!_vlDireito.init())
     {
         Serial.println("[ERRO] VL53L0X direito nao detectado");
     }
-    _vlDireito.setAddress(ENDERECO_VL53L0X_DIR);
 
-    Serial.println("[SENSORES_IR] Frente(0x29) Wire(4,16) | Esq(0x2A)+Dir(0x31) Wire1(17,5)");
+    Serial.println("[SENSORES_IR] Frente=VL6180X(21,3) Esq=VL53L0X(4,16) Dir=VL53L0X(18,17)");
 }
 
 void atualizaSensores()
@@ -77,12 +55,18 @@ void atualizaSensores()
         return;
     ultimaLeitura = agora;
 
+    // Alterna Wire1 para o sensor frontal (sozinho no barramento, addr 0x29)
+    Wire1.begin(FRENTE_SDA, FRENTE_SCL);
     uint8_t mmF = _vlFrente.readRangeSingle();
     _distF = _vlFrente.timeoutOccurred() ? DISTANCIA_LIVRE_CM : mmF / 10.0f;
 
+    // Alterna Wire1 para o sensor esquerdo (sozinho no barramento, addr 0x29)
+    Wire1.begin(ESQUERDA_SDA, ESQUERDA_SCL);
     uint16_t mmE = _vlEsquerdo.readRangeSingleMillimeters();
     _distE = _vlEsquerdo.timeoutOccurred() ? DISTANCIA_LIVRE_CM : mmE / 10.0f;
 
+    // Alterna Wire1 para o sensor direito (sozinho no barramento, addr 0x29)
+    Wire1.begin(DIREITA_SDA, DIREITA_SCL);
     uint16_t mmD = _vlDireito.readRangeSingleMillimeters();
     _distD = _vlDireito.timeoutOccurred() ? DISTANCIA_LIVRE_CM : mmD / 10.0f;
 }

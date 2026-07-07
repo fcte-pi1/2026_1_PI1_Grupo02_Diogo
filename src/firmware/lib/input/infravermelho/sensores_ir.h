@@ -5,7 +5,7 @@
 #define DISTANCIA_LIVRE_CM 400.0f
 #define DISTANCIA_PAREDE_CM 12.0f
 
-void inicializaSensores(uint8_t xshutEsquerda, uint8_t xshutDireita);
+void inicializaSensores();
 
 void atualizaSensores();
 
