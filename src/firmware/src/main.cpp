@@ -10,6 +10,7 @@
 #include "../lib/utils/telemetria/telemetria.h"
 #include "../lib/utils/dfs/dfs.h"
 #include "../lib/input/energia/energia.h"
+#include "../lib/utils/ota/ota.h"
 
 #pragma region Variáveis
 
@@ -143,8 +144,7 @@ void setup()
     connectWiFi();
     initMQTT();    // configura servidor + buffer uma única vez
     connectMQTT();
-    
-    delay(1000); // só um tempo pra começar dps
+    initOTA("micromouse"); // OTA via Wi-Fi — upload com: pio run -t upload -e esp32dev_ota
 
     resetDFS();          // garante pilha/flags zeradas antes de explorar
     estado = EXPLORANDO; // inicia a exploração por DFS
@@ -159,7 +159,8 @@ void setup()
 
 void loop()
 {
-    
+    handleOTA(); // SEMPRE primeiro: processa upload OTA se houver
+
     if (WiFi.status() != WL_CONNECTED)
     connectWiFi();
     if (!mqttClient.connected())
