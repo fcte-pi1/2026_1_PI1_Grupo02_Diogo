@@ -6,7 +6,9 @@ export default function Footer() {
   );
 
   useEffect(() => {
-    // Função assíncrona que bate no endpoint do Node.js
+    // 🚀 Flag de controle para evitar memory leak e ReferenceError nos testes
+    let isMounted = true;
+
     const checkApiHealth = async () => {
       try {
         const response = await fetch("http://localhost:3000/health");
@@ -14,29 +16,31 @@ export default function Footer() {
         if (response.ok) {
           const data = await response.json();
 
-          // Se o JSON vier como {"status":"ok"}, a API está estável
-          if (data.status === "ok") {
-            setApiHealth("STABLE");
-          } else {
-            setApiHealth("OFFLINE");
+          if (isMounted) {
+            if (data.status === "ok") {
+              setApiHealth("STABLE");
+            } else {
+              setApiHealth("OFFLINE");
+            }
           }
         } else {
-          setApiHealth("OFFLINE");
+          if (isMounted) setApiHealth("OFFLINE");
         }
       } catch {
-        // Se o servidor cair ou der erro de rede (CORS/Network), cai aqui
-        setApiHealth("OFFLINE");
+        if (isMounted) setApiHealth("OFFLINE");
       }
     };
 
-    // Dispara a checagem imediatamente ao montar a tela
     checkApiHealth();
 
-    // Configura um intervalo para checar a saúde a cada 5 segundos (5000ms)
-    const interval = setInterval(checkApiHealth, 5000);
+    const interval = setInterval(() => {
+      void checkApiHealth();
+    }, 5000);
 
-    // Limpa o temporizador se o usuário deslogar ou mudar de tela para evitar memory leak
-    return () => clearInterval(interval);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
   }, []);
 
   return (
@@ -68,7 +72,7 @@ export default function Footer() {
 
       {/* Lado Direito do Rodapé Geral (Metadados técnicos do PI1) */}
       <div className="text-right uppercase text-[9px] text-outline/40 font-space">
-        Projeto Integrador de Engenharia 1 - UnB FGA - 2026
+        Projeto Integrador de Engenharia 1 - UnB FGA - 2026.1
       </div>
     </footer>
   );
