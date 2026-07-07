@@ -257,6 +257,21 @@ describe("API integration", () => {
       });
     });
 
+    it("commits the active session into history", async () => {
+      const response = await request(app)
+        .post("/api/telemetry/simulator")
+        .send({ action: "commit" });
+
+      expect(response.status).toBe(200);
+      expect(response.body).toEqual(
+        expect.objectContaining({
+          message: "Sessão consolidada no histórico.",
+          running: false,
+          paused: false,
+        })
+      );
+    });
+
     it("returns 400 for invalid simulator action", async () => {
       const response = await request(app)
         .post("/api/telemetry/simulator")
@@ -264,7 +279,7 @@ describe("API integration", () => {
 
       expect(response.status).toBe(400);
       expect(response.body).toEqual({
-        error: "Ação inválida. Use 'start', 'pause' ou 'stop'.",
+        error: "Ação inválida. Use 'start', 'pause', 'stop', 'reset' ou 'commit'.",
       });
     });
   });
@@ -301,9 +316,10 @@ describe("API integration", () => {
         expect.objectContaining({
           running: true,
           paused: false,
-          stepOrder: 0,
+          stepOrder: expect.any(Number),
         })
       );
+      expect(response.body.stepOrder).toBeGreaterThan(0);
     });
   });
 });

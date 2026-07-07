@@ -19,7 +19,7 @@ interface MainLayoutProps {
 
 export default function MainLayout({ activeSession }: MainLayoutProps) {
   const [currentView, setCurrentView] = useState("dashboard");
-  const [viewTerminal, setViewTerminal] = useState(true);
+  const [viewTerminal, setViewTerminal] = useState(false);
   const [terminalLogs, setTerminalLogs] = useState<string[]>([]);
 
   // 1. Primeiro invocamos o Hook para obter os dados de rede

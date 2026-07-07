@@ -61,7 +61,7 @@ describe("simulator.service", () => {
         posY: 0,
       })
     );
-    expect(getSimulatorStatus().stepOrder).toBe(1);
+    expect(getSimulatorStatus().stepOrder).toBe(2);
   });
 
   it("does not create duplicate intervals when start is called twice", () => {
@@ -70,7 +70,7 @@ describe("simulator.service", () => {
 
     jest.advanceTimersByTime(1500);
 
-    expect(emitMock).toHaveBeenCalledTimes(1);
+    expect(emitMock).toHaveBeenCalledTimes(2);
   });
 
   it("pauses emission without clearing interval", () => {
@@ -81,7 +81,7 @@ describe("simulator.service", () => {
 
     jest.advanceTimersByTime(3000);
 
-    expect(emitMock).not.toHaveBeenCalled();
+    expect(emitMock).toHaveBeenCalledTimes(1);
   });
 
   it("resumes emission after pause", () => {
@@ -93,7 +93,7 @@ describe("simulator.service", () => {
 
     jest.advanceTimersByTime(1500);
 
-    expect(emitMock).toHaveBeenCalledTimes(1);
+    expect(emitMock).toHaveBeenCalledTimes(2);
   });
 
   it("stops simulator and resets counters", () => {
@@ -110,7 +110,7 @@ describe("simulator.service", () => {
     );
 
     jest.advanceTimersByTime(3000);
-    expect(emitMock).toHaveBeenCalledTimes(1);
+    expect(emitMock).toHaveBeenCalledTimes(2);
   });
 
   it("updates live config used by emitted telemetry", () => {
@@ -135,6 +135,47 @@ describe("simulator.service", () => {
         walls: expect.objectContaining({ north: true }),
       })
     );
+  });
+
+  it("emits a DTO-compatible telemetry payload when requested", async () => {
+    const fetchSpy = jest.spyOn(global, "fetch").mockResolvedValue({ ok: true } as Response);
+
+    updateSimulatorConfig({
+      posX: 2,
+      posY: 3,
+      voltage: 11.7,
+      sensorFront: 12,
+      sensorLeft: 9,
+      sensorRight: 6,
+      wallNorth: true,
+      emitImmediate: true,
+    });
+
+    await Promise.resolve();
+
+    expect(fetchSpy).toHaveBeenCalled();
+    const [, requestInit] = fetchSpy.mock.calls[0];
+    const body = JSON.parse(String(requestInit?.body));
+
+    expect(body).toEqual(
+      expect.objectContaining({
+        step: 0,
+        tempoMs: expect.any(Number),
+        modo: "DFS",
+        estado: "EXPLORANDO",
+        posicao: { x: 2, y: 3 },
+        sensores: expect.objectContaining({
+          frenteCm: 12,
+          esquerdaCm: 9,
+          direitaCm: 6,
+        }),
+        paredes: expect.objectContaining({
+          norte: true,
+        }),
+      })
+    );
+
+    fetchSpy.mockRestore();
   });
 
   it("handles socket errors without crashing the interval", () => {

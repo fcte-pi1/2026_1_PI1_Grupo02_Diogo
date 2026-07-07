@@ -3,22 +3,38 @@ import {
   getTelemetryByIdHandler,
   listTelemetryHandler,
 } from "../controllers/telemetry.controller";
-import { 
-  startSimulator, 
-  pauseSimulator, 
-  stopSimulator, 
-  getSimulatorStatus, 
-  updateSimulatorConfig 
+import {
+  startSimulator,
+  pauseSimulator,
+  stopSimulator,
+  resetSimulator,
+  getSimulatorStatus,
+  updateSimulatorConfig,
+  commitSimulatorSession,
 } from "../services/simulator.service";
+import { storeTelemetry } from "../services/telemetry.service";
 
 const router = Router();
 
 // rotas originais de telemetria
 router.get("/", listTelemetryHandler);
+router.get("/simulator/status", (_req, res) => {
+  return res.json(getSimulatorStatus());
+});
 router.get("/:id", getTelemetryByIdHandler);
 
-// rotas para testes (Start, Pause, Stop)
-router.post("/simulator", (req, res) => {
+// rotas para testes (Start, Pause, Stop, Reset)
+router.post("/simulator/update", (req, res) => {
+  const config = req.body ?? {};
+  updateSimulatorConfig(config);
+
+  return res.json({
+    message: "Variáveis do barramento atualizadas.",
+    config: getSimulatorStatus().config,
+  });
+});
+
+router.post("/simulator", async (req, res) => {
   const { action } = req.body;
 
   if (action === "start") {
@@ -38,23 +54,29 @@ router.post("/simulator", (req, res) => {
     return res.json({ message: "Simulador parado e zerado.", running: false, paused: false });
   }
 
-  return res.status(400).json({ error: "Ação inválida. Use 'start', 'pause' ou 'stop'." });
+  // Zera a memória do simulador no backend
+  if (action === "reset") {
+    resetSimulator();
+    return res.json({ message: "Simulador resetado e labirinto limpo.", running: false, paused: false });
+  }
+
+  if (action === "commit") {
+    const sessionId = await commitSimulatorSession();
+    return res.json({ message: "Sessão consolidada no histórico.", sessionId, running: false, paused: false });
+  }
+
+  return res.status(400).json({ error: "Ação inválida. Use 'start', 'pause', 'stop', 'reset' ou 'commit'." });
 });
 
-// 🚀 NOVA ROTA: Recebe as atualizações em tempo real dos sliders/inputs do frontend
-router.post("/simulator/update", (req, res) => {
-  updateSimulatorConfig(req.body);
-  return res.json({ message: "Variáveis do barramento atualizadas.", config: getSimulatorStatus().config });
+router.post("/ingest-mock", async (req, res) => {
+  try {
+    const payloadBuffer = Buffer.from(JSON.stringify(req.body));
+    // Chama a função que processa o payload como se fosse o MQTT/ESP32 real
+    const result = await storeTelemetry("telemetry/esp32/test", payloadBuffer);
+    return res.status(201).json({ message: "Payload injetado com sucesso", data: result });
+  } catch (error) {
+    console.error("Erro na ingestão mock:", error);
+    return res.status(500).json({ error: "Falha ao processar payload mock" });
+  }
 });
-
-// status de teste - retorna o objeto completo (running, paused e stepOrder)
-router.get("/simulator/status", (_req, res) => {
-  const status = getSimulatorStatus();
-  return res.json({
-    running: status.running,
-    paused: status.paused,
-    stepOrder: status.stepOrder
-  });
-});
-
 export { router as telemetryRouter };

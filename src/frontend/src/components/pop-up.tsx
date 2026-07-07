@@ -1,29 +1,29 @@
-// aqui ficar o modelo geral dos pop-ups, recomendo fazer uma tela só, fazer com que os dados sejam tipados em title, description, options... fica melhor de estruturar, no caso ele receberia uma state informando qual seria o tipo de popup e com isso ele exibiria na tela... 
-
-// tem q adicionar dentro do app.tsx o efeito blur e o popup para ser exibido no meio da tela...
-
 import React from 'react';
+import { AlertTriangle, CheckSquare, Clock, Zap, BatteryCharging, Route, Target, History, X } from 'lucide-react';
 
-// Tipagem dos dados conforme sugerido nos comentários do grupo
+// Tipagem dos dados alinhada com as necessidades do projeto
 interface PopUpProps {
   isOpen: boolean;
   onClose: () => void;
+  onGoToHistory?: () => void; // 🚀 Adicionado para redirecionar o usuário
   title: string;
   description: string;
   isError?: boolean;
   stats?: {
-    mazeType: string;      // Tipo do labirinto
-    path: string;          // Trajeto no labirinto
-    batteryUsage: string;  // Consumo de bateria
-    averageSpeed: string;  // Velocidade média
-    completionTime: string;// Tempo de conclusão
-    success: boolean;      // Desafio cumprido (S/N)
+    mazeType: string;      
+    path: string;          
+    batteryUsage: string;  
+    averageSpeed: string;  
+    completionTime: string;
+    stepCount?: number;    // 🚀 Quantidade de passos
+    success: boolean;      
   };
 }
 
 export const PopUp: React.FC<PopUpProps> = ({
   isOpen,
   onClose,
+  onGoToHistory,
   title,
   description,
   isError = false,
@@ -32,59 +32,98 @@ export const PopUp: React.FC<PopUpProps> = ({
   if (!isOpen) return null;
 
   return (
-    // Efeito de desfoque/blur de fundo sugerido no comentário do arquivo
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 transition-all">
-      <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 border border-gray-100 animate-in fade-in zoom-in-95 duration-200">
+    // Fundo com blur e máscara escura, z-index bem alto para sobrepor tudo
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[100] transition-all font-mono">
+      
+      {/* Container principal estilizado como o Cockpit */}
+      <div className="bg-surface-container-lowest border border-outline-variant/30 shadow-[0_0_30px_rgba(0,0,0,0.8)] max-w-lg w-full p-6 animate-in fade-in zoom-in-95 duration-200">
         
         {/* Cabeçalho */}
-        <div className="flex items-center gap-3 mb-3">
-          <div className={`p-2 rounded-full ${isError ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}`}>
-            {isError ? (
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-              </svg>
-            ) : (
-              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            )}
+        <div className="flex items-start justify-between mb-4 border-b border-outline-variant/20 pb-3">
+          <div className="flex items-center gap-3">
+            <div className={`p-2 border ${isError ? 'bg-red-500/10 border-red-500/30 text-red-400' : 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'}`}>
+              {isError ? <AlertTriangle className="w-5 h-5" /> : <CheckSquare className="w-5 h-5" />}
+            </div>
+            <h3 className={`text-sm font-bold uppercase tracking-widest ${isError ? 'text-red-400' : 'text-primary'}`}>
+              {title}
+            </h3>
           </div>
-          <h3 className="text-xl font-bold text-gray-900">{title}</h3>
+          <button onClick={onClose} className="text-outline hover:text-primary transition-colors p-1" title="Fechar">
+            <X className="w-4 h-4" />
+          </button>
         </div>
 
-        {/* Descrição Principal (Mensagens da Issue) */}
-        <p className="text-gray-600 mb-4 text-sm leading-relaxed">
+        {/* Descrição Principal */}
+        <p className="text-on-surface-variant text-xs leading-relaxed mb-6">
           {description}
         </p>
 
-        {/* Bloco de Estatísticas de Telemetria (Se houver) */}
+        {/* Bloco de Estatísticas de Telemetria */}
         {stats && (
-          <div className="bg-gray-50 rounded-lg p-4 mb-5 text-xs text-gray-700 border border-gray-200/60 space-y-2">
-            <h4 className="font-bold text-gray-900 border-b pb-1.5 mb-2 flex justify-between text-xs uppercase tracking-wider">
-              <span>📊 Dados de Telemetria</span>
-              <span className={`px-1.5 py-0.5 rounded text-[10px] ${stats.success ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
-                {stats.success ? 'Cumprido' : 'Falhou'}
+          <div className="bg-surface-container-low/50 border border-outline-variant/20 p-4 mb-6 space-y-4">
+            <div className="flex justify-between items-center border-b border-outline-variant/10 pb-2">
+              <span className="text-[10px] font-bold text-outline uppercase tracking-wider flex items-center gap-1.5">
+                <Target className="w-3.5 h-3.5 text-primary" /> Consolidação de Telemetria
               </span>
-            </h4>
-            <div className="grid grid-cols-2 gap-2">
-              <p><strong>Labirinto:</strong> {stats.mazeType}</p>
-              <p><strong>Tempo:</strong> {stats.completionTime}</p>
-              <p><strong>Velocidade Média:</strong> {stats.averageSpeed}</p>
-              <p><strong>Bateria:</strong> {stats.batteryUsage}</p>
+              <span className={`px-2 py-0.5 border text-[9px] uppercase tracking-wider ${stats.success ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400' : 'bg-red-500/10 border-red-500/30 text-red-400'}`}>
+                {stats.success ? 'Sessão Válida' : 'Falha Crítica'}
+              </span>
             </div>
-            <p className="pt-1 border-t border-gray-200 truncate">
-              <strong>Trajeto:</strong> <span className="font-mono text-gray-600">{stats.path}</span>
-            </p>
+            
+            <div className="grid grid-cols-2 gap-4 text-xs">
+              <div className="flex flex-col gap-1">
+                <span className="text-[9px] text-outline flex items-center gap-1"><Route className="w-3 h-3" /> LABIRINTO</span>
+                <span className="text-on-surface font-bold truncate" title={stats.mazeType}>{stats.mazeType}</span>
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-[9px] text-outline flex items-center gap-1"><Clock className="w-3 h-3" /> TEMPO DECORRIDO</span>
+                <span className="text-primary font-bold">{stats.completionTime}</span>
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-[9px] text-outline flex items-center gap-1"><Zap className="w-3 h-3" /> VEL. MÉDIA</span>
+                <span className="text-on-surface font-bold">{stats.averageSpeed}</span>
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-[9px] text-outline flex items-center gap-1"><BatteryCharging className="w-3 h-3" /> CONSUMO</span>
+                <span className="text-on-surface font-bold">{stats.batteryUsage}</span>
+              </div>
+
+              {/* Linha separada para total de passos */}
+              {stats.stepCount !== undefined && (
+                <div className="flex flex-col gap-1 col-span-2 border-t border-outline-variant/10 pt-2 mt-1">
+                  <span className="text-[9px] text-outline flex items-center gap-1"><Target className="w-3 h-3" /> TOTAL DE PASSOS (STEPS)</span>
+                  <span className="text-primary font-bold">{stats.stepCount} iterações processadas</span>
+                </div>
+              )}
+            </div>
+
+            <div className="border-t border-outline-variant/10 pt-2 mt-2">
+              <span className="text-[9px] text-outline block mb-1">TRAJETO (ÚLTIMOS NÓS):</span>
+              <span className="font-mono text-emerald-400/80 text-[10px] break-all">{stats.path}</span>
+            </div>
           </div>
         )}
 
-        {/* Botão de Fechar */}
-        <button
-          onClick={onClose}
-          className="w-full bg-gray-900 hover:bg-gray-800 text-white font-medium py-2 px-4 rounded-lg transition-colors text-sm"
-        >
-          Fechar Janela
-        </button>
+        {/* Botões de Ação */}
+        <div className="flex gap-3">
+          {onGoToHistory && (
+            <button
+              onClick={() => {
+                onClose();
+                onGoToHistory();
+              }}
+              className="flex-1 bg-primary/10 border border-primary text-primary hover:bg-primary/20 font-bold py-2.5 px-4 flex items-center justify-center gap-2 transition-colors uppercase text-[10px] tracking-widest cursor-pointer"
+            >
+              <History className="w-3.5 h-3.5" /> Ir para Histórico
+            </button>
+          )}
+          <button
+            onClick={onClose}
+            className="flex-1 bg-surface-container-low border border-outline-variant/30 text-outline hover:text-on-surface font-bold py-2.5 px-4 flex items-center justify-center transition-colors uppercase text-[10px] tracking-widest cursor-pointer"
+          >
+            Fechar 
+          </button>
+        </div>
       </div>
     </div>
   );
