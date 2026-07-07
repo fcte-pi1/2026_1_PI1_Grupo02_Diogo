@@ -192,12 +192,6 @@ export default function TestView({ robotData, sessionSteps, isConnected }: TestV
     }
   };
 
-  const handleResetPosition = () => {
-    setPosX(0);
-    setPosY(0);
-    void syncVariablesToBackend({ posX: 0, posY: 0 });
-  };
-
   const rightTabs: { id: RightTab; label: string }[] = [
     { id: "map", label: "Labirinto" },
     { id: "payload", label: "API" },

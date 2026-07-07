@@ -153,7 +153,6 @@ export default function HistoryScreen() {
 
   const stepCount = selectedSession?.steps.length ?? 0;
 
-  // Renderização da Tela de Detalhes (Replay)
   if (selectedSession) {
     return (
       <main className="w-full h-full p-6 flex flex-col gap-4 overflow-hidden font-mono text-xs">
@@ -181,7 +180,6 @@ export default function HistoryScreen() {
           {/* COLUNA ESQUERDA: DADOS E SENSORES */}
           <div className="xl:col-span-4 flex flex-col gap-4 h-full overflow-y-auto pr-2 custom-scrollbar">
             
-            {/* O uso do shrink-0 garante que a div não seja comprimida pelo flex */}
             <div className="bg-surface-container-low/60 border border-outline-variant/30 p-4 shrink-0">
               <h2 className="text-primary font-bold mb-3 flex items-center gap-2 uppercase tracking-widest border-b border-outline-variant/10 pb-2">
                 <Activity size={14} /> Consolidação Geral
@@ -210,19 +208,19 @@ export default function HistoryScreen() {
               </div>
             </div>
 
-            {/* Módulo de Sensores do Replay (Ajustado para não vazar) */}
+            {/* Módulo de Sensores do Replay */}
             <div className="bg-surface-container-low/60 border border-outline-variant/30 p-4 shrink-0 flex flex-col">
               <h2 className="text-primary font-bold mb-3 flex items-center gap-2 uppercase tracking-widest border-b border-outline-variant/10 pb-2 shrink-0">
                 <Eye size={14} /> Visão dos Sensores (No Passo)
               </h2>
               {/* Contêiner de proteção: min-w-0 e overflow-x-auto blindam contra vazamento no eixo X */}
               <div className="w-full min-w-0 overflow-x-auto custom-scrollbar flex items-center justify-center pb-2">
-                <div className="w-full min-w-[200px]">
+                <div className="w-full min-w-\[200px]">
                   <SensorGrid 
                     sensorData={{
-                      front: (replayStep as any)?.sensors?.front ?? 0,
-                      left: (replayStep as any)?.sensors?.left ?? 0,
-                      right: (replayStep as any)?.sensors?.right ?? 0,
+                      front: (((replayStep as unknown) as Record<string, unknown>)?.sensors as Record<string, number>)?.front ?? 0,
+                      left: (((replayStep as unknown) as Record<string, unknown>)?.sensors as Record<string, number>)?.left ?? 0,
+                      right: (((replayStep as unknown) as Record<string, unknown>)?.sensors as Record<string, number>)?.right ?? 0,
                     }} 
                   />
                 </div>
@@ -258,11 +256,9 @@ export default function HistoryScreen() {
           {/* COLUNA DIREITA: MAPA E PLAYER */}
           <div className="xl:col-span-8 flex flex-col h-full overflow-hidden">
             
-            {/* PLAYER CONTROLS (Linha do Tempo e Botões) */}
+            {/* PLAYER CONTROLS */}
             <div className="bg-surface-container-low/60 border border-outline-variant/30 p-4 mb-4 shrink-0">
               <div className="flex flex-col gap-4">
-                
-                {/* Scrub Bar (Slider de progresso) */}
                 <div className="flex items-center gap-3">
                   <span className="text-primary font-bold w-8 text-right">{replayIndex}</span>
                   <input 
@@ -299,7 +295,6 @@ export default function HistoryScreen() {
                     </button>
                   </div>
 
-                  {/* Controle de Velocidade */}
                   <div className="flex items-center gap-1 border border-outline-variant/20 p-1 bg-surface-container-lowest">
                     <span className="text-[9px] text-outline uppercase px-2"><FastForward className="w-3 h-3 inline mr-1"/> Speed:</span>
                     {[0.5, 1, 2, 4].map(spd => (
@@ -342,7 +337,6 @@ export default function HistoryScreen() {
     );
   }
 
-  // Tela de Listagem (Tabela Principal)
   return (
     <main className="w-full h-full p-6 flex flex-col gap-4 overflow-hidden font-mono text-xs">
       <header className="shrink-0 border-b border-outline-variant/20 pb-4">
