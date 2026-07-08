@@ -134,10 +134,10 @@ describe("TestView Component", () => {
 
     await user.click(screen.getByRole("button", { name: /mover para leste/i }));
 
-    expect(screen.getByTestId("joystick-position")).toHaveTextContent("1,0");
+    expect(screen.getByTestId("joystick-position")).toHaveTextContent("8,7");
     expect(screen.getByTestId("maze-robot-cell")).toHaveAttribute(
       "title",
-      "Robô em (1, 0)",
+      "Robô em (8, 7)",
     );
   });
 
@@ -146,19 +146,19 @@ describe("TestView Component", () => {
     render(<TestView {...defaultProps} />);
 
     await user.click(
-      screen.getByRole("button", { name: "Toggle east wall at (0, 0)" }),
+      screen.getByRole("button", { name: "Toggle east wall at (7, 7)" }),
     );
-    expect(screen.getByTitle("Robô em (0, 0)")).toHaveAttribute(
+    expect(screen.getByTitle("Robô em (7, 7)")).toHaveAttribute(
       "data-wall-east",
       "true",
     );
 
     await user.click(screen.getByRole("button", { name: /mover para leste/i }));
 
-    expect(screen.getByTestId("joystick-position")).toHaveTextContent("0,0");
+    expect(screen.getByTestId("joystick-position")).toHaveTextContent("7,7");
     expect(screen.getByTestId("maze-robot-cell")).toHaveAttribute(
       "title",
-      "Robô em (0, 0)",
+      "Robô em (7, 7)",
     );
   });
 
@@ -192,7 +192,7 @@ describe("TestView Component", () => {
     render(<TestView {...defaultProps} />);
     expect(screen.getByTestId("maze-robot-cell")).toHaveAttribute(
       "title",
-      "Robô em (0, 0)",
+      "Robô em (7, 7)",
     );
   });
 

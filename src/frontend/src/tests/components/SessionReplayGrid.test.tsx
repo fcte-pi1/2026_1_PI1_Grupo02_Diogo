@@ -32,7 +32,7 @@ describe("SessionReplayGrid", () => {
     expect(walledCell).not.toHaveAttribute("data-wall-east");
   });
 
-  it("translada a matriz progressivamente quando o replay atinge coordenadas negativas", () => {
+  it("limita coordenadas negativas no replay sem transladar a matriz", () => {
     const steps = [
       {
         id: "step-1",
@@ -54,24 +54,16 @@ describe("SessionReplayGrid", () => {
       },
     ];
 
-    // Antes do passo negativo: sem deslocamento
     const { rerender } = render(
       <SessionReplayGrid steps={steps} activeIndex={0} />
     );
-    expect(screen.getByTestId("maze-grid")).toHaveAttribute(
-      "data-offset-x",
-      "0"
-    );
+    expect(screen.getByTestId("maze-grid")).not.toHaveAttribute("data-offset-x");
     expect(screen.getByTitle("Robô em (0, 0)")).toBeInTheDocument();
 
-    // Ao entrar em (-1,0), a matriz inteira desloca: largada vira (1,0)
     rerender(<SessionReplayGrid steps={steps} activeIndex={1} />);
-    expect(screen.getByTestId("maze-grid")).toHaveAttribute(
-      "data-offset-x",
-      "1"
-    );
+    expect(screen.getByTestId("maze-grid")).not.toHaveAttribute("data-offset-x");
     expect(screen.getByTitle("Robô em (0, 0)")).toBeInTheDocument();
-    expect(screen.getByTitle("Coords: (1, 0)")).toHaveAttribute(
+    expect(screen.getByTestId("maze-robot-cell")).toHaveAttribute(
       "data-visits",
       "1"
     );

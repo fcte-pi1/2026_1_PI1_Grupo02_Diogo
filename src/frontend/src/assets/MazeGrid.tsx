@@ -2,7 +2,7 @@ import { memo, useMemo } from "react";
 import type { MazeCell } from "../types/session";
 import { computeMazeOffset } from "../utils/maze-translation";
 
-const DEFAULT_GRID_SIZE = 8;
+const DEFAULT_GRID_SIZE = 16;
 
 // Curva de intensidade da trilha: 1 visita ~0.20, 2 visitas ~0.40, 3+ visitas capado em 0.60
 const VISIT_ALPHA_CAP = 0.6;

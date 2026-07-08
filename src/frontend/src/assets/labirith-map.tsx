@@ -2,7 +2,7 @@ import { memo, useMemo } from "react";
 import type { SessionStep } from "../types/session";
 import type { MazeCellWalls } from "../types/maze";
 
-const DEFAULT_GRID_SIZE = 8;
+const DEFAULT_GRID_SIZE = 16;
 
 export type Direction = "North" | "South" | "East" | "West";
 
