@@ -36,17 +36,17 @@ void IRAM_ATTR encoderRightISR() { encoderRightCount++; }
 
 // -- Sequência hardcode (43 comandos) --------------------------------------------
 const char SEQUENCIA[] = {
-    'f', 'e',
-    'f', 'd',
-    'f', 'f',
+    // 'f', 'e',
+    // 'f', 'd',
+    // 'f', 'f',
 
-    'd', 'd',
+    // 'd', 'd',
     
-    'f', 'f',
-    'e', 'f',
-    'd', 'f',
+    // 'f', 'f',
+    // 'e', 'f',
+    // 'd', 'f',
 
-    'd', 'd'
+    // 'd', 'd'
 
     // 'd','d','d','d',
     // 'e','e','e','e',
@@ -55,13 +55,13 @@ const char SEQUENCIA[] = {
 
 
 
-    // 'f', 'f', 'f', 'f', 'f', 'f', 'f'
+    'f', 'd', 'f', 'd', 'f', 'e', 'f'
 };
 const int TOTAL_PASSOS = sizeof(SEQUENCIA) / sizeof(SEQUENCIA[0]);
 
 Rato rato;
 
-const unsigned long PAUSA_ENTRE_PASSOS_MS = 100;
+const unsigned long PAUSA_ENTRE_PASSOS_MS = 1000; // só pra dar tempo de observar o robô
 
 void executaPasso(char comando)
 {
@@ -69,7 +69,7 @@ void executaPasso(char comando)
     {
     case 'f':
     Serial.println("-> Andar (frente)");
-    andarDistancia(13.8);          // com 13.8 está andando aproximadamente 18cm
+    andarDistancia(13.8);          // usa PWM+PID, já testado e funcional 19.2 é o real
     if (rato.direcao == 'N') rato.y++;
     else if (rato.direcao == 'S') rato.y--;
     else if (rato.direcao == 'L') rato.x++;

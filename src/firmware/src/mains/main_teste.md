@@ -1,3 +1,7 @@
+/*
+    Esse código testa os motores, conexão wifi / mqtt e sensores
+*/
+
 #include <Arduino.h>
 #include <WiFi.h>
 #include <PubSubClient.h>
