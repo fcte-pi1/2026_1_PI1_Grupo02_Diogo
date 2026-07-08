@@ -4,6 +4,10 @@ import { MazeGrid } from "./MazeGrid";
 import type { MazeCell, SessionStep } from "../types/session";
 import { mergeLiveMazeCells } from "../utils/mergeLiveMazeCells";
 import { rotacaoDoRoboAoVivo } from "../utils/sensorRaycast";
+import { computeMazeOffset } from "../utils/maze-translation";
+
+/** Labirinto ao vivo da ESP / simulate-esp.sh (MAZE_SIZE=16). */
+const LIVE_DASHBOARD_MAZE_SIZE = 16;
 
 interface VisualizeDivActiveSession {
   sessionName?: string;
@@ -47,14 +51,20 @@ export function VisualizeDiv({
   const socketConnected = isSocketConnected ?? isConnected ?? false;
   const [liveSteps, setLiveSteps] = useState<SessionStep[]>([]);
 
-  const mazeWidth = Math.max(activeSession?.maze?.width ?? 16, 16);
-  const mazeHeight = Math.max(activeSession?.maze?.height ?? 16, 16);
+  const mazeWidth = Math.max(
+    activeSession?.maze?.width ?? LIVE_DASHBOARD_MAZE_SIZE,
+    LIVE_DASHBOARD_MAZE_SIZE,
+  );
+  const mazeHeight = Math.max(
+    activeSession?.maze?.height ?? LIVE_DASHBOARD_MAZE_SIZE,
+    LIVE_DASHBOARD_MAZE_SIZE,
+  );
 
   const resolvedSteps = steps ?? liveSteps;
 
-  // OFFSETS FORAM REMOVIDOS. A coordenada é absoluta.
-  const safePosX = clampCoord(posX, mazeWidth - 1);
-  const safePosY = clampCoord(posY, mazeHeight - 1);
+  const { offsetX, offsetY } = computeMazeOffset(resolvedSteps, posX, posY);
+  const safePosX = clampCoord(posX + offsetX, mazeWidth - 1);
+  const safePosY = clampCoord(posY + offsetY, mazeHeight - 1);
 
   const liveWallSources = useMemo(() => {
     const sources = [...resolvedSteps];
@@ -132,8 +142,8 @@ export function VisualizeDiv({
                 <MazeGrid
                   cells={discoveredCells}
                   steps={resolvedSteps}
-                  currentX={safePosX}
-                  currentY={safePosY}
+                  currentX={posX}
+                  currentY={posY}
                   width={mazeWidth}
                   height={mazeHeight}
                   robotRotation={robotRotation}
