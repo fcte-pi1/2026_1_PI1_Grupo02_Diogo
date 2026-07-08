@@ -109,8 +109,11 @@ void inicializaSensores()
     vlFrente.setBus(&Wire1);
     vlFrente.setTimeout(500);
 
-    if (vlFrente.init()) {
-        vlFrente.configureDefault();
+    vlFrente.init();
+    vlFrente.configureDefault();
+
+    Wire1.beginTransmission(vlFrente.getAddress());
+    if (Wire1.endTransmission() == 0) {
         Serial.println("[SENSOR] VL6180X (frente) OK");
     } else {
         Serial.println("[SENSOR] ERRO: VL6180X nao detectado (SDA=21 SCL=19)");

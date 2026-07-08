@@ -18,8 +18,12 @@ void inicializaSensores()
     _vlFrente.setBus(&Wire1);
     _vlFrente.setTimeout(500);
 
-    if (_vlFrente.init()) {
-        _vlFrente.configureDefault();
+    _vlFrente.init();
+    _vlFrente.configureDefault();
+
+    // Verifica presença no barramento via ACK do endereço I2C
+    Wire1.beginTransmission(_vlFrente.getAddress());
+    if (Wire1.endTransmission() == 0) {
         _frente_ok = true;
         Serial.println("[SENSORES] VL6180X (frente) OK");
     } else {
