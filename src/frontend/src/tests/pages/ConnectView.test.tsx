@@ -1,6 +1,9 @@
-import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import ConnectView from '../../features/network/ConnectView';
+
+const mockFetch = vi.fn();
+vi.stubGlobal('fetch', mockFetch);
 
 // Mock do hook customizado para injetar dados posicionais controlados nos testes
 const mockUseWebSocket = vi.fn();
@@ -22,6 +25,14 @@ describe('ConnectView Component', () => {
     currentView: 'network',
     connectionProps: null,
   };
+
+  beforeEach(() => {
+    mockFetch.mockReset();
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({ status: 'ok' }),
+    });
+  });
 
   it('deve renderizar o estado de colapso de rede e passar coordenadas default [0,0] para o mapa', () => {
     mockUseWebSocket.mockReturnValue({
@@ -80,5 +91,38 @@ describe('ConnectView Component', () => {
     // Dispara a ação de clique no inspetor
     fireEvent.click(btnHealth);
     expect(screen.getByText(/Buscando dados da rota \/api\/health/i)).toBeInTheDocument();
+  });
+
+  it('deve marcar a stack como erro quando o health check falha', async () => {
+    mockFetch.mockRejectedValue(new Error('health unavailable'));
+    mockUseWebSocket.mockReturnValue({
+      robotData: null,
+      isConnected: false,
+    });
+
+    render(<ConnectView {...defaultProps} isConnected={false} />);
+
+    await waitFor(() => {
+      expect(screen.getAllByText('ERROR').length).toBeGreaterThan(0);
+    });
+  });
+
+  it('deve inspecionar telemetria recebida via websocket', async () => {
+    mockUseWebSocket.mockReturnValue({
+      robotData: {
+        stepOrder: 7,
+        posX: 2,
+        posY: 3,
+        voltage: 11.2,
+        current: 210,
+      },
+      isConnected: true,
+    });
+
+    render(<ConnectView {...defaultProps} isConnected={true} />);
+
+    fireEvent.click(screen.getByRole('button', { name: /ws \/telemetry/i }));
+
+    expect(screen.getByText(/"stepOrder": 7/)).toBeInTheDocument();
   });
 });

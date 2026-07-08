@@ -1,23 +1,55 @@
-\begin{siglas}
-  \item[Fig.] Figura
-  \item[Eq.] Equação
-  \item[Tab.] Tabela
-  \item[Ex.] Exemplo
-  \item[PI] Projeto Integrador
-  \item[ESP32] Espressif Systems 32-bit microcontroller 
-  \item[MDF] Medium Density Fiberboard
-  \item[CAD] Computer-Aided Design
-  \item[EAP] Estrutura Analítica do Projeto
-  \item[MER] Modelo Entidade-Relacionamento
-  \item[DFS] Busca em Profundidade (Depth-First Search)
-  \item[LM2596] Conversor DC-DC LM2596 (regulador)
-  \item[HC-SR04] Sensor ultrassônico HC-SR04
-  \item[INA219] Sensor de tensão e corrente INA219
-  \item[MQTT] Message Queuing Telemetry Transport
-  \item[WebSocket] Protocolo WebSocket
-  \item[PWM] Modulação por Largura de Pulso
-  \item[RF] Requisito Funcional
-  \item[RNF] Requisito Não Funcional
-  \item[MX1508] Ponte H MX1508
-  \item[PlatformIO] Plataforma de desenvolvimento PlatformIO
-\end{siglas}
+\begin{landscape}
+\thispagestyle{empty} % Oculta cabeçalhos e rodapés para maximizar o espaço vertical útil
+
+% Alterando localmente o espaçamento dos itens da lista description
+\setlength{\itemsep}{0pt}
+\setlength{\parsep}{0pt}
+\setlength{\topsep}{0pt}
+
+% --- Coluna Esquerda: Lista de Siglas ---
+\begin{minipage}[t]{0.52\textwidth}
+    \section*{Lista de Siglas}
+    \begin{SingleSpace}
+    \begin{description}
+        \setlength{\itemsep}{-2pt} % Força um leve esmagamento entre as linhas
+        \item[CAD] Computer-Aided Design
+        \item[DFS] Busca em Profundidade (\textit{Depth-First Search})
+        \item[EAP] Estrutura Analítica do Projeto
+        \item[Eq.] Equação
+        \item[ESP32] Microcontrolador Espressif Systems 32-bit
+        \item[Ex.] Exemplo
+        \item[Fig.] Figura
+        \item[HC-SR04] Sensor ultrassônico HC-SR04
+        \item[INA219] Sensor de tensão e corrente INA219
+        \item[LM2596] Conversor DC-DC (regulador)
+        \item[MDF] \textit{Medium Density Fiberboard}
+        \item[MER] Modelo Entidade-Relacionamento
+        \item[MQTT] \textit{Message Queuing Telemetry Transport}
+        \item[MX1508] Ponte H MX1508
+        \item[PI] Projeto Integrador
+        \item[PlatformIO] Ambiente de desenvolvimento PlatformIO
+        \item[PWM] Modulação por Largura de Pulso
+        \item[RF] Requisito Funcional
+        \item[RNF] Requisito Não Funcional
+        \item[Tab.] Tabela
+        \item[WebSocket] Protocolo WebSocket
+    \end{description}
+    \end{SingleSpace}
+\end{minipage}
+\hfill 
+% --- Coluna Direita: Lista de Símbolos ---
+\begin{minipage}[t]{0.42\textwidth}
+    \section*{Lista de Símbolos}
+    \begin{SingleSpace}
+    \begin{description}
+        \setlength{\itemsep}{-2pt} % Força o mesmo esmagamento simétrico
+        \item[$ \Gamma $] Letra grega Gama
+        \item[$ \Lambda $] Letra grega Lambda
+        \item[$ \Omega $] Letra grega Ômega
+        \item[$ \zeta $] Letra grega minúscula zeta
+        \item[$ \in $] Símbolo matemático de Pertence
+    \end{description}
+    \end{SingleSpace}
+\end{minipage}
+
+\end{landscape}

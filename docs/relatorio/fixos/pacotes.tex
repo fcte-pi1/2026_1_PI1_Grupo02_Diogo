@@ -1,44 +1,76 @@
-% Codificação e fontes
-\usepackage[T1]{fontenc}
-\usepackage[utf8]{inputenc}
-\usepackage{lmodern}
-\usepackage{textcomp}
-\usepackage{bold-extra}
+% =========================================================
+% PACOTES FUNDAMENTAIS E IDIOMA
+% =========================================================
+\usepackage[T1]{fontenc}        % Seleção de códigos de fonte.
+\usepackage[utf8]{inputenc}     % Codificação do documento (conversão automática de acentos)
+\usepackage[brazil]{babel}      % Idioma do documento (traduções de "Chapter" para "Capítulo")
+\usepackage{lmodern}            % Usa a fonte Latin Modern (alta qualidade em PDF)
+\usepackage{textcomp}           % Símbolos complementares
+\usepackage{bold-extra}         % Permite negrito e itálico/small-caps simultâneos simultaneamente
 
-% Estrutura e layout
-\usepackage{longtable}
-\usepackage{makecell}
-\usepackage{pdflscape}
-\usepackage{eso-pic}
-\usepackage{lastpage}
-\usepackage{indentfirst}
-\usepackage{float}
-\usepackage{placeins}
+% =========================================================
+% ESTRUTURA, MARGENS E LAYOUT (Padrão ABNT)
+% =========================================================
+% Configuração cravada de margens ABNT (3cm esq/sup, 2cm dir/inf)
+\usepackage[left=3cm,top=3cm,right=2cm,bottom=2cm]{geometry}
+\usepackage{setspace}           % Permite o comando \onehalfspacing (espaçamento 1.5 padrão ABNT)
+\usepackage{indentfirst}        % Indenta obrigatoriamente o primeiro parágrafo de cada seção
+\usepackage{lastpage}           % Conta o total de páginas (usado em fichas catalográficas e rodapés)
+\usepackage{multicol} % Permite usar o ambiente \begin{multicols}
 
-% Gráficos e cores
-\usepackage{graphicx}
-\usepackage{subcaption}
-\usepackage{color}
-\usepackage{float}
 
-% Unidades
-\usepackage{units}
+% =========================================================
+% TABELAS E PÁGINAS COMPLEXAS
+% =========================================================
+\usepackage{longtable}          % Tabelas que quebram em várias páginas (essencial para roteiros)
+\usepackage{tabularx}           % Tabelas com largura de coluna auto-ajustável (\begin{tabularx}{\textwidth})
+\usepackage{makecell}           % Permite quebras de linha manuais dentro de células de tabela
+\usepackage{pdflscape}          % Permite girar páginas específicas para modo paisagem
+\usepackage{eso-pic}            % Inserção de imagens de fundo (marcas d'água, capas customizadas)
 
-% Citações ABNT (ANTES do hyperref)
-\usepackage[alf]{abntex2cite}
+% =========================================================
+% GRÁFICOS, CORES E FLUTUANTES
+% =========================================================
+\usepackage{graphicx}           % Inclusão de imagens e gráficos
+\usepackage{subcaption}         % Permite subfiguras (1a, 1b, etc)
+\usepackage{xcolor}             % Suporte a cores mais avançado que o antigo pacote 'color'
+\usepackage{float}              % Controle rígido de flutuantes (permite o uso do [H] para fixar tabelas/figuras)
+\usepackage{placeins}           % Fornece o \FloatBarrier para impedir que imagens invadam outras seções
 
-% Backref (ANTES do hyperref)
-\usepackage[brazilian,hyperpageref]{backref}
+% =========================================================
+% UNIDADES E MATEMÁTICA
+% =========================================================
+\usepackage{units}              % Formatação padronizada de unidades de medida
+% =========================================================
+% PACOTES DE MATEMÁTICA
+% =========================================================
+\usepackage{amsmath}    % Resolve o seu erro atual (ambientes matemáticos)
+\usepackage{amsfonts}   % Fontes matemáticas avançadas
+\usepackage{amssymb}    % Símbolos matemáticos adicionais
 
-% Microtipografia (resolve overfull/underfull)
-\usepackage{microtype}
-\setlength{\emergencystretch}{2em}
+% =========================================================
+% MICROTIPOGRAFIA E AJUSTES FINOS
+% =========================================================
+\usepackage{microtype}          % Resolve 90% dos problemas de justificação (overfull/underfull hbox)
+\setlength{\emergencystretch}{2em} % Dá uma folga extra para o LaTeX não jogar palavras para fora da margem
+\setlength{\parindent}{1.25cm}  % Define o recuo exato do parágrafo no padrão ABNT (1.25cm a 1.5cm)
 
-% Hyperlinks — SEMPRE por último
-\usepackage{hyperref}
+% =========================================================
+% CITAÇÕES ABNT E REFERÊNCIAS
+% =========================================================
+% Backref DEVE vir antes do hyperref (mostra em quais páginas a referência foi citada)
+\usepackage[brazilian,hyperpageref]{backref} 
+% Pacote oficial de citações ABNT em formato alfabético (AUTOR, Ano)
+\usepackage[alf]{abntex2cite}   
 
-% para imagem 
-\usepackage{float}
-
-% criação de tabelas
-\usepackage{tabularx}
+% =========================================================
+% HYPERLINKS (SEMPRE O ÚLTIMO PACOTE A SER CARREGADO)
+% =========================================================
+\usepackage{hyperref}           % Cria links clicáveis no PDF
+\hypersetup{
+    colorlinks=true,            % false = links em caixas vermelhas, true = links coloridos
+    linkcolor=black,            % Cor dos links internos (Sumário, figuras, tabelas) - Preto para impressão/acadêmico
+    citecolor=black,            % Cor dos links de citações [1] ou (AUTOR, 2026)
+    urlcolor=blue,              % Cor dos links de internet (\url)
+    bookmarksdepth=4            % Nível de profundidade dos marcadores laterais no leitor de PDF
+}

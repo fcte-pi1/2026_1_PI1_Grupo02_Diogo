@@ -4,7 +4,7 @@ import {
   getTelemetryByIdService,
 } from "../services/telemetry.service";
 
-const DEFAULT_LIMIT = 100;
+const DEFAULT_LIMIT = 50;
 const MAX_LIMIT = 1000;
 
 const parseLimit = (value: unknown): number => {
@@ -20,7 +20,7 @@ const parseLimit = (value: unknown): number => {
 
 export async function listTelemetryHandler(req: Request, res: Response) {
   try {
-    const limit = Number(req.query.limit) || 50;
+    const limit = parseLimit(req.query.limit);
     
     // 🔍 Chama o service para buscar os dados brutos salvos na tabela TelemetryRaw
     const items = await getRecentTelemetry(limit);

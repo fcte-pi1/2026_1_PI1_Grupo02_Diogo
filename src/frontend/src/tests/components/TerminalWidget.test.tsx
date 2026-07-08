@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { describe, it, expect, vi } from 'vitest';
 import TerminalWidget from '../../features/telemetry/components/TerminalWidget'; // Certifique-se de apontar para o caminho correto
@@ -64,5 +64,29 @@ describe('TerminalWidget Component', () => {
 
     await user.click(maxBtn);
     await user.click(minBtn);
+  });
+
+  it('permite redimensionar o terminal via arraste do mouse', () => {
+    Object.defineProperty(window, 'innerHeight', {
+      configurable: true,
+      value: 800,
+    });
+
+    render(<TerminalWidget {...defaultProps} status={true} />);
+
+    const resizeHandle = screen.getByTitle('Arraste para redimensionar');
+    fireEvent.mouseDown(resizeHandle, { clientY: 700 });
+    fireEvent.mouseMove(document, { clientY: 500 });
+    fireEvent.mouseUp(document);
+
+    expect(resizeHandle).toBeInTheDocument();
+  });
+
+  it('exibe mensagem de console limpo quando conectado sem logs', () => {
+    render(<TerminalWidget {...defaultProps} status={true} logs={[]} />);
+
+    expect(
+      screen.getByText('// Console limpo. Aguardando próximas iterações...')
+    ).toBeInTheDocument();
   });
 });

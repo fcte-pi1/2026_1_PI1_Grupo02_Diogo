@@ -65,6 +65,7 @@ model Session {
 
   initialVoltage Float?
   finalVoltage   Float?
+  avgCurrent     Float?
   totalDrainMah  Float?
 
   fastestPath Json?

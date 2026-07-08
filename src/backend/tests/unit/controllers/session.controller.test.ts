@@ -33,6 +33,16 @@ describe("session.controller", () => {
       expect(res.json).toHaveBeenCalledWith({ items: sessions, count: 1 });
     });
 
+    it("returns empty list when there are no sessions", async () => {
+      sessionServiceMock.listSessionMetadata.mockResolvedValueOnce([]);
+      const res = createMockResponse();
+
+      await listSessionsHandler(createMockRequest(), res, nextMock);
+
+      expect(res.status).toHaveBeenCalledWith(200);
+      expect(res.json).toHaveBeenCalledWith({ items: [], count: 0 });
+    });
+
     it("calls next on error", async () => {
       const error = new Error("db_error");
       sessionServiceMock.listSessionMetadata.mockRejectedValueOnce(error);
@@ -81,6 +91,19 @@ describe("session.controller", () => {
       expect(res.status).toHaveBeenCalledWith(200);
       expect(res.json).toHaveBeenCalledWith(session);
     });
+
+    it("calls next on error", async () => {
+      const error = new Error("db_error");
+      const res = createMockResponse();
+      const req = createMockRequest({
+        params: { id: "550e8400-e29b-41d4-a716-446655440000" },
+      });
+      sessionServiceMock.getSessionDetail.mockRejectedValueOnce(error);
+
+      await getSessionByIdHandler(req, res, nextMock);
+
+      expect(nextMock).toHaveBeenCalledWith(error);
+    });
   });
 
   describe("deleteSessionHandler", () => {
@@ -117,6 +140,19 @@ describe("session.controller", () => {
       await deleteSessionHandler(req, res, nextMock);
 
       expect(res.sendStatus).toHaveBeenCalledWith(204);
+    });
+
+    it("calls next on error", async () => {
+      const error = new Error("db_error");
+      const res = createMockResponse();
+      const req = createMockRequest({
+        params: { id: "550e8400-e29b-41d4-a716-446655440000" },
+      });
+      sessionServiceMock.deleteSession.mockRejectedValueOnce(error);
+
+      await deleteSessionHandler(req, res, nextMock);
+
+      expect(nextMock).toHaveBeenCalledWith(error);
     });
   });
 });

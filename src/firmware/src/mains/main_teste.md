@@ -5,317 +5,326 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <PubSubClient.h>
+#include <ArduinoJson.h>
+#include <Wire.h>
+#include <VL6180X.h>
 #include <Adafruit_INA219.h>
-#include <ArduinoJson.h> 
+#include <ArduinoOTA.h>
 
-// ======================================================
-//                CONFIGURAÇÕES GLOBAIS
-// ======================================================
-const char* WIFI_SSID = "Alguém em algum lugar"; // troque para o wifi que está conectado ao seu computador e a esp32
-const char* WIFI_PASSWORD = "87654321"; // passe sua senha
+// ============================================================
+//  REDE — ajuste conforme seu ambiente
+// ============================================================
+const char* WIFI_SSID     = "ALLREDE-CASA28";
+const char* WIFI_PASSWORD = "tata060428";
+const char* MQTT_BROKER   = "192.168.1.11";
+const int   MQTT_PORT     = 1883;
+const char* MQTT_TOPIC    = "rato/telemetria";
+const char* ROBOT_ID      = "UAV-MOUSE-01";
 
-const char* MQTT_BROKER = "10.233.48.48"; // ip do docker para conectar-se com mqtt (sua rede wifi)
-const int MQTT_PORT = 1883;
-const char* MQTT_TELEMETRY_TOPIC = "rato/telemetria";
-const char* ROBOT_ID = "UAV-MOUSE-01";
+// ============================================================
+//  PINAGEM
+// ============================================================
+const uint8_t LED_PIN = 2;
 
-// Pinagem
-const int LED_PIN = 2;
-const int TRIG_FRONT = 4;
-const int ECHO_FRONT = 16;
-const int TRIG_LEFT = 17;
-const int ECHO_LEFT = 5;
-const int TRIG_RIGHT = 18;
-const int ECHO_RIGHT = 19;
+// VL6180X frontal — Wire1 dedicado
+#define FRENTE_SDA 21
+#define FRENTE_SCL 19
 
-// Pinos INA219
-const int INA219_SDA = 21; // Pino SDA do INA219
-const int INA219_SCL = 15; // Pino SCL do INA219
+// INA219 — Wire dedicado (NÃO compartilha com o sensor)
+const uint8_t INA219_SDA = 19;
+const uint8_t INA219_SCL = 2;
 
-// Motores
-const int MOTOR_LEFT_IN1 = 26;
-const int MOTOR_LEFT_IN2 = 25;
-const int MOTOR_RIGHT_IN1 = 14;
-const int MOTOR_RIGHT_IN2 = 27;
+// Motores (Ponte H — LEDC/PWM)
+const uint8_t MOTOR_LEFT_IN1  = 26;
+const uint8_t MOTOR_LEFT_IN2  = 25;
+const uint8_t MOTOR_RIGHT_IN1 = 14;
+const uint8_t MOTOR_RIGHT_IN2 = 27;
 
-// encoders
-const int ENCODER_LEFT_A = 34;
-const int ENCODER_LEFT_B = 35;
-const int ENCODER_RIGHT_A = 32;
-const int ENCODER_RIGHT_B = 33;
+// Encoders
+const uint8_t ENCODER_LEFT_A  = 32;
+const uint8_t ENCODER_LEFT_B  = 33;
+const uint8_t ENCODER_RIGHT_A = 34;
+const uint8_t ENCODER_RIGHT_B = 35;
 
-// Variáveis Voláteis para Interrupções
-volatile long encoderLeftCount = 0;
-volatile long encoderRightCount = 0;
+// ============================================================
+//  LEDC — canais PWM dos motores
+// ============================================================
+const int PWM_FREQ = 5000;
+const int PWM_RES  = 8;
+const int CH_L_IN1 = 0;
+const int CH_L_IN2 = 1;
+const int CH_R_IN1 = 2;
+const int CH_R_IN2 = 3;
 
-// Gerenciamento de Timers Assíncronos (Não-bloqueantes)
-unsigned long lastTelemetrySend = 0;
-unsigned long lastMotorToggle = 0;
-unsigned long lastLedBlink = 0;
-unsigned long lastSerialLog = 0;
+const int VEL_TESTE = 140;
 
-bool motorsRunning = false;
-bool ledState = false;
-unsigned long stepCounter = 0;
-
-WiFiClient wifiClient;
-PubSubClient client(wifiClient);
-
+// ============================================================
+//  OBJETOS GLOBAIS
+// ============================================================
+VL6180X        vlFrente;
 Adafruit_INA219 ina219;
 
-// ======================================================
-//                INTERRUPÇÕES (ISRs)
-// ======================================================
-void IRAM_ATTR encoderLeftISR()
+WiFiClient   wifiClient;
+PubSubClient mqttClient(wifiClient);
+
+// ============================================================
+//  VARIÁVEIS DE ESTADO
+// ============================================================
+volatile long encoderLeftCount  = 0;
+volatile long encoderRightCount = 0;
+
+bool  motorsRunning    = false;
+bool  ledState         = false;
+unsigned long stepCounter       = 0;
+unsigned long lastTelemetrySend = 0;
+unsigned long lastSerialLog     = 0;
+unsigned long lastLedBlink      = 0;
+unsigned long lastMotorToggle   = 0;
+
+float distFrente = 400.0f;
+float tensaoV    = 0.0f;
+float correnteMa = 0.0f;
+
+// ============================================================
+//  ISRs — ENCODERS
+// ============================================================
+void IRAM_ATTR encoderLeftISR()  { encoderLeftCount++;  }
+void IRAM_ATTR encoderRightISR() { encoderRightCount++; }
+
+// ============================================================
+//  VL6180X — inicialização
+// ============================================================
+void inicializaSensores()
 {
-    // Se precisar de sentido (frente/trás), leia o pino B aqui
-    encoderLeftCount++;
+    Wire1.begin(FRENTE_SDA, FRENTE_SCL);
+    Wire1.setClock(100000);
+
+    vlFrente.setBus(&Wire1);
+    vlFrente.setTimeout(500);
+
+    if (vlFrente.init()) {
+        vlFrente.configureDefault();
+        Serial.println("[SENSOR] VL6180X (frente) OK");
+    } else {
+        Serial.println("[SENSOR] ERRO: VL6180X nao detectado (SDA=21 SCL=19)");
+    }
 }
 
-void IRAM_ATTR encoderRightISR()
+void lerSensores()
 {
-    encoderRightCount++;
+    uint8_t mmF = vlFrente.readRangeSingle();
+    distFrente = (vlFrente.timeoutOccurred() || mmF == 255)
+                 ? 400.0f : mmF / 10.0f;
 }
 
-// ======================================================
-//                ROTINAS DE CONEXÃO
-// ======================================================
+// ============================================================
+//  MOTORES — LEDC/PWM
+// ============================================================
+void setupMotores()
+{
+    ledcSetup(CH_L_IN1, PWM_FREQ, PWM_RES); ledcAttachPin(MOTOR_LEFT_IN1,  CH_L_IN1);
+    ledcSetup(CH_L_IN2, PWM_FREQ, PWM_RES); ledcAttachPin(MOTOR_LEFT_IN2,  CH_L_IN2);
+    ledcSetup(CH_R_IN1, PWM_FREQ, PWM_RES); ledcAttachPin(MOTOR_RIGHT_IN1, CH_R_IN1);
+    ledcSetup(CH_R_IN2, PWM_FREQ, PWM_RES); ledcAttachPin(MOTOR_RIGHT_IN2, CH_R_IN2);
+}
+
+void acionarMotores(int velEsq, int velDir)
+{
+    if      (velEsq > 0) { ledcWrite(CH_L_IN1, velEsq);        ledcWrite(CH_L_IN2, 0);           }
+    else if (velEsq < 0) { ledcWrite(CH_L_IN1, 0);             ledcWrite(CH_L_IN2, abs(velEsq)); }
+    else                 { ledcWrite(CH_L_IN1, 0);              ledcWrite(CH_L_IN2, 0);           }
+
+    if      (velDir > 0) { ledcWrite(CH_R_IN1, velDir);        ledcWrite(CH_R_IN2, 0);           }
+    else if (velDir < 0) { ledcWrite(CH_R_IN1, 0);             ledcWrite(CH_R_IN2, abs(velDir)); }
+    else                 { ledcWrite(CH_R_IN1, 0);              ledcWrite(CH_R_IN2, 0);           }
+
+    motorsRunning = (velEsq != 0 || velDir != 0);
+}
+
+void stopMotors()  { acionarMotores(0, 0); }
+
+void moveForward()
+{
+    acionarMotores(VEL_TESTE, VEL_TESTE);
+    Serial.println("[MOTOR] Frente");
+}
+
+void turnLeft()
+{
+    acionarMotores(-VEL_TESTE, VEL_TESTE);
+    Serial.println("[MOTOR] Esquerda");
+}
+
+void turnRight()
+{
+    acionarMotores(VEL_TESTE, -VEL_TESTE);
+    Serial.println("[MOTOR] Direita");
+}
+
+// ============================================================
+//  REDE — WiFi + MQTT
+// ============================================================
 void connectWiFi()
 {
-    if (WiFi.status() == WL_CONNECTED)
-        return;
-
-    Serial.print("Conectando ao WiFi...");
+    if (WiFi.status() == WL_CONNECTED) return;
+    Serial.print("WiFi...");
     WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-
-    // Bloqueio aceitável apenas no setup inicial
-    while (WiFi.status() != WL_CONNECTED)
-    {
-        delay(500);
-        Serial.print(".");
-    }
-    Serial.print("\nWiFi Conectado! IP: ");
-    Serial.println(WiFi.localIP());
+    while (WiFi.status() != WL_CONNECTED) { delay(500); Serial.print("."); }
+    Serial.printf(" OK (%s)\n", WiFi.localIP().toString().c_str());
 }
 
 void connectMQTT()
 {
-    client.setServer(MQTT_BROKER, MQTT_PORT);
-
-    // Tentativa de conexão não-bloqueante se chamada dentro do loop
-    if (!client.connected())
-    {
-        Serial.print("Tentando conexão MQTT...");
-        if (client.connect("ESP32Client"))
-        {
-            Serial.println("Conectado com sucesso!");
-        }
-        else
-        {
-            Serial.print("Falha, rc=");
-            Serial.println(client.state());
-        }
-    }
+    if (mqttClient.connected()) return;
+    mqttClient.setServer(MQTT_BROKER, MQTT_PORT);
+    char id[32];
+    snprintf(id, sizeof(id), "ESP32-%06llX", (unsigned long long)(ESP.getEfuseMac() & 0xFFFFFF));
+    Serial.printf("MQTT (%s)...", id);
+    if (mqttClient.connect(id)) Serial.println("OK");
+    else                        Serial.printf(" falha rc=%d\n", mqttClient.state());
 }
 
-// ======================================================
-//                SENSORES E ATUADORES
-// ======================================================
-float readUltrasonic(int trigPin, int echoPin)
+// ============================================================
+//  OTA
+// ============================================================
+void initOTA()
 {
-    digitalWrite(trigPin, LOW);
-    delayMicroseconds(2);
-
-    digitalWrite(trigPin, HIGH);
-    delayMicroseconds(10);
-
-    digitalWrite(trigPin, LOW);
-
-    long duration = pulseIn(echoPin, HIGH, 30000);
-
-    float distance = duration * 0.034 / 2.0;
-
-    return distance;
+    ArduinoOTA.setHostname("micromouse");
+    ArduinoOTA.onStart([]()  { Serial.println("[OTA] Iniciando..."); });
+    ArduinoOTA.onEnd([]()    { Serial.println("\n[OTA] OK"); });
+    ArduinoOTA.onProgress([](unsigned int p, unsigned int t) {
+        Serial.printf("[OTA] %u%%\r", (p * 100) / t);
+    });
+    ArduinoOTA.onError([](ota_error_t e) {
+        Serial.printf("[OTA] Erro[%u]\n", e);
+    });
+    ArduinoOTA.begin();
+    Serial.printf("[OTA] Pronto — micromouse.local | %s\n",
+                  WiFi.localIP().toString().c_str());
 }
 
-void stopMotors()
+// ============================================================
+//  TELEMETRIA MQTT
+// ============================================================
+void publishTelemetry()
 {
-    digitalWrite(MOTOR_LEFT_IN1, LOW);
-    digitalWrite(MOTOR_LEFT_IN2, LOW);
-    digitalWrite(MOTOR_RIGHT_IN1, LOW);
-    digitalWrite(MOTOR_RIGHT_IN2, LOW);
-    motorsRunning = false;
-}
+    if (!mqttClient.connected()) return;
 
-void moveForward()
-{
-    digitalWrite(MOTOR_LEFT_IN1, HIGH);
-    digitalWrite(MOTOR_LEFT_IN2, LOW);
-    digitalWrite(MOTOR_RIGHT_IN1, HIGH);
-    digitalWrite(MOTOR_RIGHT_IN2, LOW);
-    motorsRunning = true;
-}
+    StaticJsonDocument<1024> doc;
+    char buffer[768];
 
-// ======================================================
-//                ENVIO DE TELEMETRIA REAL
-// ======================================================
-void publishTelemetry(float front, float left, float right, float busVoltage, float current_mA)
-{
-    if (WiFi.status() != WL_CONNECTED || !client.connected())
-        return;
-
-    StaticJsonDocument<768> doc;
-
-    doc["robotId"] = ROBOT_ID;
-    doc["step"] = stepCounter++;
-    doc["tempoMs"] = millis();
-    doc["modo"] = "DFS";
-    doc["estado"] = motorsRunning ? "EXPLORANDO" : "PARADO";
-
-    JsonObject posicao = doc.createNestedObject("posicao");
-    posicao["x"] = 0;
-    posicao["y"] = 0;
-
-    doc["direcao"] = "norte";
-    doc["ultimomovimento"] = motorsRunning ? "frente" : "parado"; // Caixa baixa para bater com o DTO
-
-    JsonObject paredes = doc.createNestedObject("paredes");
-    paredes["norte"] = (front < 12.0f);
-    paredes["sul"] = false;
-    paredes["leste"] = (right < 12.0f);
-    paredes["oeste"] = (left < 12.0f);
-
-    JsonObject motores = doc.createNestedObject("motores");
-    motores["pwmEsquerdo"] = motorsRunning ? 120 : 0;
-    motores["pwmDireito"] = motorsRunning ? 118 : 0;
-
-    JsonObject sensores = doc.createNestedObject("sensores");
-    sensores["esquerdaCm"] = round(left * 100) / 100;
-    sensores["frenteCm"] = round(front * 100) / 100;
-    sensores["direitaCm"] = round(right * 100) / 100;
-
-    JsonObject energia = doc.createNestedObject("energia");
-    energia["tensaoV"] = busVoltage;
-    energia["correnteMa"] = current_mA;
-
+    doc["robotId"]  = ROBOT_ID;
+    doc["step"]     = stepCounter++;
+    doc["tempoMs"]  = millis();
+    doc["modo"]     = "TESTE";
+    doc["estado"]   = motorsRunning ? "MOVENDO" : "PARADO";
+    doc["direcao"]  = "norte";
+    doc["ultimoMovimento"] = motorsRunning ? "frente" : "parado";
     doc["conclusao"] = false;
 
-    char buffer[512];
-    serializeJson(doc, buffer);
+    JsonObject posicao = doc.createNestedObject("posicao");
+    posicao["x"] = 0; posicao["y"] = 0;
 
-    client.publish(MQTT_TELEMETRY_TOPIC, buffer);
+    JsonObject paredes = doc.createNestedObject("paredes");
+    paredes["norte"] = (distFrente < 12.0f);
+    paredes["sul"]   = false;
+    paredes["leste"] = false;
+    paredes["oeste"] = false;
+
+    JsonObject motores = doc.createNestedObject("motores");
+    motores["pwmEsquerdo"] = motorsRunning ? VEL_TESTE : 0;
+    motores["pwmDireito"]  = motorsRunning ? VEL_TESTE : 0;
+
+    JsonObject sensores = doc.createNestedObject("sensores");
+    sensores["frenteCm"] = distFrente;
+
+    JsonObject energia = doc.createNestedObject("energia");
+    energia["tensaoV"]    = tensaoV;
+    energia["correnteMa"] = correnteMa;
+
+    serializeJson(doc, buffer);
+    mqttClient.publish(MQTT_TOPIC, buffer);
 }
 
-// ======================================================
-//                SETUP SETUP
-// ======================================================
+// ============================================================
+//  SETUP
+// ============================================================
 void setup()
 {
     Serial.begin(115200);
-    client.setBufferSize(1024);
+    mqttClient.setBufferSize(1024);
 
     pinMode(LED_PIN, OUTPUT);
-    pinMode(TRIG_FRONT, OUTPUT);
-    pinMode(ECHO_FRONT, INPUT);
-    pinMode(TRIG_LEFT, OUTPUT);
-    pinMode(ECHO_LEFT, INPUT);
-    pinMode(TRIG_RIGHT, OUTPUT);
-    pinMode(ECHO_RIGHT, INPUT);
 
-    pinMode(MOTOR_LEFT_IN1, OUTPUT);
-    pinMode(MOTOR_LEFT_IN2, OUTPUT);
-    pinMode(MOTOR_RIGHT_IN1, OUTPUT);
-    pinMode(MOTOR_RIGHT_IN2, OUTPUT);
-
-    pinMode(ENCODER_LEFT_A, INPUT_PULLUP);
+    pinMode(ENCODER_LEFT_A,  INPUT_PULLUP);
     pinMode(ENCODER_RIGHT_A, INPUT_PULLUP);
-
-    attachInterrupt(digitalPinToInterrupt(ENCODER_LEFT_A), encoderLeftISR, RISING);
+    attachInterrupt(digitalPinToInterrupt(ENCODER_LEFT_A),  encoderLeftISR,  RISING);
     attachInterrupt(digitalPinToInterrupt(ENCODER_RIGHT_A), encoderRightISR, RISING);
 
-    //
-    // INA219
-    //
-    Wire.begin(INA219_SDA, INA219_SCL);
+    setupMotores();
+    stopMotors();
 
-    if (!ina219.begin())
-    {
-        Serial.println("Erro ao iniciar INA219");
-    }
-    else
-    {
-        Serial.println("INA219 iniciado");
-    }
+    inicializaSensores();
+
+    Wire.begin(INA219_SDA, INA219_SCL);
+    if (!ina219.begin()) Serial.println("[INA219] ERRO");
+    else                 Serial.println("[INA219] OK");
 
     connectWiFi();
     connectMQTT();
-    stopMotors();
+    initOTA();
+
+    Serial.println("\n=== BANCADA DE TESTE PRONTA ===");
+    Serial.println("Ciclo: frente(5s) -> esquerda(5s) -> direita(5s) -> parado(5s)");
+    delay(3000);
 }
 
-// ======================================================
-//                LOOP LOOP (ASSÍNCRONO)
-// ======================================================
+// ============================================================
+//  LOOP
+// ============================================================
 void loop()
 {
-    // Garante infraestrutura de rede ativa sem travar o processamento lógico
-    if (WiFi.status() != WL_CONNECTED)
-        connectWiFi();
-    if (!client.connected())
-        connectMQTT();
-    client.loop();
+    ArduinoOTA.handle();
 
-    unsigned long currentMillis = millis();
+    if (WiFi.status() != WL_CONNECTED) connectWiFi();
+    if (!mqttClient.connected())       connectMQTT();
+    mqttClient.loop();
 
-    // TIMER 1: Piscar LED sem delay (Inverte o estado a cada 250ms)
-    if (currentMillis - lastLedBlink >= 250)
-    {
-        lastLedBlink = currentMillis;
+    unsigned long now = millis();
+
+    if (now - lastLedBlink >= 250) {
+        lastLedBlink = now;
         ledState = !ledState;
         digitalWrite(LED_PIN, ledState);
     }
 
-    // TIMER 2: Lógica de alternância dos motores (Cada 5 segundos)
-    if (currentMillis - lastMotorToggle >= 5000)
-    {
-        lastMotorToggle = currentMillis;
-        if (motorsRunning)
-        {
-            stopMotors();
-            Serial.println("Motores PARADOS");
+    lerSensores();
+    tensaoV    = ina219.getBusVoltage_V();
+    correnteMa = ina219.getCurrent_mA();
+
+    if (now - lastMotorToggle >= 5000) {
+        lastMotorToggle = now;
+        static int fase = 0;
+        switch (fase % 4) {
+            case 0: moveForward(); break;
+            case 1: turnLeft();    break;
+            case 2: turnRight();   break;
+            case 3: stopMotors();  Serial.println("[MOTOR] Parado"); break;
         }
-        else
-        {
-            moveForward();
-        }
+        fase++;
     }
 
-    // Leituras constantes dos sensores para tomada de decisão em tempo real
-    float frontDistance = readUltrasonic(TRIG_FRONT, ECHO_FRONT);
-    float leftDistance = readUltrasonic(TRIG_LEFT, ECHO_LEFT);
-    float rightDistance = readUltrasonic(TRIG_RIGHT, ECHO_RIGHT);
-
-    //
-    // INA219
-    //
-
-    float busVoltage = ina219.getBusVoltage_V();
-    float current_mA = ina219.getCurrent_mA();
-
-    // TIMER 3: Envio de Telemetria via MQTT (A cada 2 segundos)
-    if (currentMillis - lastTelemetrySend >= 2000)
-    {
-        lastTelemetrySend = currentMillis;
-        publishTelemetry(frontDistance, leftDistance, rightDistance, busVoltage, current_mA);
+    if (now - lastTelemetrySend >= 2000) {
+        lastTelemetrySend = now;
+        publishTelemetry();
     }
 
-    // TIMER 4: Exibição no Monitor Serial (A cada 1 segundo)
-    if (currentMillis - lastSerialLog >= 1000)
-    {
-        lastSerialLog = currentMillis;
+    if (now - lastSerialLog >= 1000) {
+        lastSerialLog = now;
         Serial.println("\n--- [TELEMETRIA LOCAL] ---");
-        Serial.printf("Distâncias -> F: %.2f cm | E: %.2f cm | D: %.2f cm\n", frontDistance, leftDistance, rightDistance);
-        Serial.printf("Encoders   -> L: %ld | R: %ld\n", encoderLeftCount, encoderRightCount);
-        Serial.printf("Motores    -> Status: %s\n", motorsRunning ? "EM MOVIMENTO" : "PARADO");
-        Serial.printf("Energia    -> Tensão: %.2f V | Corrente: %.2f mA\n", busVoltage, current_mA);
+        Serial.printf("Frente: %.1f cm\n", distFrente);
+        Serial.printf("Encoders L: %ld  R: %ld\n", encoderLeftCount, encoderRightCount);
+        Serial.printf("Motores: %s\n", motorsRunning ? "EM MOVIMENTO" : "PARADO");
+        Serial.printf("Energia: %.2f V  %.2f mA\n", tensaoV, correnteMa);
     }
 }
