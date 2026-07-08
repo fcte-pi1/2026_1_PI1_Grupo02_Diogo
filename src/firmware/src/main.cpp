@@ -8,11 +8,19 @@
 #include "../lib/output/motor/motor.h"
 #include "../lib/utils/conexao/conexoes.h"
 #include "../lib/utils/telemetria/telemetria.h"
+#include "../lib/utils/floodfill/floodfill.h"
 #include "../lib/utils/dfs/dfs.h"
 #include "../lib/input/energia/energia.h"
 #include "../lib/utils/ota/ota.h"
 
 #pragma region Variáveis
+
+enum Modo // algoritmos de percorrer
+{
+    DFS,
+    FLOODFILL,  // volta: centro -> início (estado = EXPLORANDO)
+    CORRIDA_FF, // Corrida: inicio -> centro (estado = CORRIDA)
+};
 
 const char *MQTT_TOPIC = "rato/telemetria";
 const char *ROBOT_ID = "UAV-MOUSE-01";
@@ -60,6 +68,7 @@ int destinoY = -1;
 //  O enum Estado é definido em dfs.h (para ser compartilhado com passoDFS).
 // -------------------------------------------------------------------------------
 Estado estado = PARADO;
+Modo modo = DFS;
 
 // -------------------------------------------------------------------------------
 //  GLOBAIS
@@ -77,6 +86,11 @@ unsigned long lastSerialLog = 0;
 bool ledState = false;
 bool concluido = false;
 unsigned long stepCounter = 0;
+
+// Pausa entre FF (entre volta e corrida)
+bool aguardandoCorrida = false;
+unsigned long inicioEspera = 0;
+const unsigned long TEMPO_ESPERA_CORRIDA_MS = 10000;
 
 Rato rato;
 Labirinto lab;
@@ -148,6 +162,7 @@ void setup()
 
     resetDFS();          // garante pilha/flags zeradas antes de explorar
     estado = EXPLORANDO; // inicia a exploração por DFS
+    modo = DFS;
 }
 #pragma endregion
 
@@ -179,8 +194,15 @@ void loop()
     {
         lastTelemetrySend = currentMillis;
 
-        lerDadosEnergeticos(&rato, &ina219);
-        publishTelemetry(rato, lab, mqttClient, MQTT_TOPIC, ROBOT_ID, stepCounter, estado, motorsRunning, getUltimoMovimentoDFS(), concluido);
+        const char *ultimoMovimento;
+        if (modo == DFS)
+            ultimoMovimento = getUltimoMovimentoDFS();
+        else    // FLOODFILL (volta) ou CORRIDA_FF usam a mesma escolha de caminho
+            ultimoMovimento = getUltimoMovimentoFloodFill();
+
+            lerDadosEnergeticos(&rato, &ina219);
+            publishTelemetry(rato, lab, mqttClient, MQTT_TOPIC, ROBOT_ID, stepCounter, estado, motorsRunning, ultimoMovimento, concluido);
+
     }
     
     // Serial (1s)
@@ -199,21 +221,69 @@ void loop()
     switch (estado)
     {
     case EXPLORANDO:
-        passoDFS(&rato, &lab, &motorsRunning, &stepCounter,
-                 &destinoX, &destinoY, &concluido, &estado);
+        switch (modo)
+        {
+        case DFS:
+            passoDFS(&rato, &lab, &motorsRunning, &stepCounter,
+                     &destinoX, &destinoY, &concluido, &estado);
+            lerDistancias(&rato);
+
+            break;
+        case FLOODFILL:
+            // Volta: do centro (posição atual) até o início do labirinto
+            passoFloodFill(&rato, &lab, &motorsRunning,
+                           INICIO_X, INICIO_Y,
+                           &concluido, &estado);
+
+            lerDistancias(&rato);
+            break;
+        default:
+            break;
+        }
+        break;
+    case CORRIDA:
+        // Corrida: do início até o centro (destinoX/Y já descobertos pelo DFS)
+        passoFloodFill(&rato, &lab, &motorsRunning,
+                       destinoX, destinoY,
+                       &concluido, &estado);
         lerDistancias(&rato);
         break;
 
-    case CORRIDA:
-        // FloodFill — não implementar agora
-        stopMotors();
-        break;
-
     case CONCLUIDO:
+        if (modo == DFS)
+        {
+            // Achou o centro 2x2 -> prepara e inicia a volta pro início
+            modo = FLOODFILL;
+            concluido = false;
+            resetFloodFill();
+            estado = EXPLORANDO;
+        }
+        else if (modo == FLOODFILL)
+        {
+            if (!aguardandoCorrida)
+            {
+                // Voltou pro início -> espera 10s
+                aguardandoCorrida = true;
+                inicioEspera = currentMillis;
+                motorsRunning = false;
+            }
+            else if (currentMillis - inicioEspera >= TEMPO_ESPERA_CORRIDA_MS)
+            {
+                // Esperou os 10s -> começa corrida (início -> centro)
+                aguardandoCorrida = false;
+                modo = CORRIDA_FF;
+                concluido = false;
+                resetFloodFill();
+                estado = CORRIDA;
+            }
+        }
+        atualizaSensores();
+        break;
     case PARADO:
     default:
         stopMotors();
         break;
+
     }
 }
 
