@@ -17,7 +17,7 @@ describe("session.dto", () => {
       avgSpeed: 12.5,
       initialVoltage: 12,
       finalVoltage: 11.2,
-      avgCurrent: 215,
+      totalDrainMah: 215,
     });
 
     expect(dto).toEqual({
@@ -30,7 +30,7 @@ describe("session.dto", () => {
       avgSpeed: 12.5,
       initialVoltage: 12,
       finalVoltage: 11.2,
-      avgCurrent: 215,
+      totalDrainMah: 215,
     });
   });
 

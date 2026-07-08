@@ -1,3 +1,24 @@
+jest.mock("../../../src/lib/prisma", () => ({
+  prisma: {
+    session: { update: jest.fn() },
+  },
+}));
+
+jest.mock("../../../src/repositories/maze.repository", () => ({
+  findOrCreateSimulatorMaze: jest.fn(),
+  replaceMazeCells: jest.fn(),
+}));
+
+jest.mock("../../../src/repositories/session-step.repository", () => ({
+  deleteOrphanSteps: jest.fn().mockResolvedValue(0),
+}));
+
+jest.mock("../../../src/services/telemetry.service", () => ({
+  consolidateSession: jest.fn(),
+  resetTelemetryRunContextForTests: jest.fn(),
+  setActiveRunContextForSimulator: jest.fn(),
+}));
+
 jest.mock("../../../src/websocket/socket", () => ({
   getSocket: jest.fn(),
 }));
