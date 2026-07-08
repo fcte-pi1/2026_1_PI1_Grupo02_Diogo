@@ -29,51 +29,40 @@ static bool _dir_ok    = false;
 // ============================================================
 void inicializaSensores()
 {
-    // --- 1. Garante que ambos os VL53L0X começam desligados ---
-    // Enquanto estão com XSHUT=LOW, o barramento I2C não enxerga nenhum
-    // deles, permitindo inicializar o VL6180X (mesmo endereço 0x29) sem
-    // colisão de endereço.
+    // --- 1. Desliga todos os sensores ---
+    // VL6180X via SHDN (GPIO 23), VL53L0X via XSHUT (GPIO 4 e 5).
+    // Todos usam 0x29 como endereço padrão — só um pode estar ativo por vez.
+    pinMode(VL6180X_SHDN_PIN, OUTPUT);
     pinMode(XSHUT_ESQ_PIN, OUTPUT);
     pinMode(XSHUT_DIR_PIN, OUTPUT);
-    digitalWrite(XSHUT_ESQ_PIN, LOW);
-    digitalWrite(XSHUT_DIR_PIN, LOW);
-    delay(10); // tempo de desativação garantido pelo datasheet (~1 ms)
+
+    digitalWrite(VL6180X_SHDN_PIN, LOW);   // VL6180X offline — desocupa 0x29
+    digitalWrite(XSHUT_ESQ_PIN, LOW);       // VL53L0X esq offline
+    digitalWrite(XSHUT_DIR_PIN, LOW);       // VL53L0X dir offline
+    delay(10);
 
     // --- 2. Sobe o barramento Wire1 ---
     Wire1.begin(SENSOR_SDA, SENSOR_SCL);
-    Wire1.setClock(400000); // Fast-mode: reduz latência de leitura
+    Wire1.setClock(400000);
 
-    // --- 3. Inicializa VL6180X (frente) —  único dispositivo no bus agora ---
-    _vlFrente.setBus(&Wire1);
-    _vlFrente.setTimeout(500);
-    _vlFrente.init();
-    _vlFrente.configureDefault();
-
-    // Verifica presença via ACK no endereço
-    Wire1.beginTransmission(ADDR_FRENTE);
-    _frente_ok = (Wire1.endTransmission() == 0);
-    Serial.println(_frente_ok
-        ? "[SENSORES] VL6180X frente OK  @0x29 (Wire1 SDA=21 SCL=22)"
-        : "[ERRO]     VL6180X frente nao detectado");
-
-    // --- 4. Liga VL53L0X esquerda e reendereça para 0x30 ---
+    // --- 3. Liga e reendereça VL53L0X esquerda (0x29 → 0x30) ---
+    // VL6180X está com SHDN=LOW, então 0x29 está livre.
     digitalWrite(XSHUT_ESQ_PIN, HIGH);
-    delay(10); // boot time do sensor (~1.2 ms mínimo, 10 ms seguro)
+    delay(10);
 
     _vlEsquerda.setBus(&Wire1);
     _vlEsquerda.setTimeout(500);
     if (_vlEsquerda.init()) {
         _vlEsquerda.setAddress(ADDR_ESQ);
-        _vlEsquerda.startContinuous(50); // leitura contínua a cada 50 ms
+        _vlEsquerda.startContinuous(50);
         _esq_ok = true;
         Serial.println("[SENSORES] VL53L0X esquerda OK @0x30 (Wire1)");
     } else {
         Serial.println("[ERRO]     VL53L0X esquerda nao detectado");
     }
 
-    // --- 5. Liga VL53L0X direita e reendereça para 0x31 ---
-    // O esquerdo já está em 0x30, então não há colisão ao colocar o
-    // direito (ainda em 0x29 padrão) no barramento.
+    // --- 4. Liga e reendereça VL53L0X direita (0x29 → 0x31) ---
+    // Esquerda já está em 0x30, VL6180X offline — 0x29 livre.
     digitalWrite(XSHUT_DIR_PIN, HIGH);
     delay(10);
 
@@ -87,6 +76,23 @@ void inicializaSensores()
     } else {
         Serial.println("[ERRO]     VL53L0X direita nao detectado");
     }
+
+    // --- 5. Liga VL6180X (frente) — único em 0x29, sem colisão ---
+    // delay de 50 ms: SHDN não é power-on, o sensor precisa de tempo para
+    // estabilizar o oscilador interno antes de responder no I2C.
+    digitalWrite(VL6180X_SHDN_PIN, HIGH);
+    delay(50);
+
+    _vlFrente.setBus(&Wire1);
+    _vlFrente.setTimeout(500);
+    _vlFrente.init();
+    _vlFrente.configureDefault();
+
+    Wire1.beginTransmission(ADDR_FRENTE);
+    _frente_ok = (Wire1.endTransmission() == 0);
+    Serial.println(_frente_ok
+        ? "[SENSORES] VL6180X frente OK  @0x29 (Wire1 SDA=21 SCL=22)"
+        : "[ERRO]     VL6180X frente nao detectado");
 }
 
 // ============================================================

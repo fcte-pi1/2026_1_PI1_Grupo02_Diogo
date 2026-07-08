@@ -11,9 +11,16 @@
 #define XSHUT_DIR_PIN  5
 
 // ============================================================
+//  PINO SHDN — shutdown do VL6180X (SENSOR FRONTAL)
+//  Necessário para evitar colisão de endereço I2C com os
+//  VL53L0X (ambos default 0x29). LOW = sensor desligado.
+// ============================================================
+#define VL6180X_SHDN_PIN  23
+
+// ============================================================
 //  BUS I2C DOS SENSORES ToF
 //  Wire1: SDA = GPIO 21 | SCL = GPIO 22
-//  (Wire / I2C0 é exclusivo do INA219 em SDA=18, SCL=2)
+//  (Wire / I2C0 é exclusivo do INA219 em SDA=18, SCL=17)
 // ============================================================
 #define SENSOR_SDA 21
 #define SENSOR_SCL 22

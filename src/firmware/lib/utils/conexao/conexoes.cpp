@@ -1,10 +1,10 @@
 #include "conexoes.h"
 
 // -- Definições dos globais declarados (extern) em conexoes.h -----------------
-const char *WIFI_SSID = "ALLREDE-CASA28"; // troque para o wifi conectado ao computador e à ESP32
-const char *WIFI_PASSWORD = "tata060428"; // sua senha
+const char *WIFI_SSID = "Alguém em algum lugar"; // troque para o wifi conectado ao computador e à ESP32
+const char *WIFI_PASSWORD = "87654321"; // sua senha
 
-const char *MQTT_BROKER = "192.168.1.11"; // IP do broker MQTT (Docker) na sua rede
+const char *MQTT_BROKER = "10.60.11.48"; // IP do broker MQTT (Docker) na sua rede
 const int MQTT_PORT = 1883;
 
 WiFiClient wifiClient;

@@ -3,7 +3,7 @@
 #include <VL6180X.h>
 
 #define I2C_SDA 21
-#define I2C_SCL 19
+#define I2C_SCL 22
 #define DISTANCIA_LIVRE_CM 400.0f
 
 static VL6180X sensor;
@@ -188,7 +188,7 @@ void setup()
 
     if (!sensor_ok) {
         Serial.println("[ERRO] VL6180X nao detectado!");
-        Serial.println("Verifique: SDA=21, SCL=19, VCC=3.3V, GND=GND");
+        Serial.println("Verifique: SDA=21, SCL=22, VCC=3.3V, GND=GND");
         while (1) delay(1000);
     }
 

@@ -126,7 +126,7 @@ void setup()
     attachInterrupt(digitalPinToInterrupt(ENCODER_LEFT_A), encoderLeftISR, RISING);
     attachInterrupt(digitalPinToInterrupt(ENCODER_RIGHT_A), encoderRightISR, RISING);
 
-    // Sensores Infravermelho (Wire1 alterna entre os 3 pares SDA/SCL)
+    // Sensores Infravermelho (Wire1 fixo SDA=21 SCL=22)
     inicializaSensores();
     // Motores (pinos + referência aos contadores de encoder)
     inicializaMotores(MOTOR_LEFT_IN1, MOTOR_LEFT_IN2,
