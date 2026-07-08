@@ -90,7 +90,7 @@ export const MazeGrid = memo(function MazeGrid({
 
     const isRobot = safeX === x && safeY === y;
     const visitCount = visitCounts.get(key) ?? 0;
-    const isVisited = visitCount > 0 && !isRobot;
+    const isVisited = visitCount > 0;
 
     const hasNorth = cellData?.wallNorth ?? false;
     const hasSouth = cellData?.wallSouth ?? false;
@@ -118,16 +118,28 @@ export const MazeGrid = memo(function MazeGrid({
             : undefined
         }
         title={isRobot ? `Robô em (${x}, ${y})` : `Coords: (${x}, ${y})`}
+        data-wall-north={hasNorth ? "true" : undefined}
+        data-wall-south={hasSouth ? "true" : undefined}
+        data-wall-east={hasEast ? "true" : undefined}
+        data-wall-west={hasWest ? "true" : undefined}
       >
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center font-mono text-[10px] text-zinc-500/40">
           {x},{y}
         </div>
 
-        {/* PAREDES SINCRONIZADAS COM O LABYRINTH MAP (Néon Esmeralda) */}
-        {hasNorth && <div className="absolute top-0 left-0 right-0 h-[3px] bg-emerald-400 z-10 shadow-[0_0_8px_#34d399]" />}
-        {hasSouth && <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-emerald-400 z-10 shadow-[0_0_8px_#34d399]" />}
-        {hasEast && <div className="absolute top-0 bottom-0 right-0 w-[3px] bg-emerald-400 z-10 shadow-[0_0_8px_#34d399]" />}
-        {hasWest && <div className="absolute top-0 bottom-0 left-0 w-[3px] bg-emerald-400 z-10 shadow-[0_0_8px_#34d399]" />}
+        {/* Paredes 4px vermelhas — mesmo contrato visual do LabyrinthMap */}
+        {hasNorth && (
+          <div className="absolute top-0 left-0 right-0 z-10 h-[4px] bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.7)]" />
+        )}
+        {hasSouth && (
+          <div className="absolute bottom-0 left-0 right-0 z-10 h-[4px] bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.7)]" />
+        )}
+        {hasEast && (
+          <div className="absolute top-0 bottom-0 right-0 z-10 w-[4px] bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.7)]" />
+        )}
+        {hasWest && (
+          <div className="absolute top-0 bottom-0 left-0 z-10 w-[4px] bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.7)]" />
+        )}
 
         {/* RATO ROTACIONANDO */}
         {isRobot && (
@@ -156,7 +168,7 @@ export const MazeGrid = memo(function MazeGrid({
       data-testid="maze-grid"
       data-offset-x={offsetX}
       data-offset-y={offsetY}
-      className="grid gap-0 bg-zinc-950 border border-outline-variant/50 p-2 shadow-inner w-fit h-full aspect-square mx-auto rounded-xl"
+      className="grid gap-0 bg-zinc-950 border border-outline-variant/50 p-2 shadow-inner w-full h-full max-w-full max-h-full aspect-square mx-auto rounded-xl"
       style={{
         gridTemplateColumns: `repeat(${width}, minmax(0, 1fr))`,
         gridTemplateRows: `repeat(${height}, minmax(0, 1fr))`,

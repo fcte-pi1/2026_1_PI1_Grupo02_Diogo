@@ -3,7 +3,10 @@ import { Prisma } from "@prisma/client";
 import type { TelemetryPayloadDto } from "../dtos/telemetry.dto";
 import { validateTelemetryPayload } from "../dtos/telemetry.dto";
 import { prisma } from "../lib/prisma";
-import { findOrCreateDefaultMaze } from "../repositories/maze.repository";
+import {
+  findOrCreateDefaultMaze,
+  findOrCreateSimulatorMaze,
+} from "../repositories/maze.repository";
 import { createConsolidatedSession } from "../repositories/session.repository";
 import {
   createOrphanSessionStep,
@@ -97,13 +100,22 @@ const parsePayload = (buffer: Buffer): ParsedTelemetry => {
 };
 
 const ensureActiveRunContext = async (
-  espData: TelemetryPayloadDto
+  espData: TelemetryPayloadDto & { robotId?: string; sessionName?: string }
 ): Promise<ActiveRunContext> => {
   if (activeRunContext) {
     return activeRunContext;
   }
 
-  const maze = await findOrCreateDefaultMaze();
+  const isSimulator =
+    espData.robotId === "mock-simulator" ||
+    String(espData.sessionName ?? "")
+      .toLowerCase()
+      .includes("simul");
+
+  const maze = isSimulator
+    ? await findOrCreateSimulatorMaze()
+    : await findOrCreateDefaultMaze();
+
   activeRunContext = {
     algorithm: espData.modo,
     mode: espData.estado,
@@ -133,10 +145,10 @@ export const recordOrphanTelemetryStep = async (
           },
         },
         update: {
-          wallNorth: espData.paredes.norte,
-          wallSouth: espData.paredes.sul,
-          wallEast: espData.paredes.leste,
-          wallWest: espData.paredes.oeste,
+          wallNorth: espData.paredes.norte || undefined,
+          wallSouth: espData.paredes.sul || undefined,
+          wallEast: espData.paredes.leste || undefined,
+          wallWest: espData.paredes.oeste || undefined,
         },
         create: {
           mazeId: runContext.mazeId,
@@ -242,6 +254,19 @@ export const consolidateSession = async (
 
     return session.id;
   });
+};
+
+/** Permite ao simulador forçar o maze 8x8 no contexto ativo antes do commit. */
+export const setActiveRunContextForSimulator = (ctx: {
+  mazeId: string;
+  algorithm: string;
+  mode: string;
+}) => {
+  activeRunContext = {
+    mazeId: ctx.mazeId,
+    algorithm: ctx.algorithm,
+    mode: ctx.mode,
+  };
 };
 
 export const storeTelemetry = async (

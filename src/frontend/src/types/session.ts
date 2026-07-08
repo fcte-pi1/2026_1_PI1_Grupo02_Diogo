@@ -18,7 +18,14 @@ export interface SessionStep {
   voltage: number;
   current: number;
   createdAt: string;
-  sensors?: { front: number; left: number; right: number }; // Garanta que exista
+  sensors?: { front: number; left: number; right: number };
+  /** Paredes absolutas descobertas na célula (telemetria ao vivo). */
+  walls?: {
+    north: boolean;
+    south: boolean;
+    east: boolean;
+    west: boolean;
+  };
 }
 
 export interface MazeCell {

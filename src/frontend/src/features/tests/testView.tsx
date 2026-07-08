@@ -18,8 +18,18 @@ import SensorGrid from "../telemetry/components/SensorGrid";
 import BatteryWidget from "../telemetry/components/BatteryWidget";
 import EngineTelemetryWidget from "../telemetry/components/EngineTelemetryWidget";
 import type { TelemetryData } from "../../hooks/useWebSocket";
-import { LabyrinthMap } from "../../components/labirith-map";
+import { MazeEditor } from "../../components/MazeEditor";
 import type { MazeCellWalls } from "../../types/maze";
+import {
+  canMove,
+  createEmptyCell,
+  getCellKey,
+  getNeighbor,
+  getWallField,
+  type Direction,
+} from "../../utils/verificarColisao";
+import { lerSensoresProximidade, leituraFromCm } from "../../utils/sensorRaycast";
+import type { SensorReading } from "../telemetry/components/SensorGrid";
 
 const API_BASE_URL = (
   import.meta.env.VITE_API_URL ?? "http://127.0.0.1:3000"
@@ -34,23 +44,6 @@ interface TestViewProps {
 }
 
 type RightTab = "map" | "payload" | "sensors" | "steps";
-type Direction = "North" | "South" | "East" | "West";
-type WallField = "wallNorth" | "wallSouth" | "wallEast" | "wallWest";
-
-function getCellKey(x: number, y: number): string {
-  return `${x},${y}`;
-}
-
-function createEmptyCell(x: number, y: number): MazeCellWalls {
-  return {
-    posX: x,
-    posY: y,
-    wallNorth: false,
-    wallSouth: false,
-    wallEast: false,
-    wallWest: false,
-  };
-}
 
 function sortMazeCells(cells: MazeCellWalls[]): MazeCellWalls[] {
   return [...cells].sort((a, b) => {
@@ -86,57 +79,6 @@ function normalizeMazeCells(
   return sortMazeCells(Array.from(map.values()));
 }
 
-function getDirectionFromDelta(dx: number, dy: number): Direction | null {
-  if (dx === 1 && dy === 0) return "East";
-  if (dx === -1 && dy === 0) return "West";
-  if (dx === 0 && dy === 1) return "North";
-  if (dx === 0 && dy === -1) return "South";
-  return null;
-}
-
-function hasWall(cell: MazeCellWalls, direction: Direction): boolean {
-  switch (direction) {
-    case "North":
-      return cell.wallNorth;
-    case "South":
-      return cell.wallSouth;
-    case "East":
-      return cell.wallEast;
-    case "West":
-      return cell.wallWest;
-  }
-}
-
-function getNeighbor(
-  x: number,
-  y: number,
-  dir: Direction,
-): { x: number; y: number; opposite: Direction } {
-  switch (dir) {
-    case "North":
-      return { x, y: y + 1, opposite: "South" };
-    case "South":
-      return { x, y: y - 1, opposite: "North" };
-    case "East":
-      return { x: x + 1, y, opposite: "West" };
-    case "West":
-      return { x: x - 1, y, opposite: "East" };
-  }
-}
-
-function getWallField(dir: Direction): WallField {
-  switch (dir) {
-    case "North":
-      return "wallNorth";
-    case "South":
-      return "wallSouth";
-    case "East":
-      return "wallEast";
-    case "West":
-      return "wallWest";
-  }
-}
-
 export default function TestView({
   robotData,
   sessionSteps,
@@ -150,9 +92,10 @@ export default function TestView({
 
   const [voltage, setVoltage] = useState(12.1);
   const [current, setCurrent] = useState(240);
-  const [sensorFront, setSensorFront] = useState(25);
-  const [sensorLeft, setSensorLeft] = useState(25);
-  const [sensorRight, setSensorRight] = useState(25);
+  // Origem (0,0) olhando Norte: Oeste=parede(borda), Norte/Leste=livres no alcance
+  const [sensorFront, setSensorFront] = useState(40);
+  const [sensorLeft, setSensorLeft] = useState(4);
+  const [sensorRight, setSensorRight] = useState(40);
   const [posX, setPosX] = useState(0);
   const [posY, setPosY] = useState(0);
   const [robotRotation, setRobotRotation] = useState(0);
@@ -163,6 +106,10 @@ export default function TestView({
   const [mazeCells, setMazeCells] = useState<MazeCellWalls[]>(() =>
     normalizeMazeCells([], GRID_SIZE, GRID_SIZE),
   );
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [actionBusy, setActionBusy] = useState(false);
+  /** Dispara o ping visual dos sensores a cada leitura/movimento. */
+  const [sensorScanTick, setSensorScanTick] = useState(0);
 
   const clampPosition = (value: number) =>
     Math.min(GRID_SIZE - 1, Math.max(0, value));
@@ -175,79 +122,71 @@ export default function TestView({
     return map;
   }, [mazeCells]);
 
-  // 🧠 Cérebro do Simulador: Raycasting dos Sensores
-  // Atualiza a distância automaticamente se o robô virar ou se uma parede for desenhada
+  // 🧠 Raycast: distância real até a parede (passos livres) em FRENTE / ESQ / DIR
   useEffect(() => {
-    const currentCell = mazeMap.get(getCellKey(posX, posY)) ?? createEmptyCell(posX, posY);
-    
-    // Normaliza a rotação (0=Norte, 90=Leste, 180=Sul, 270=Oeste)
-    let normRot = robotRotation % 360;
-    if (normRot < 0) normRot += 360;
+    const readings = lerSensoresProximidade(
+      mazeMap,
+      posX,
+      posY,
+      robotRotation,
+      GRID_SIZE,
+      GRID_SIZE,
+    );
 
-    let frontWall = false, leftWall = false, rightWall = false;
+    const newSf = readings.front.cm;
+    const newSl = readings.left.cm;
+    const newSr = readings.right.cm;
 
-    if (normRot === 0) { // Robô olhando pro Norte
-      frontWall = currentCell.wallNorth;
-      leftWall = currentCell.wallWest;
-      rightWall = currentCell.wallEast;
-    } else if (normRot === 90) { // Robô olhando pro Leste
-      frontWall = currentCell.wallEast;
-      leftWall = currentCell.wallNorth;
-      rightWall = currentCell.wallSouth;
-    } else if (normRot === 180) { // Robô olhando pro Sul
-      frontWall = currentCell.wallSouth;
-      leftWall = currentCell.wallEast;
-      rightWall = currentCell.wallWest;
-    } else if (normRot === 270) { // Robô olhando pro Oeste
-      frontWall = currentCell.wallWest;
-      leftWall = currentCell.wallSouth;
-      rightWall = currentCell.wallNorth;
-    }
-
-    // 4cm (Alerta de batida) se tem parede / 25cm (Livre) se não tem
-    const newSf = frontWall ? 4 : 25;
-    const newSl = leftWall ? 4 : 25;
-    const newSr = rightWall ? 4 : 25;
-
-    // Só atualiza os states se houver mudança real para evitar loops infinitos
     if (newSf !== sensorFront || newSl !== sensorLeft || newSr !== sensorRight) {
       setSensorFront(newSf);
       setSensorLeft(newSl);
       setSensorRight(newSr);
-      
-      // Sincroniza essa nova leitura de sensores para o back-end em background
+      setSensorScanTick((n) => n + 1);
+
       void syncVariablesToBackend({
         sensorFront: newSf,
         sensorLeft: newSl,
-        sensorRight: newSr
+        sensorRight: newSr,
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mazeMap, posX, posY, robotRotation]);
 
+  const sensorReadings = useMemo(() => {
+    return lerSensoresProximidade(
+      mazeMap,
+      posX,
+      posY,
+      robotRotation,
+      GRID_SIZE,
+      GRID_SIZE,
+    );
+  }, [mazeMap, posX, posY, robotRotation]);
+
+  const toReading = (
+    channel: "front" | "left" | "right",
+    fallbackCm: number,
+  ): SensorReading => {
+    const live = sensorReadings[channel];
+    // Se o usuário forçou override no slider, mantém cm mas recalcula label aproximado
+    if (fallbackCm !== live.cm) {
+      if (fallbackCm <= 8) {
+        return { cm: fallbackCm, label: "PAREDE", detalhe: "Override manual" };
+      }
+      if (fallbackCm <= 20) {
+        return { cm: fallbackCm, label: "PERTO", detalhe: "Override manual" };
+      }
+      return { cm: fallbackCm, label: "LIVRE", detalhe: "Override manual" };
+    }
+    return live;
+  };
+
   const currentMazeCell = useMemo(() => {
     return mazeMap.get(getCellKey(posX, posY)) ?? createEmptyCell(posX, posY);
   }, [mazeMap, posX, posY]);
 
-  const canMove = (x: number, y: number, dx: number, dy: number): boolean => {
-    const direction = getDirectionFromDelta(dx, dy);
-    if (!direction) return false;
-
-    const currentCell = mazeMap.get(getCellKey(x, y)) ?? createEmptyCell(x, y);
-
-    if (hasWall(currentCell, direction)) {
-      return false;
-    }
-
-    const nextX = x + dx;
-    const nextY = y + dy;
-
-    if (nextX < 0 || nextX >= GRID_SIZE || nextY < 0 || nextY >= GRID_SIZE) {
-      return false;
-    }
-
-    return true;
-  };
+  const canMoveFrom = (x: number, y: number, dx: number, dy: number): boolean =>
+    canMove(mazeMap, x, y, dx, dy, GRID_SIZE, GRID_SIZE);
 
   const currentStep = useMemo<TelemetryData>(() => {
     const baseStep = robotData ?? {
@@ -316,6 +255,15 @@ export default function TestView({
       ? sessionSteps[selectedStepIndex]
       : currentStep;
 
+  const displaySessionSteps = useMemo(
+    () =>
+      sessionSteps.map((step) => ({
+        ...step,
+        createdAt: step.timestamp ?? new Date().toISOString(),
+      })) as unknown as SessionStep[],
+    [sessionSteps],
+  );
+
   const selectedVoltage = selectedStep?.voltage ?? currentStep.voltage ?? 0;
 
   const batteryPercentage = Math.max(
@@ -367,13 +315,10 @@ export default function TestView({
         });
 
         if (data?.config) {
+          // Não sobrescreve posX/posY: o joystick / editor é a fonte da verdade.
+          // O poll antigo teletransportava o rato e gravava saltos no histórico.
           setVoltage(Number(data.config.voltage ?? 12.1));
           setCurrent(Number(data.config.current ?? 240));
-          setSensorFront(Number(data.config.sensorFront ?? 25));
-          setSensorLeft(Number(data.config.sensorLeft ?? 25));
-          setSensorRight(Number(data.config.sensorRight ?? 25));
-          setPosX(Number(data.config.posX ?? 0));
-          setPosY(Number(data.config.posY ?? 0));
         }
       }
     } catch (err) {
@@ -454,9 +399,8 @@ export default function TestView({
     if (dx === -1 && dy === 0) newRot = 270; // Usando 270 em vez de -90
     setRobotRotation(newRot);
 
-    // 2. Se tentar bater na parede, emite pulso de colisão e aborta movimento
-    if (!canMove(posX, posY, dx, dy)) {
-      void syncVariablesToBackend({ emitImmediate: true }); 
+    // 2. Colisão: só aborta — não grava passo (evita teleporte / passo fantasma no histórico)
+    if (!canMoveFrom(posX, posY, dx, dy)) {
       return;
     }
 
@@ -466,6 +410,7 @@ export default function TestView({
 
     setPosX(nextX);
     setPosY(nextY);
+    setSensorScanTick((n) => n + 1);
 
     const nextCell =
       mazeMap.get(getCellKey(nextX, nextY)) ?? createEmptyCell(nextX, nextY);
@@ -477,20 +422,28 @@ export default function TestView({
       wallSouth: nextCell.wallSouth,
       wallEast: nextCell.wallEast,
       wallWest: nextCell.wallWest,
-      emitImmediate: true, // Registra o passo
+      // Só grava passo no histórico depois do Start
+      ...(status.running ? { emitImmediate: true } : {}),
     });
   };
 
   const handleAction = async (
     action: "start" | "pause" | "stop" | "reset" | "commit",
   ) => {
+    setActionBusy(true);
+    setActionError(null);
+
     try {
       if (action === "commit") {
-        await syncVariablesToBackend({ emitImmediate: true });
+        // Emite um último pulso só se já houver movimento (running) — senão não inventa passo.
+        if (status.running) {
+          await syncVariablesToBackend({ emitImmediate: true });
+        }
       }
 
       if (action === "reset") {
-        setSelectedStepIndex(null); // Reseta a visão do histórico também
+        setSelectedStepIndex(null);
+        setRobotRotation(0);
         setVoltage(12.1);
         setCurrent(240);
         setSensorFront(25);
@@ -499,7 +452,9 @@ export default function TestView({
         setPosX(0);
         setPosY(0);
         setMazeCells(normalizeMazeCells([], GRID_SIZE, GRID_SIZE));
+        setStatus({ running: false, paused: false, stepOrder: 0 });
 
+        // Sem emitImmediate: reset não deve criar passo órfão nem iniciar o cronômetro.
         await syncVariablesToBackend({
           voltage: 12.1,
           current: 240,
@@ -512,31 +467,76 @@ export default function TestView({
           wallWest: false,
           posX: 0,
           posY: 0,
-          emitImmediate: true,
         });
       }
 
       const response = await fetch(`${API_BASE_URL}/api/telemetry/simulator`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action }),
+        body: JSON.stringify(
+          action === "commit"
+            ? {
+                action,
+                width: GRID_SIZE,
+                height: GRID_SIZE,
+                sessionName: `Simulação TestView - ${new Date().toLocaleString("pt-BR")}`,
+                mazeCells: mazeCells.map((cell) => ({
+                  posX: cell.posX,
+                  posY: cell.posY,
+                  wallNorth: cell.wallNorth,
+                  wallSouth: cell.wallSouth,
+                  wallEast: cell.wallEast,
+                  wallWest: cell.wallWest,
+                })),
+              }
+            : { action },
+        ),
       });
 
-      if (response.ok) {
-        if (action === "start") {
-          setStatus((prev) => ({ ...prev, running: true, paused: false }));
-        } else if (action === "pause") {
-          setStatus((prev) => ({ ...prev, paused: true }));
-        } else if (action === "stop") {
-          setStatus({ running: false, paused: false, stepOrder: 0 });
-        } else if (action === "reset") {
-          setStatus({ running: false, paused: false, stepOrder: 0 });
-        } else if (action === "commit") {
-          setStatus((prev) => ({ ...prev, running: false, paused: false }));
+      if (!response.ok) {
+        const payload = (await response.json().catch(() => null)) as {
+          error?: string;
+          message?: string;
+        } | null;
+        throw new Error(
+          payload?.error ??
+            payload?.message ??
+            `Backend respondeu ${response.status} em ${API_BASE_URL}`,
+        );
+      }
+
+      const payload = (await response.json().catch(() => null)) as {
+        sessionId?: string | null;
+        message?: string;
+      } | null;
+
+      if (action === "start") {
+        setStatus((prev) => ({ ...prev, running: true, paused: false }));
+      } else if (action === "pause") {
+        setStatus((prev) => ({ ...prev, paused: true }));
+      } else if (action === "stop") {
+        setStatus({ running: false, paused: false, stepOrder: 0 });
+      } else if (action === "reset") {
+        setStatus({ running: false, paused: false, stepOrder: 0 });
+      } else if (action === "commit") {
+        setStatus((prev) => ({ ...prev, running: false, paused: false }));
+        if (!payload?.sessionId) {
+          setActionError(
+            "Nenhum passo órfão para consolidar. Use Start + joystick (ou Forçar Pulso) antes de enviar ao histórico.",
+          );
         }
       }
     } catch (err) {
+      const message =
+        err instanceof TypeError
+          ? `Backend offline em ${API_BASE_URL}. Suba a API (porta 3000) e tente de novo.`
+          : err instanceof Error
+            ? err.message
+            : "Falha ao processar ação do simulador.";
       console.error("Erro ao processar ação:", err);
+      setActionError(message);
+    } finally {
+      setActionBusy(false);
     }
   };
 
@@ -576,28 +576,41 @@ export default function TestView({
 
             <div className="flex gap-2 w-full">
               <button
+                type="button"
+                disabled={actionBusy}
                 onClick={() => void handleAction("start")}
-                className="flex-1 bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20 text-emerald-400 py-2 font-bold flex items-center justify-center gap-1.5 transition-colors"
+                className="flex-1 bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20 text-emerald-400 py-2 font-bold flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50"
               >
                 <Play className="w-3 h-3" /> Start
               </button>
 
               <button
+                type="button"
                 onClick={() => void handleAction("pause")}
-                disabled={!status.running || status.paused}
+                disabled={actionBusy || !status.running || status.paused}
                 className="flex-1 bg-amber-500/10 border border-amber-500/30 hover:bg-amber-500/20 text-amber-400 py-2 font-bold flex items-center justify-center gap-1.5 transition-colors disabled:opacity-30"
               >
                 <Pause className="w-3 h-3" /> Pause
               </button>
 
               <button
+                type="button"
                 onClick={() => void handleAction("stop")}
-                disabled={!status.running && !status.paused}
+                disabled={actionBusy || (!status.running && !status.paused)}
                 className="flex-1 bg-red-500/10 border border-red-500/30 hover:bg-red-500/20 text-red-400 py-2 font-bold flex items-center justify-center gap-1.5 transition-colors disabled:opacity-30"
               >
                 <RotateCcw className="w-3 h-3" /> Stop
               </button>
             </div>
+
+            {actionError && (
+              <div
+                data-testid="simulator-action-error"
+                className="mt-2 border border-red-500/40 bg-red-500/10 px-2 py-1.5 text-[10px] leading-relaxed text-red-300"
+              >
+                {actionError}
+              </div>
+            )}
           </div>
 
           {/* PAINEL JOYSTICK */}
@@ -611,6 +624,8 @@ export default function TestView({
                 <div className="flex justify-center">
                   <div className="flex flex-col items-center gap-1 bg-surface-container-lowest p-2 border border-outline-variant/10 rounded-full shadow-inner">
                     <button
+                      type="button"
+                      aria-label="Mover para norte"
                       onClick={() => handleJoystickMove(0, 1)}
                       className="p-3 bg-surface-container-low hover:bg-primary/20 hover:text-primary transition-colors border border-outline-variant/10 rounded-t-full"
                     >
@@ -619,6 +634,8 @@ export default function TestView({
 
                     <div className="flex gap-1">
                       <button
+                        type="button"
+                        aria-label="Mover para oeste"
                         onClick={() => handleJoystickMove(-1, 0)}
                         className="p-3 bg-surface-container-low hover:bg-primary/20 hover:text-primary transition-colors border border-outline-variant/10 rounded-l-full"
                       >
@@ -628,6 +645,7 @@ export default function TestView({
                       <div
                         className="w-16 h-11 flex flex-col items-center justify-center font-bold text-primary bg-black/20 border border-outline-variant/10 shadow-inner px-2"
                         title="Posição Atual"
+                        data-testid="joystick-position"
                       >
                         <span className="text-[14px]">
                           {posX},{posY}
@@ -635,6 +653,8 @@ export default function TestView({
                       </div>
 
                       <button
+                        type="button"
+                        aria-label="Mover para leste"
                         onClick={() => handleJoystickMove(1, 0)}
                         className="p-3 bg-surface-container-low hover:bg-primary/20 hover:text-primary transition-colors border border-outline-variant/10 rounded-r-full"
                       >
@@ -643,6 +663,8 @@ export default function TestView({
                     </div>
 
                     <button
+                      type="button"
+                      aria-label="Mover para sul"
                       onClick={() => handleJoystickMove(0, -1)}
                       className="p-3 bg-surface-container-low hover:bg-primary/20 hover:text-primary transition-colors border border-outline-variant/10 rounded-b-full"
                     >
@@ -693,86 +715,123 @@ export default function TestView({
               />
             </div>
 
-            <div className="bg-surface-container-lowest border border-outline-variant/10 p-2 mt-2">
-              <div className="flex justify-between mb-1 text-[9px] text-outline">
-                <span>FRONT:</span>
-                <span className="text-primary">{sensorFront}cm</span>
-              </div>
-              <input
-                type="range"
-                min="3"
-                max="40"
-                value={sensorFront}
-                onChange={(e) => {
-                  const sf = Number(e.target.value);
-                  setSensorFront(sf);
-                  void syncVariablesToBackend({ sensorFront: sf });
+            <div className="mt-3 min-h-[14rem]">
+              <SensorGrid
+                sensorData={{
+                  front: toReading("front", sensorFront),
+                  left: toReading("left", sensorLeft),
+                  right: toReading("right", sensorRight),
                 }}
-                className="w-full accent-primary h-1"
+                scanTick={sensorScanTick}
+                interactive
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-2 mt-1">
-              <div className="bg-surface-container-lowest border border-outline-variant/10 p-2">
-                <div className="flex justify-between mb-1 text-[9px] text-outline">
-                  <span>LEFT:</span>
-                  <span className="text-primary">{sensorLeft}cm</span>
+            <details className="mt-2 border border-outline-variant/20 bg-surface-container-lowest/60 p-2">
+              <summary className="cursor-pointer text-[9px] uppercase tracking-wider text-outline">
+                Ajuste manual (override)
+              </summary>
+              <div className="mt-2 space-y-2">
+                <div>
+                  <div className="flex justify-between mb-1 text-[9px] text-outline">
+                    <span>FRONT:</span>
+                    <span className="text-primary">
+                      {toReading("front", sensorFront).label}
+                    </span>
+                  </div>
+                  <input
+                    type="range"
+                    min="3"
+                    max="40"
+                    value={sensorFront}
+                    onChange={(e) => {
+                      const sf = Number(e.target.value);
+                      setSensorFront(sf);
+                      setSensorScanTick((n) => n + 1);
+                      void syncVariablesToBackend({ sensorFront: sf });
+                    }}
+                    className="w-full accent-primary h-1"
+                  />
                 </div>
-                <input
-                  type="range"
-                  min="3"
-                  max="40"
-                  value={sensorLeft}
-                  onChange={(e) => {
-                    const sl = Number(e.target.value);
-                    setSensorLeft(sl);
-                    void syncVariablesToBackend({ sensorLeft: sl });
-                  }}
-                  className="w-full accent-primary h-1"
-                />
-              </div>
-
-              <div className="bg-surface-container-lowest border border-outline-variant/10 p-2">
-                <div className="flex justify-between mb-1 text-[9px] text-outline">
-                  <span>RIGHT:</span>
-                  <span className="text-primary">{sensorRight}cm</span>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <div className="flex justify-between mb-1 text-[9px] text-outline">
+                      <span>LEFT:</span>
+                      <span className="text-primary">
+                        {toReading("left", sensorLeft).label}
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min="3"
+                      max="40"
+                      value={sensorLeft}
+                      onChange={(e) => {
+                        const sl = Number(e.target.value);
+                        setSensorLeft(sl);
+                        setSensorScanTick((n) => n + 1);
+                        void syncVariablesToBackend({ sensorLeft: sl });
+                      }}
+                      className="w-full accent-primary h-1"
+                    />
+                  </div>
+                  <div>
+                    <div className="flex justify-between mb-1 text-[9px] text-outline">
+                      <span>RIGHT:</span>
+                      <span className="text-primary">
+                        {toReading("right", sensorRight).label}
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min="3"
+                      max="40"
+                      value={sensorRight}
+                      onChange={(e) => {
+                        const sr = Number(e.target.value);
+                        setSensorRight(sr);
+                        setSensorScanTick((n) => n + 1);
+                        void syncVariablesToBackend({ sensorRight: sr });
+                      }}
+                      className="w-full accent-primary h-1"
+                    />
+                  </div>
                 </div>
-                <input
-                  type="range"
-                  min="3"
-                  max="40"
-                  value={sensorRight}
-                  onChange={(e) => {
-                    const sr = Number(e.target.value);
-                    setSensorRight(sr);
-                    void syncVariablesToBackend({ sensorRight: sr });
-                  }}
-                  className="w-full accent-primary h-1"
-                />
               </div>
-            </div>
+            </details>
           </div>
 
           {/* PAINEL DE AÇÕES */}
           <div className="bg-surface-container-low/60 border border-outline-variant/30 p-4 flex flex-col gap-3 shrink-0">
             <div className="flex gap-2">
               <button
+                type="button"
+                disabled={actionBusy}
                 onClick={() => void handleAction("commit")}
-                className="flex-1 bg-primary/10 border border-primary text-primary font-bold py-2 flex items-center justify-center gap-2 hover:bg-primary/20 transition-colors uppercase text-[10px] tracking-widest"
+                className="flex-1 bg-primary/10 border border-primary text-primary font-bold py-2 flex items-center justify-center gap-2 hover:bg-primary/20 transition-colors uppercase text-[10px] tracking-widest disabled:opacity-50"
               >
                 <History className="w-3.5 h-3.5" /> Enviar fluxo p/ histórico
               </button>
 
               <button
+                type="button"
+                disabled={actionBusy}
                 onClick={() => void handleAction("reset")}
-                className="flex-1 bg-red-500/10 border border-red-500/30 text-red-400 font-bold py-2 flex items-center justify-center gap-2 hover:bg-red-500/20 transition-colors uppercase text-[10px] tracking-widest"
+                className="flex-1 bg-red-500/10 border border-red-500/30 text-red-400 font-bold py-2 flex items-center justify-center gap-2 hover:bg-red-500/20 transition-colors uppercase text-[10px] tracking-widest disabled:opacity-50"
               >
                 <RotateCcw className="w-3.5 h-3.5" /> Zerar sessão
               </button>
             </div>
 
             <button
+              type="button"
               onClick={() => {
+                if (!status.running) {
+                  setActionError(
+                    "Inicie com Start antes de forçar um pulso (evita passos fantasmas no histórico).",
+                  );
+                  return;
+                }
                 void syncVariablesToBackend({ emitImmediate: true });
                 window.alert("Pulso instantâneo enviado");
               }}
@@ -822,14 +881,7 @@ export default function TestView({
                       } as unknown as SessionStep)
                     : null
                 }
-                steps={
-                  sessionSteps
-                    ? (sessionSteps.map((step) => ({
-                        ...step,
-                        createdAt: new Date().toISOString(),
-                      })) as unknown as SessionStep[])
-                    : []
-                }
+                steps={displaySessionSteps}
                 isSocketConnected={isConnected}
                 posX={selectedStep?.posX ?? 0}
                 posY={selectedStep?.posY ?? 0}
@@ -882,22 +934,14 @@ export default function TestView({
                 </div>
 
                 <div className="flex-1 w-full relative p-4 flex items-center justify-center overflow-auto">
-                  <LabyrinthMap
-                    staticCells={mazeCells}
-                    steps={
-                      sessionSteps
-                        ? (sessionSteps.map((step) => ({
-                            ...step,
-                            createdAt: new Date().toISOString(),
-                          })) as unknown as SessionStep[])
-                        : []
-                    }
+                  <MazeEditor
+                    cells={mazeCells}
+                    steps={displaySessionSteps}
                     currentX={selectedStep?.posX ?? posX}
                     currentY={selectedStep?.posY ?? posY}
                     robotRotation={robotRotation}
                     width={GRID_SIZE}
                     height={GRID_SIZE}
-                    editable
                     onToggleWall={toggleWall}
                   />
                 </div>
@@ -922,19 +966,27 @@ export default function TestView({
               <div className="h-full p-6 flex flex-col gap-6 overflow-auto">
                 <SensorGrid
                   sensorData={{
-                    front:
+                    front: toReading(
+                      "front",
                       selectedStep?.sensors?.front ??
-                      currentStep.sensors?.front ??
-                      0,
-                    left:
+                        currentStep.sensors?.front ??
+                        sensorFront,
+                    ),
+                    left: toReading(
+                      "left",
                       selectedStep?.sensors?.left ??
-                      currentStep.sensors?.left ??
-                      0,
-                    right:
+                        currentStep.sensors?.left ??
+                        sensorLeft,
+                    ),
+                    right: toReading(
+                      "right",
                       selectedStep?.sensors?.right ??
-                      currentStep.sensors?.right ??
-                      0,
+                        currentStep.sensors?.right ??
+                        sensorRight,
+                    ),
                   }}
+                  scanTick={sensorScanTick}
+                  interactive
                 />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-auto">
@@ -977,7 +1029,7 @@ export default function TestView({
 
                         <div className="text-[10px] text-outline mt-1">
                           V: {step.voltage?.toFixed(1)}V &bull; F:{" "}
-                          {step.sensors?.front ?? 0}cm
+                          {leituraFromCm(step.sensors?.front ?? 0).label}
                         </div>
                       </button>
                     ))

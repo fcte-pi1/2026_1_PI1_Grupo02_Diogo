@@ -129,6 +129,8 @@ export default function DashboardView({
               left: currentStep.sensors?.left ?? 0,
               right: currentStep.sensors?.right ?? 0,
             }}
+            scanTick={currentStep.stepOrder ?? 0}
+            interactive
           />
 
           {/* Telemetria de Corrente e Consumo dos Motores */}

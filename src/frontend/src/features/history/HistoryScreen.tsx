@@ -22,6 +22,7 @@ import {
 import { ApiError } from "../../api/client";
 import type { SessionDetail, SessionMetadata } from "../../types/session";
 import SensorGrid from "../telemetry/components/SensorGrid";
+import { lerSensoresReplay } from "../../utils/sensorRaycast";
 
 const formatDate = (iso: string): string =>
   new Date(iso).toLocaleString("pt-BR");
@@ -149,6 +150,21 @@ export default function HistoryScreen() {
     return selectedSession.steps[safeIndex];
   }, [selectedSession, replayIndex]);
 
+  const replaySensorReadings = useMemo(() => {
+    if (!selectedSession || !replayStep) {
+      return {
+        front: { cm: 0, label: "—" },
+        left: { cm: 0, label: "—" },
+        right: { cm: 0, label: "—" },
+      };
+    }
+    return lerSensoresReplay(
+      selectedSession.maze,
+      selectedSession.steps,
+      replayIndex,
+    );
+  }, [selectedSession, replayStep, replayIndex]);
+
   const calculatedStats = useMemo(() => {
     if (!selectedSession || selectedSession.steps.length === 0) {
       return { batteryUsage: "—", averageSpeed: "—" };
@@ -253,10 +269,12 @@ export default function HistoryScreen() {
                 <div className="w-full min-w-[200px]">
                   <SensorGrid
                     sensorData={{
-                      front: (replayStep as any)?.sensors?.front ?? 0,
-                      left: (replayStep as any)?.sensors?.left ?? 0,
-                      right: (replayStep as any)?.sensors?.right ?? 0,
+                      front: replaySensorReadings.front,
+                      left: replaySensorReadings.left,
+                      right: replaySensorReadings.right,
                     }}
+                    scanTick={replayIndex + 1}
+                    interactive={false}
                   />
                 </div>
               </div>
@@ -368,13 +386,13 @@ export default function HistoryScreen() {
             </div>
 
             {/* MAPA REPLAY GRID */}
-            <div className="flex-1 relative bg-surface-container-lowest border border-outline-variant/30 p-2 overflow-hidden flex items-center justify-center">
+            <div className="flex-1 relative min-h-0 bg-surface-container-lowest border border-outline-variant/30 p-2 overflow-auto flex items-center justify-center">
               {isLoadingDetail ? (
                 <Loader2 className="w-8 h-8 text-primary animate-spin" />
               ) : stepCount === 0 ? (
                 <span className="text-outline">Sessão vazia.</span>
               ) : (
-                <div className="w-full max-h-full aspect-square relative">
+                <div className="relative w-full h-full max-w-full max-h-full flex items-center justify-center">
                   <div className="absolute top-2 left-2 z-10 bg-black/60 border border-outline-variant/20 px-2 py-1 text-[10px] text-outline backdrop-blur-sm">
                     Posição Robô:{" "}
                     <span className="text-primary font-bold">

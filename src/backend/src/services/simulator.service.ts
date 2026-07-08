@@ -1,8 +1,21 @@
-import { consolidateSession } from "./telemetry.service";
+import {
+  consolidateSession,
+  resetTelemetryRunContextForTests,
+  setActiveRunContextForSimulator,
+} from "./telemetry.service";
 import { getSocket } from "../websocket/socket";
+import {
+  findOrCreateSimulatorMaze,
+  replaceMazeCells,
+  type MazeCellWallInput,
+} from "../repositories/maze.repository";
+import { deleteOrphanSteps } from "../repositories/session-step.repository";
+import { prisma } from "../lib/prisma";
 
 let simulatorInterval: NodeJS.Timeout | null = null;
 let isPaused = false;
+/** Loop automático desligado no TestView; flag separada para Start/Pause/Stop. */
+let isRunning = false;
 let telemetryFake = 0;
 
 let liveConfig = {
@@ -117,18 +130,16 @@ const emitTelemetryPulse = async () => {
 // Dentro de simulator.service.ts
 export const startSimulator = () => {
   isPaused = false;
-  if (simulatorInterval) {
-    return;
+  isRunning = true;
+
+  // Registra a posição atual como primeiro passo do trajeto (largada em qualquer célula).
+  if (telemetryFake === 0) {
+    void emitTelemetryPulse();
   }
 
-  console.log("[MOCK] 🏎️ Simulador iniciado.");
-  simulatorInterval = setInterval(() => {
-    if (!isPaused) {
-      void emitTelemetryPulse();
-    }
-  }, 1000); // <-- ALTERADO PARA 1000 (1 SEGUNDO REAL)
-
-  void emitTelemetryPulse();
+  console.log(
+    "[MOCK] 🏎️ Simulador iniciado (passos sob comando do joystick / pulso manual).",
+  );
 };
 
 export const pauseSimulator = () => {
@@ -142,19 +153,41 @@ export const stopSimulator = () => {
     simulatorInterval = null;
   }
   isPaused = false;
+  isRunning = false;
   telemetryFake = 0;
   console.log("[MOCK] 🛑 Simulador parado.");
 };
 
-export const resetSimulator = () => {
+export const resetSimulator = async () => {
   stopSimulator();
-  telemetryFake = 0; 
-  
+  telemetryFake = 0;
+
   liveConfig = {
-    voltage: 12.1, current: 240, sensorFront: 25, sensorLeft: 25, sensorRight: 25,
-    wallNorth: false, wallSouth: false, wallEast: false, wallWest: false,
-    posX: 0, posY: 0, conclusao: false, estado: "EXPLORANDO", modo: "DFS", sessionName: "Sessão Ativa",
+    voltage: 12.1,
+    current: 240,
+    sensorFront: 25,
+    sensorLeft: 25,
+    sensorRight: 25,
+    wallNorth: false,
+    wallSouth: false,
+    wallEast: false,
+    wallWest: false,
+    posX: 0,
+    posY: 0,
+    conclusao: false,
+    estado: "EXPLORANDO",
+    modo: "DFS",
+    sessionName: "Sessão Ativa",
   };
+
+  resetTelemetryRunContextForTests();
+
+  try {
+    const removed = await deleteOrphanSteps();
+    console.log(`[MOCK] 🧹 ${removed} passo(s) órfão(s) removido(s).`);
+  } catch (err) {
+    console.error("[MOCK_RESET_ERROR] Falha ao limpar passos órfãos:", err);
+  }
 
   try {
     getSocket().emit("session_reset", { status: "cleared" });
@@ -171,20 +204,41 @@ export const updateSimulatorConfig = (newConfig: any) => {
   liveConfig = { ...liveConfig, ...newConfig };
   console.log("[MOCK] 🛠️ Configurações atualizadas.");
 
-  if (shouldEmitNow || newConfig.conclusao) {
+  // Grava passo só com emitImmediate explícito E se não estiver pausado
+  if ((shouldEmitNow || newConfig.conclusao) && !isPaused) {
     void emitTelemetryPulse();
   }
 };
 
-export const commitSimulatorSession = async () => {
+export const commitSimulatorSession = async (options?: {
+  mazeCells?: MazeCellWallInput[];
+  sessionName?: string;
+}) => {
   try {
+    const maze = await findOrCreateSimulatorMaze();
+
+    if (options?.mazeCells && options.mazeCells.length > 0) {
+      await replaceMazeCells(maze.id, options.mazeCells);
+    }
+
+    const modo =
+      liveConfig.modo === "TESTE_SIMULADOR" ? "DFS" : liveConfig.modo;
+    const estado =
+      liveConfig.estado === "RODANDO" ? "EXPLORANDO" : liveConfig.estado;
+
+    setActiveRunContextForSimulator({
+      mazeId: maze.id,
+      algorithm: modo,
+      mode: estado,
+    });
+
     const payload = {
       step: Number(telemetryFake),
       tempoMs: Number(Date.now()),
-      modo: liveConfig.modo,
-      estado: liveConfig.estado,
+      modo,
+      estado,
       posicao: { x: Number(liveConfig.posX), y: Number(liveConfig.posY) },
-      direcao: "norte",
+      direcao: "norte" as const,
       paredes: {
         norte: Boolean(liveConfig.wallNorth),
         sul: Boolean(liveConfig.wallSouth),
@@ -203,11 +257,25 @@ export const commitSimulatorSession = async () => {
       },
       conclusao: Boolean(liveConfig.conclusao),
       robotId: "mock-simulator",
-      sessionName: String(liveConfig.sessionName),
+      sessionName: String(
+        options?.sessionName ?? liveConfig.sessionName ?? "Simulação TestView",
+      ),
     };
 
     const sessionId = await consolidateSession(payload as any);
     if (sessionId) {
+      await prisma.session.update({
+        where: { id: sessionId },
+        data: { mazeId: maze.id },
+      });
+
+      // Reaplica o labirinto do TestView depois da consolidação para
+      // não deixar o último pulso do intervalo apagar paredes pintadas.
+      if (options?.mazeCells && options.mazeCells.length > 0) {
+        await replaceMazeCells(maze.id, options.mazeCells);
+      }
+
+      stopSimulator();
       console.log(`[MOCK] 📝 Sessão consolidada no histórico: ${sessionId}`);
     }
     return sessionId;
@@ -218,10 +286,10 @@ export const commitSimulatorSession = async () => {
 };
 
 export const getSimulatorStatus = () => {
-  return { 
-    running: simulatorInterval !== null, 
-    paused: isPaused, 
-    stepOrder: telemetryFake, 
-    config: liveConfig 
+  return {
+    running: isRunning,
+    paused: isPaused,
+    stepOrder: telemetryFake,
+    config: liveConfig,
   };
 };
