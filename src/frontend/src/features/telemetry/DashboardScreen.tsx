@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 import BatteryWidget from "./components/BatteryWidget";
 import EngineTelemetryWidget from "./components/EngineTelemetryWidget";
 import SensorGrid from "./components/SensorGrid";
@@ -6,9 +6,10 @@ import type { SessionStep } from "../../types/session";
 import { VisualizeDiv } from "../../components/VisualizeDiv";
 import { TelemetryData } from "../../hooks/useWebSocket";
 import { PopUp } from "../../components/pop-up";
+import type { SessionData } from "../../App";
 
 interface DashboardViewProps {
-  activeSession: any; // Mantendo a tipagem do seu projeto
+  activeSession: SessionData | null;
   currentView: string;
   connectionProps: { latency: string };
   robotData: TelemetryData | null;

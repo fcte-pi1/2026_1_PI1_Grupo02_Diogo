@@ -59,8 +59,8 @@ describe("simulator.service", () => {
       config: expect.objectContaining({
         voltage: 12.1,
         current: 240,
-        posX: 0,
-        posY: 0,
+        posX: 7,
+        posY: 7,
       }),
     });
   });
@@ -75,7 +75,7 @@ describe("simulator.service", () => {
 
     expect(emitMock).toHaveBeenCalledWith(
       "telemetry:step",
-      expect.objectContaining({ posX: 0, posY: 0, stepOrder: 0 }),
+      expect.objectContaining({ posX: 7, posY: 7, stepOrder: 0 }),
     );
     expect(getSimulatorStatus().stepOrder).toBe(1);
 

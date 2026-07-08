@@ -1,11 +1,24 @@
 import { useState, useEffect, useMemo } from "react";
-import { Database, ComponentIcon, ComputerIcon, Unlink, Play } from "lucide-react";
+import { Play } from "lucide-react";
 import { MazeGrid } from "./MazeGrid";
-import type { SessionStep } from "../types/session";
+import type { MazeCell, SessionStep } from "../types/session";
+import { mergeLiveMazeCells } from "../utils/mergeLiveMazeCells";
 import { rotacaoDoRoboAoVivo } from "../utils/sensorRaycast";
 
+interface VisualizeDivActiveSession {
+  sessionName?: string;
+  algorithm?: string;
+  mode?: string;
+  maze?: {
+    name?: string;
+    width?: number;
+    height?: number;
+    cells?: MazeCell[];
+  };
+}
+
 interface VisualizeDivProps {
-  activeSession: any; // Mantendo a tipagem flexível do seu projeto original
+  activeSession: VisualizeDivActiveSession | null;
   currentView: string;
   connectionProps: { latency: string };
   isConnected?: boolean;
@@ -30,7 +43,6 @@ export function VisualizeDiv({
   steps,
   posX,
   posY,
-  connectionProps,
 }: VisualizeDivProps) {
   const socketConnected = isSocketConnected ?? isConnected ?? false;
   const [liveSteps, setLiveSteps] = useState<SessionStep[]>([]);
@@ -55,27 +67,10 @@ export function VisualizeDiv({
     return sources;
   }, [resolvedSteps, robotData]);
 
-  const discoveredCells = useMemo(() => {
-    const map = new Map();
-    (activeSession?.maze?.cells ?? []).forEach((c: any) => {
-      map.set(`${c.posX},${c.posY}`, c);
-    });
-
-    liveWallSources.forEach((step: any) => {
-      const key = `${step.posX},${step.posY}`;
-      const existing = map.get(key) || { posX: step.posX, posY: step.posY };
-      
-      map.set(key, {
-        ...existing,
-        wallNorth: existing.wallNorth || step.walls?.north || step.wallNorth || false,
-        wallSouth: existing.wallSouth || step.walls?.south || step.wallSouth || false,
-        wallEast: existing.wallEast || step.walls?.east || step.wallEast || false,
-        wallWest: existing.wallWest || step.walls?.west || step.wallWest || false,
-      });
-    });
-
-    return Array.from(map.values());
-  }, [activeSession?.maze?.cells, liveWallSources]);
+  const discoveredCells = useMemo(
+    () => mergeLiveMazeCells(activeSession?.maze?.cells ?? [], liveWallSources),
+    [activeSession?.maze?.cells, liveWallSources],
+  );
 
   const robotRotation = useMemo(() => {
     const trail = resolvedSteps.map((step) => ({
