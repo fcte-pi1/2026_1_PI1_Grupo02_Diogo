@@ -1,4 +1,4 @@
-import type { TelemetryRaw } from "@prisma/client";
+import type { SessionStep, TelemetryRaw } from "@prisma/client";
 import { Prisma } from "@prisma/client";
 import type { TelemetryPayloadDto } from "../dtos/telemetry.dto";
 import { validateTelemetryPayload } from "../dtos/telemetry.dto";
@@ -31,6 +31,40 @@ type ActiveRunContext = {
 };
 
 let activeRunContext: ActiveRunContext | null = null;
+
+const CELL_SIZE_CM = 18;
+
+const computeTotalDistanceCm = (steps: SessionStep[]): number => {
+  let total = 0;
+
+  for (let i = 1; i < steps.length; i++) {
+    const dx = Math.abs(steps[i].posX - steps[i - 1].posX);
+    const dy = Math.abs(steps[i].posY - steps[i - 1].posY);
+    total += (dx + dy) * CELL_SIZE_CM;
+  }
+
+  return total;
+};
+
+const computeAvgSpeedCmPerSecond = (
+  steps: SessionStep[],
+  durationMs: number
+): number => {
+  if (durationMs <= 0 || steps.length === 0) {
+    return 0;
+  }
+
+  return computeTotalDistanceCm(steps) / (durationMs / 1000);
+};
+
+const computeAvgCurrentMa = (steps: SessionStep[]): number => {
+  if (steps.length === 0) {
+    return 0;
+  }
+
+  const totalCurrent = steps.reduce((sum, step) => sum + step.current, 0);
+  return totalCurrent / steps.length;
+};
 
 export const resetTelemetryRunContextForTests = (): void => {
   activeRunContext = null;
@@ -143,6 +177,8 @@ export const consolidateSession = async (
     const firstStep = orphanSteps[0];
     const lastStep = orphanSteps[orphanSteps.length - 1];
     const durationMs = lastStep.timestamp.getTime() - firstStep.timestamp.getTime();
+    const avgSpeed = computeAvgSpeedCmPerSecond(orphanSteps, durationMs);
+    const avgCurrent = computeAvgCurrentMa(orphanSteps);
 
     // 🚀 ADICIONADO: Pega o sessionName customizado se existir no payload (ex: "Teste - 1234")
     // Fazemos um casting para any pois o sessionName é injetado pelo simulador, não está no DTO oficial
@@ -155,8 +191,10 @@ export const consolidateSession = async (
         mode: runContext.mode,
         mazeId: runContext.mazeId,
         durationMs,
+        avgSpeed,
         initialVoltage: firstStep.voltage,
         finalVoltage: lastStep.voltage,
+        avgCurrent,
         startPosX: firstStep.posX,
         startPosY: firstStep.posY,
       },

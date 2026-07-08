@@ -256,7 +256,10 @@ describe("telemetry.service", () => {
         id: "step-2",
         stepOrder: 2,
         timestamp: new Date("2026-01-01T00:00:10.000Z"),
+        posX: 1,
+        posY: 0,
         voltage: 11.5,
+        current: 180,
       };
       findOrphansMock.mockResolvedValueOnce([firstStep, lastStep]);
       createConsolidatedMock.mockResolvedValueOnce({ id: "session-1" });
@@ -274,6 +277,10 @@ describe("telemetry.service", () => {
           mode: "FINALIZADO",
           mazeId: "maze-1",
           durationMs: 10000,
+          avgSpeed: 1.8,
+          initialVoltage: 12,
+          finalVoltage: 11.5,
+          avgCurrent: 190,
         }),
         expect.any(Object)
       );
