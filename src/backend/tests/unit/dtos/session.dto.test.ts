@@ -14,8 +14,10 @@ describe("session.dto", () => {
       createdAt,
       isCompleted: true,
       durationMs: 5000,
+      avgSpeed: 12.5,
       initialVoltage: 12,
       finalVoltage: 11.2,
+      avgCurrent: 215,
     });
 
     expect(dto).toEqual({
@@ -25,8 +27,10 @@ describe("session.dto", () => {
       createdAt: createdAt.toISOString(),
       completed: true,
       durationMs: 5000,
+      avgSpeed: 12.5,
       initialVoltage: 12,
       finalVoltage: 11.2,
+      avgCurrent: 215,
     });
   });
 

@@ -74,8 +74,10 @@ describe("session.repository", () => {
       mode: "FINALIZADO",
       mazeId: "maze-1",
       durationMs: 1000,
+      avgSpeed: 1.2,
       initialVoltage: 12,
       finalVoltage: 11,
+      avgCurrent: 200,
       startPosX: 0,
       startPosY: 0,
     });
