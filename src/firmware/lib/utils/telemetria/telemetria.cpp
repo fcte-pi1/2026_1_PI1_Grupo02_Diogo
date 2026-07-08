@@ -6,9 +6,13 @@ static const char* _estadoParaDto(Estado estado){
         case CONCLUIDO:
             return "FINALIZADO";
         case CORRIDA:
+            // CORRIDA não existe no enum do DTO — mapeamos como EXPLORANDO
+            // pois o robô ainda está em movimento ativo no labirinto
             return "EXPLORANDO";
         case EXPLORANDO:
             return "EXPLORANDO";
+        case ERRO:
+            return "ERRO";
         case PARADO:
         default:
             return "PARADO";
@@ -30,7 +34,8 @@ void publishTelemetry(
     if (WiFi.status() != WL_CONNECTED || !mqttClient.connected())
         return;
 
-    StaticJsonDocument<768> doc;
+    // 1024 bytes: margem segura para o payload completo com todos os campos aninhados
+    StaticJsonDocument<1024> doc;
 
     doc["robotId"] = robotId;
     doc["step"] = stepCounter; // incremento fica a cargo do passoDFS()
@@ -70,7 +75,8 @@ void publishTelemetry(
 
     doc["conclusao"] = concluded;
 
-    char buffer[512];
+    // 768 bytes: suficiente para serializar o JSON sem truncamento silencioso
+    char buffer[768];
     serializeJson(doc, buffer);
     mqttClient.publish(mqttTopic, buffer);
 }

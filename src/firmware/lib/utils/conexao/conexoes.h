@@ -14,4 +14,5 @@ extern WiFiClient wifiClient;
 extern PubSubClient mqttClient;
 
 void connectWiFi();
-void connectMQTT();
+void initMQTT();    // chame UMA vez no setup() para configurar servidor e buffer
+void connectMQTT(); // chame no setup() e no loop() para (re)conectar

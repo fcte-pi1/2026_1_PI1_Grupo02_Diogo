@@ -19,7 +19,8 @@ enum Estado
     PARADO,
     EXPLORANDO,
     CORRIDA,
-    CONCLUIDO
+    CONCLUIDO,
+    ERRO   // fail-safe: conexão MQTT perdida ou sensor em falha
 };
 
 // Posição usada na pilha de backtrack (memória estática, sem heap)
