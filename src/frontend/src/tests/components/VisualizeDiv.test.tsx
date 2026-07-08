@@ -25,16 +25,39 @@ describe('VisualizeDiv Component', () => {
     expect(screen.getByText(/ALGORITMO: FLOOD FILL/i)).toBeInTheDocument();
   });
 
-  it('deve aplicar a função defensiva clampCoord para limitar posições extrapoladas ao teto da malha 8x8', () => {
+  it("posiciona o robô no centro da malha 16x16 quando a ESP parte de (7,7)", () => {
     render(
       <VisualizeDiv
         {...defaultProps}
-        posX={12}
+        activeSession={{
+          ...defaultProps.activeSession,
+          maze: { name: "Lab_Oficial_UnB", width: 8, height: 8, cells: [] },
+        }}
+        posX={7}
+        posY={7}
+      />,
+    );
+
+    expect(screen.getByTestId("maze-coords")).toHaveTextContent("COORDS: X-7, Y-7");
+    expect(screen.getByTestId("maze-robot-cell")).toHaveAttribute(
+      "title",
+      "Robô em (7, 7)",
+    );
+    expect(screen.getByTestId("maze-grid")).toHaveStyle({
+      gridTemplateColumns: "repeat(16, minmax(0, 1fr))",
+    });
+  });
+
+  it('deve aplicar a função defensiva clampCoord para limitar posições extrapoladas ao teto da malha', () => {
+    render(
+      <VisualizeDiv
+        {...defaultProps}
+        posX={20}
         posY={5}
       />,
     );
 
-    expect(screen.getByTestId('maze-coords')).toHaveTextContent('COORDS: X-12, Y-5');
+    expect(screen.getByTestId('maze-coords')).toHaveTextContent('COORDS: X-15, Y-5');
   });
 
   it('limita coordenadas negativas a zero no badge', () => {

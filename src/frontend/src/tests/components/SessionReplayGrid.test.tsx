@@ -32,7 +32,7 @@ describe("SessionReplayGrid", () => {
     expect(walledCell).not.toHaveAttribute("data-wall-east");
   });
 
-  it("limita coordenadas negativas no replay sem transladar a matriz", () => {
+  it("translada o replay quando o trajeto usa coordenadas negativas", () => {
     const steps = [
       {
         id: "step-1",
@@ -57,11 +57,11 @@ describe("SessionReplayGrid", () => {
     const { rerender } = render(
       <SessionReplayGrid steps={steps} activeIndex={0} />
     );
-    expect(screen.getByTestId("maze-grid")).not.toHaveAttribute("data-offset-x");
+    expect(screen.getByTestId("maze-grid")).toHaveAttribute("data-offset-x", "0");
     expect(screen.getByTitle("Robô em (0, 0)")).toBeInTheDocument();
 
     rerender(<SessionReplayGrid steps={steps} activeIndex={1} />);
-    expect(screen.getByTestId("maze-grid")).not.toHaveAttribute("data-offset-x");
+    expect(screen.getByTestId("maze-grid")).toHaveAttribute("data-offset-x", "1");
     expect(screen.getByTitle("Robô em (0, 0)")).toBeInTheDocument();
     expect(screen.getByTestId("maze-robot-cell")).toHaveAttribute(
       "data-visits",
