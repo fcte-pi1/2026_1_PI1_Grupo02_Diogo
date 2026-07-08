@@ -195,6 +195,7 @@ export const recordOrphanTelemetryStep = async (
       conclusao: espData.conclusao,
       estado: espData.estado,
       modo: espData.modo,
+      direcao: espData.direcao,
     };
 
     io.emit("telemetry:step", enrichedPayload);

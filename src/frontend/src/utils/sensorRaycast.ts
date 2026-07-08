@@ -157,6 +157,79 @@ export function buildMazeWallsMap(cells: MazeCell[]): Map<string, MazeCellWalls>
   return map;
 }
 
+/** Converte direção absoluta da ESP em graus (0=N, 90=E, 180=S, 270=W). */
+export function direcaoEspParaRotacao(direcao?: string): number {
+  switch (direcao?.toLowerCase()) {
+    case "leste":
+      return 90;
+    case "sul":
+      return 180;
+    case "oeste":
+      return 270;
+    case "norte":
+    default:
+      return 0;
+  }
+}
+
+/** Rotação ao vivo: prioriza `direcao` da ESP; senão infere pelo deslocamento. */
+export function rotacaoDoRoboAoVivo(
+  steps: { posX: number; posY: number }[],
+  direcaoEsp?: string,
+): number {
+  if (direcaoEsp) return direcaoEspParaRotacao(direcaoEsp);
+  if (steps.length >= 2) {
+    return computeReplayRobotRotation(steps, steps.length - 1);
+  }
+  return 0;
+}
+
+export interface LiveWallTelemetryStep {
+  posX: number;
+  posY: number;
+  walls?: {
+    north?: boolean;
+    south?: boolean;
+    east?: boolean;
+    west?: boolean;
+  } | null;
+}
+
+/**
+ * Sensores no Dashboard / telemetria ao vivo: raycast nas paredes descobertas
+ * (merge do maze + telemetria), não nos cm crus do pacote MQTT.
+ */
+export function lerSensoresAoVivo(
+  discoveredCells: MazeCell[],
+  wallSources: LiveWallTelemetryStep[],
+  posX: number,
+  posY: number,
+  width: number,
+  height: number,
+  direcaoEsp?: string,
+): {
+  front: ReturnType<typeof statusDoSensor>;
+  left: ReturnType<typeof statusDoSensor>;
+  right: ReturnType<typeof statusDoSensor>;
+} {
+  const stepsForRotation = wallSources.map((s) => ({
+    posX: s.posX,
+    posY: s.posY,
+  }));
+  const rotation = rotacaoDoRoboAoVivo(stepsForRotation, direcaoEsp);
+
+  if (discoveredCells.length > 0) {
+    const map = buildMazeWallsMap(discoveredCells);
+    return lerSensoresProximidade(map, posX, posY, rotation, width, height);
+  }
+
+  return {
+    front: statusDoSensor(SENSOR_RANGE_CELLS),
+    left: statusDoSensor(SENSOR_RANGE_CELLS),
+    right: statusDoSensor(SENSOR_RANGE_CELLS),
+  };
+}
+
 /** Rotação do robô no replay a partir do deslocamento entre passos consecutivos. */
 export function computeReplayRobotRotation(
   steps: { posX: number; posY: number }[],

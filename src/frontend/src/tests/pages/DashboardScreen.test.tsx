@@ -37,15 +37,18 @@ describe("DashboardScreen Component", () => {
           sessionId: "sess-1",
           timestamp: "2026-01-15T10:00:00.000Z",
           stepOrder: 2,
-          posX: 1,
-          posY: 2,
+          posX: 0,
+          posY: 0,
           voltage: 11.5,
           current: 300,
+          direcao: "leste",
+          walls: { north: false, south: true, east: false, west: true },
         }}
       />
     );
 
     expect(screen.getByTestId("battery-voltage")).toHaveTextContent("11.5V");
-    expect(screen.getByTestId("maze-coords")).toHaveTextContent("COORDS: X-1, Y-2");
+    expect(screen.getByTestId("maze-coords")).toHaveTextContent("COORDS: X-0, Y-0");
+    expect(screen.getByTestId("sensor-right-label")).toHaveTextContent("PAREDE");
   });
 });

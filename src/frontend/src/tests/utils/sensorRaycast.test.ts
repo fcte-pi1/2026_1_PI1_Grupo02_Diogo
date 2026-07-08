@@ -3,6 +3,8 @@ import type { MazeCellWalls } from "../../types/maze";
 import {
   absoluteDirectionFromRobot,
   computeReplayRobotRotation,
+  direcaoEspParaRotacao,
+  lerSensoresAoVivo,
   lerSensoresProximidade,
   lerSensoresReplay,
   passosLivresAteParede,
@@ -78,6 +80,13 @@ describe("sensorRaycast", () => {
     expect(statusDoSensor(4).label).toBe("LIVRE");
   });
 
+  it("converte direção da ESP em rotação", () => {
+    expect(direcaoEspParaRotacao("norte")).toBe(0);
+    expect(direcaoEspParaRotacao("leste")).toBe(90);
+    expect(direcaoEspParaRotacao("sul")).toBe(180);
+    expect(direcaoEspParaRotacao("oeste")).toBe(270);
+  });
+
   it("infere rotação do robô no replay pelo deslocamento", () => {
     const steps = [
       { posX: 0, posY: 0 },
@@ -88,6 +97,39 @@ describe("sensorRaycast", () => {
     expect(computeReplayRobotRotation(steps, 1)).toBe(0);
     expect(computeReplayRobotRotation(steps, 2)).toBe(90);
     expect(computeReplayRobotRotation(steps, 3)).toBe(180);
+  });
+
+  it("raycast ao vivo detecta PAREDE na borda com direção da ESP", () => {
+    const wallSources = [
+      {
+        posX: 0,
+        posY: 0,
+        walls: { north: false, south: true, east: false, west: true },
+      },
+    ];
+    const cells = [
+      {
+        posX: 0,
+        posY: 0,
+        wallNorth: false,
+        wallSouth: true,
+        wallEast: false,
+        wallWest: true,
+      },
+    ];
+
+    const readings = lerSensoresAoVivo(
+      cells,
+      wallSources,
+      0,
+      0,
+      8,
+      8,
+      "leste",
+    );
+
+    expect(readings.right.label).toBe("PAREDE");
+    expect(readings.left.label).toBe("LIVRE");
   });
 
   it("calcula sensores no replay a partir do labirinto salvo", () => {

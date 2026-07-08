@@ -25,6 +25,8 @@ export interface TelemetryData {
   conclusao?: boolean;
   estado?: string;
   modo?: string;
+  /** Direção absoluta reportada pela ESP (norte/sul/leste/oeste). */
+  direcao?: string;
 }
 
 export function useWebSocket() {
