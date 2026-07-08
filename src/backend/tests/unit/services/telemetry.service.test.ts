@@ -1,5 +1,6 @@
 jest.mock("../../../src/repositories/maze.repository", () => ({
   findOrCreateDefaultMaze: jest.fn(),
+  createMazeSnapshot: jest.fn(),
 }));
 
 jest.mock("../../../src/repositories/session.repository", () => ({
@@ -30,7 +31,7 @@ jest.mock("../../../src/websocket/socket", () =>
 );
 
 import { prisma } from "../../../src/lib/prisma";
-import { findOrCreateDefaultMaze } from "../../../src/repositories/maze.repository";
+import { findOrCreateDefaultMaze, createMazeSnapshot } from "../../../src/repositories/maze.repository";
 import { createConsolidatedSession } from "../../../src/repositories/session.repository";
 import {
   createOrphanSessionStep,
@@ -59,6 +60,7 @@ import {
 } from "../../helpers/telemetry.factory";
 
 const mazeMock = findOrCreateDefaultMaze as jest.Mock;
+const createMazeSnapshotMock = createMazeSnapshot as jest.Mock;
 const createOrphanMock = createOrphanSessionStep as jest.Mock;
 const findOrphansMock = findOrphanSteps as jest.Mock;
 const findOrphansLimitedMock = findOrphanStepsLimited as jest.Mock;
@@ -74,6 +76,7 @@ describe("telemetry.service", () => {
     jest.clearAllMocks();
     resetTelemetryRunContextForTests();
     mazeMock.mockResolvedValue({ id: "maze-1" });
+    createMazeSnapshotMock.mockResolvedValue("maze-snapshot-1");
     transactionMock.mockImplementation(async (callback) => callback({}));
   });
 
@@ -271,16 +274,22 @@ describe("telemetry.service", () => {
       );
 
       expect(result).toBe("session-1");
+      expect(createMazeSnapshotMock).toHaveBeenCalledWith(
+        "maze-1",
+        expect.stringContaining("Corrida"),
+        undefined,
+        expect.any(Object),
+      );
       expect(createConsolidatedMock).toHaveBeenCalledWith(
         expect.objectContaining({
           algorithm: "FLOOD FILL",
           mode: "FINALIZADO",
-          mazeId: "maze-1",
+          mazeId: "maze-snapshot-1",
           durationMs: 10000,
           avgSpeed: 1.8,
           initialVoltage: 12,
           finalVoltage: 11.5,
-          avgCurrent: 190,
+          totalDrainMah: 190,
         }),
         expect.any(Object)
       );

@@ -4,8 +4,10 @@ import type { TelemetryPayloadDto } from "../dtos/telemetry.dto";
 import { validateTelemetryPayload } from "../dtos/telemetry.dto";
 import { prisma } from "../lib/prisma";
 import {
+  createMazeSnapshot,
   findOrCreateDefaultMaze,
   findOrCreateSimulatorMaze,
+  type MazeCellWallInput,
 } from "../repositories/maze.repository";
 import { createConsolidatedSession } from "../repositories/session.repository";
 import {
@@ -225,7 +227,8 @@ export const recordOrphanTelemetryStep = async (
 };
 
 export const consolidateSession = async (
-  espData: TelemetryPayloadDto
+  espData: TelemetryPayloadDto,
+  options?: { mazeCells?: MazeCellWallInput[] },
 ): Promise<string | null> => {
   const runContext = await ensureActiveRunContext(espData);
 
@@ -242,16 +245,23 @@ export const consolidateSession = async (
     const avgSpeed = computeAvgSpeedCmPerSecond(orphanSteps, durationMs);
     const avgCurrent = computeAvgCurrentMa(orphanSteps);
 
-    // 🚀 ADICIONADO: Pega o sessionName customizado se existir no payload (ex: "Teste - 1234")
-    // Fazemos um casting para any pois o sessionName é injetado pelo simulador, não está no DTO oficial
-    const customSessionName = (espData as any).sessionName;
+    const customSessionName = (espData as { sessionName?: string }).sessionName;
+    const sessionLabel =
+      customSessionName || `Corrida - ${new Date().toLocaleString("pt-BR")}`;
+
+    const snapshotMazeId = await createMazeSnapshot(
+      runContext.mazeId,
+      `${sessionLabel} (snapshot)`,
+      options?.mazeCells,
+      tx,
+    );
 
     const session = await createConsolidatedSession(
       {
-        sessionName: customSessionName || `Corrida - ${new Date().toLocaleString("pt-BR")}`,
+        sessionName: sessionLabel,
         algorithm: runContext.algorithm,
         mode: runContext.mode,
-        mazeId: runContext.mazeId,
+        mazeId: snapshotMazeId,
         durationMs,
         avgSpeed,
         initialVoltage: firstStep.voltage,

@@ -2,6 +2,7 @@ jest.mock("../../../src/lib/prisma", () => ({
   prisma: {
     maze: {
       findFirst: jest.fn(),
+      findUnique: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
     },
@@ -23,6 +24,7 @@ jest.mock("../../../src/lib/prisma", () => ({
 import { prisma } from "../../../src/lib/prisma";
 import {
   createDefaultMaze,
+  createMazeSnapshot,
   findFirstMaze,
   findOrCreateDefaultMaze,
   findOrCreateSimulatorMaze,
@@ -31,8 +33,10 @@ import {
 } from "../../../src/repositories/maze.repository";
 
 const findFirstMock = prisma.maze.findFirst as jest.Mock;
+const findUniqueMock = prisma.maze.findUnique as jest.Mock;
 const createMock = prisma.maze.create as jest.Mock;
 const updateMock = prisma.maze.update as jest.Mock;
+const createManyCellsMock = prisma.cell.createMany as jest.Mock;
 
 describe("maze.repository", () => {
   beforeEach(() => {
@@ -115,5 +119,50 @@ describe("maze.repository", () => {
 
     expect(updateMock).toHaveBeenCalled();
     expect(result.width).toBe(8);
+  });
+
+  it("createMazeSnapshot copies source cells into a new maze", async () => {
+    findUniqueMock.mockResolvedValueOnce({
+      id: "source-maze",
+      width: 8,
+      height: 8,
+      cells: [
+        {
+          posX: 0,
+          posY: 0,
+          wallNorth: true,
+          wallSouth: false,
+          wallEast: true,
+          wallWest: false,
+        },
+      ],
+    });
+    createMock.mockResolvedValueOnce({ id: "snapshot-maze" });
+    createManyCellsMock.mockResolvedValueOnce({ count: 1 });
+
+    const snapshotId = await createMazeSnapshot(
+      "source-maze",
+      "Teste snapshot",
+    );
+
+    expect(snapshotId).toBe("snapshot-maze");
+    expect(createMock).toHaveBeenCalledWith({
+      data: {
+        name: "Teste snapshot",
+        width: 8,
+        height: 8,
+      },
+    });
+    expect(createManyCellsMock).toHaveBeenCalledWith({
+      data: [
+        expect.objectContaining({
+          mazeId: "snapshot-maze",
+          posX: 0,
+          posY: 0,
+          wallNorth: true,
+          wallEast: true,
+        }),
+      ],
+    });
   });
 });

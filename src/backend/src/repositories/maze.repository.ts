@@ -1,9 +1,11 @@
-import type { Maze } from "@prisma/client";
+import type { Maze, Prisma } from "@prisma/client";
 import { prisma } from "../lib/prisma";
 
 export const DEFAULT_MAZE_SIZE = 16;
 export const SIMULATOR_MAZE_SIZE = 8;
 export const SIMULATOR_MAZE_NAME = "Labirinto simulador (8x8)";
+
+type DbClient = Prisma.TransactionClient | typeof prisma;
 
 export type MazeCellWallInput = {
   posX: number;
@@ -83,4 +85,57 @@ export const replaceMazeCells = async (
       })),
     });
   });
+};
+
+/** Copia o labirinto (e células) para um novo registro imutável no histórico. */
+export const createMazeSnapshot = async (
+  sourceMazeId: string,
+  snapshotName: string,
+  cellsOverride?: MazeCellWallInput[],
+  client: DbClient = prisma,
+): Promise<string> => {
+  const source = await client.maze.findUnique({
+    where: { id: sourceMazeId },
+    include: { cells: true },
+  });
+
+  if (!source) {
+    throw new Error(`Labirinto ${sourceMazeId} não encontrado para snapshot`);
+  }
+
+  const snapshot = await client.maze.create({
+    data: {
+      name: snapshotName,
+      width: source.width,
+      height: source.height,
+    },
+  });
+
+  const cellData =
+    cellsOverride && cellsOverride.length > 0
+      ? cellsOverride
+      : source.cells.map((cell) => ({
+          posX: cell.posX,
+          posY: cell.posY,
+          wallNorth: cell.wallNorth,
+          wallSouth: cell.wallSouth,
+          wallEast: cell.wallEast,
+          wallWest: cell.wallWest,
+        }));
+
+  if (cellData.length > 0) {
+    await client.cell.createMany({
+      data: cellData.map((cell) => ({
+        mazeId: snapshot.id,
+        posX: cell.posX,
+        posY: cell.posY,
+        wallNorth: Boolean(cell.wallNorth),
+        wallSouth: Boolean(cell.wallSouth),
+        wallEast: Boolean(cell.wallEast),
+        wallWest: Boolean(cell.wallWest),
+      })),
+    });
+  }
+
+  return snapshot.id;
 };

@@ -10,7 +10,6 @@ import {
   type MazeCellWallInput,
 } from "../repositories/maze.repository";
 import { deleteOrphanSteps } from "../repositories/session-step.repository";
-import { prisma } from "../lib/prisma";
 
 let simulatorInterval: NodeJS.Timeout | null = null;
 let isPaused = false;
@@ -217,10 +216,6 @@ export const commitSimulatorSession = async (options?: {
   try {
     const maze = await findOrCreateSimulatorMaze();
 
-    if (options?.mazeCells && options.mazeCells.length > 0) {
-      await replaceMazeCells(maze.id, options.mazeCells);
-    }
-
     const modo =
       liveConfig.modo === "TESTE_SIMULADOR" ? "DFS" : liveConfig.modo;
     const estado =
@@ -262,15 +257,10 @@ export const commitSimulatorSession = async (options?: {
       ),
     };
 
-    const sessionId = await consolidateSession(payload as any);
+    const sessionId = await consolidateSession(payload as any, {
+      mazeCells: options?.mazeCells,
+    });
     if (sessionId) {
-      await prisma.session.update({
-        where: { id: sessionId },
-        data: { mazeId: maze.id },
-      });
-
-      // Reaplica o labirinto do TestView depois da consolidação para
-      // não deixar o último pulso do intervalo apagar paredes pintadas.
       if (options?.mazeCells && options.mazeCells.length > 0) {
         await replaceMazeCells(maze.id, options.mazeCells);
       }
