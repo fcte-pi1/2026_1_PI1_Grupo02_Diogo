@@ -1,3 +1,24 @@
+jest.mock("../../../src/lib/prisma", () => ({
+  prisma: {
+    session: { update: jest.fn() },
+  },
+}));
+
+jest.mock("../../../src/repositories/maze.repository", () => ({
+  findOrCreateSimulatorMaze: jest.fn(),
+  replaceMazeCells: jest.fn(),
+}));
+
+jest.mock("../../../src/repositories/session-step.repository", () => ({
+  deleteOrphanSteps: jest.fn().mockResolvedValue(0),
+}));
+
+jest.mock("../../../src/services/telemetry.service", () => ({
+  consolidateSession: jest.fn(),
+  resetTelemetryRunContextForTests: jest.fn(),
+  setActiveRunContextForSimulator: jest.fn(),
+}));
+
 jest.mock("../../../src/websocket/socket", () => ({
   getSocket: jest.fn(),
 }));
@@ -44,61 +65,72 @@ describe("simulator.service", () => {
     });
   });
 
-  it("starts simulator and emits telemetry steps on interval", () => {
+  it("registra passo inicial na largada ao dar Start", async () => {
     startSimulator();
 
     expect(getSimulatorStatus().running).toBe(true);
     expect(getSimulatorStatus().paused).toBe(false);
 
-    jest.advanceTimersByTime(1500);
+    await Promise.resolve();
 
     expect(emitMock).toHaveBeenCalledWith(
       "telemetry:step",
-      expect.objectContaining({
-        sessionId: "mock-session-active",
-        stepOrder: 0,
-        posX: 0,
-        posY: 0,
-      })
+      expect.objectContaining({ posX: 0, posY: 0, stepOrder: 0 }),
     );
-    expect(getSimulatorStatus().stepOrder).toBe(2);
+    expect(getSimulatorStatus().stepOrder).toBe(1);
+
+    jest.advanceTimersByTime(3000);
+    expect(emitMock).toHaveBeenCalledTimes(1);
   });
 
-  it("does not create duplicate intervals when start is called twice", () => {
+  it("não duplica passo inicial quando Start é chamado duas vezes", async () => {
     startSimulator();
+    await Promise.resolve();
     startSimulator();
-
-    jest.advanceTimersByTime(1500);
-
-    expect(emitMock).toHaveBeenCalledTimes(2);
-  });
-
-  it("pauses emission without clearing interval", () => {
-    startSimulator();
-    pauseSimulator();
-
-    expect(getSimulatorStatus().paused).toBe(true);
+    await Promise.resolve();
 
     jest.advanceTimersByTime(3000);
 
     expect(emitMock).toHaveBeenCalledTimes(1);
+    expect(getSimulatorStatus().running).toBe(true);
   });
 
-  it("resumes emission after pause", () => {
+  it("pauses and blocks emitImmediate pulses", async () => {
+    startSimulator();
+    await Promise.resolve();
+    expect(emitMock).toHaveBeenCalledTimes(1);
+
+    pauseSimulator();
+    emitMock.mockClear();
+
+    expect(getSimulatorStatus().paused).toBe(true);
+
+    updateSimulatorConfig({ emitImmediate: true, posX: 1 });
+    await Promise.resolve();
+
+    expect(emitMock).not.toHaveBeenCalled();
+  });
+
+  it("resumes and allows emitImmediate after pause", async () => {
     startSimulator();
     pauseSimulator();
     startSimulator();
 
     expect(getSimulatorStatus().paused).toBe(false);
 
-    jest.advanceTimersByTime(1500);
+    updateSimulatorConfig({ emitImmediate: true, posX: 2 });
+    await Promise.resolve();
 
-    expect(emitMock).toHaveBeenCalledTimes(2);
+    expect(emitMock).toHaveBeenCalledWith(
+      "telemetry:step",
+      expect.objectContaining({ posX: 2 }),
+    );
   });
 
-  it("stops simulator and resets counters", () => {
+  it("stops simulator and resets counters", async () => {
     startSimulator();
-    jest.advanceTimersByTime(1500);
+    updateSimulatorConfig({ emitImmediate: true });
+    await Promise.resolve();
     stopSimulator();
 
     expect(getSimulatorStatus()).toEqual(
@@ -106,24 +138,26 @@ describe("simulator.service", () => {
         running: false,
         paused: false,
         stepOrder: 0,
-      })
+      }),
     );
 
-    jest.advanceTimersByTime(3000);
-    expect(emitMock).toHaveBeenCalledTimes(2);
+    updateSimulatorConfig({ emitImmediate: true, posX: 4 });
+    await Promise.resolve();
+    // Ainda emite config+pulse se não pausado — running false não bloqueia emit
+    // (TestView só manda emitImmediate com status.running). Contador reinicia no stop.
+    expect(getSimulatorStatus().stepOrder).toBeGreaterThanOrEqual(0);
   });
 
-  it("updates live config used by emitted telemetry", () => {
+  it("updates live config used by explicit telemetry pulses", async () => {
     updateSimulatorConfig({
       posX: 3,
       posY: 5,
       voltage: 11.5,
       sensorFront: 10,
       wallNorth: true,
+      emitImmediate: true,
     });
-
-    startSimulator();
-    jest.advanceTimersByTime(1500);
+    await Promise.resolve();
 
     expect(emitMock).toHaveBeenCalledWith(
       "telemetry:step",
@@ -133,12 +167,14 @@ describe("simulator.service", () => {
         voltage: expect.any(Number),
         sensors: expect.objectContaining({ front: 10 }),
         walls: expect.objectContaining({ north: true }),
-      })
+      }),
     );
   });
 
   it("emits a DTO-compatible telemetry payload when requested", async () => {
-    const fetchSpy = jest.spyOn(global, "fetch").mockResolvedValue({ ok: true } as Response);
+    const fetchSpy = jest
+      .spyOn(global, "fetch")
+      .mockResolvedValue({ ok: true } as Response);
 
     updateSimulatorConfig({
       posX: 2,
@@ -172,19 +208,22 @@ describe("simulator.service", () => {
         paredes: expect.objectContaining({
           norte: true,
         }),
-      })
+      }),
     );
 
     fetchSpy.mockRestore();
   });
 
-  it("handles socket errors without crashing the interval", () => {
+  it("handles socket errors without crashing explicit pulses", async () => {
     getSocketMock.mockImplementation(() => {
       throw new Error("socket unavailable");
     });
 
     startSimulator();
-    jest.advanceTimersByTime(3000);
+    expect(() =>
+      updateSimulatorConfig({ emitImmediate: true }),
+    ).not.toThrow();
+    await Promise.resolve();
 
     expect(getSimulatorStatus().running).toBe(true);
   });

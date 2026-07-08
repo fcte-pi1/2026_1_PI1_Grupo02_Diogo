@@ -42,9 +42,9 @@ describe("TestView Component", () => {
 
   it("deve acionar as chamadas de rota HTTP correspondentes ao disparar comandos de fluxo", async () => {
     const user = userEvent.setup();
-    mockFetch.mockResolvedValueOnce({ 
+    mockFetch.mockResolvedValueOnce({
       ok: true,
-      json: async () => ({ status: "ok" }) 
+      json: async () => ({ status: "ok" }),
     });
 
     render(<TestView {...defaultProps} />);
@@ -57,7 +57,23 @@ describe("TestView Component", () => {
       expect.objectContaining({
         method: "POST",
         body: JSON.stringify({ action: "start" }),
-      })
+      }),
+    );
+  });
+
+  it("mostra erro visível quando o backend estiver offline no Start", async () => {
+    const user = userEvent.setup();
+    render(<TestView {...defaultProps} />);
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalled();
+    });
+
+    mockFetch.mockRejectedValueOnce(new TypeError("Failed to fetch"));
+    await user.click(screen.getByRole("button", { name: /start/i }));
+
+    expect(await screen.findByTestId("simulator-action-error")).toHaveTextContent(
+      /Backend offline/i,
     );
   });
 
@@ -72,45 +88,78 @@ describe("TestView Component", () => {
 
   it("deve acionar pause e stop com os endpoints corretos", async () => {
     const user = userEvent.setup();
-    mockFetch
-      .mockResolvedValueOnce({
+    mockFetch.mockImplementation(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input);
+      if (url.includes("/simulator/status")) {
+        return {
+          ok: true,
+          json: async () => ({ running: true, paused: false, stepOrder: 1 }),
+        };
+      }
+      if (url.endsWith("/simulator") && init?.method === "POST") {
+        return { ok: true, json: async () => ({ status: "ok" }) };
+      }
+      return {
         ok: true,
         json: async () => ({ running: true, paused: false, stepOrder: 1 }),
-      })
-      .mockResolvedValueOnce({ ok: true, json: async () => ({}) })
-      .mockResolvedValueOnce({
-        ok: true,
-        json: async () => ({ running: true, paused: true, stepOrder: 1 }),
-      })
-      .mockResolvedValueOnce({ ok: true, json: async () => ({}) });
+      };
+    });
 
     render(<TestView {...defaultProps} />);
 
-    const pauseButton = await screen.findByRole("button", { name: /pause/i });
+    const pauseButton = await screen.findByRole("button", { name: /^Pause$/i });
+    await waitFor(() => expect(pauseButton).not.toBeDisabled());
     await user.click(pauseButton);
-    await user.click(screen.getByRole("button", { name: /stop/i }));
+    await user.click(screen.getByRole("button", { name: /^Stop$/i }));
 
     expect(mockFetch).toHaveBeenCalledWith(
       "http://127.0.0.1:3000/api/telemetry/simulator",
       expect.objectContaining({
         method: "POST",
         body: JSON.stringify({ action: "pause" }),
-      })
+      }),
     );
     expect(mockFetch).toHaveBeenCalledWith(
       "http://127.0.0.1:3000/api/telemetry/simulator",
       expect.objectContaining({
         method: "POST",
         body: JSON.stringify({ action: "stop" }),
-      })
+      }),
     );
   });
 
   it("deve sincronizar variáveis ao acionar o direcional do joystick", async () => {
+    const user = userEvent.setup();
     render(<TestView {...defaultProps} />);
-    const directionalButtons = screen.getAllByRole("button");
-    // Verifica se existem botões montados para o joystick na árvore DOM
-    expect(directionalButtons.length).toBeGreaterThan(0);
+
+    await user.click(screen.getByRole("button", { name: /mover para leste/i }));
+
+    expect(screen.getByTestId("joystick-position")).toHaveTextContent("1,0");
+    expect(screen.getByTestId("maze-robot-cell")).toHaveAttribute(
+      "title",
+      "Robô em (1, 0)",
+    );
+  });
+
+  it("não atravessa parede ao usar o joystick", async () => {
+    const user = userEvent.setup();
+    render(<TestView {...defaultProps} />);
+
+    await user.click(
+      screen.getByRole("button", { name: "Toggle east wall at (0, 0)" }),
+    );
+    expect(screen.getByTitle("Robô em (0, 0)")).toHaveAttribute(
+      "data-wall-east",
+      "true",
+    );
+
+    await user.click(screen.getByRole("button", { name: /mover para leste/i }));
+
+    expect(screen.getByTestId("joystick-position")).toHaveTextContent("0,0");
+    expect(screen.getByTestId("maze-robot-cell")).toHaveAttribute(
+      "title",
+      "Robô em (0, 0)",
+    );
   });
 
   it("deve renderizar telemetria ativa quando robotData estiver disponível", async () => {
@@ -141,8 +190,10 @@ describe("TestView Component", () => {
 
   it("deve alternar as bordas do cubo de barreiras", async () => {
     render(<TestView {...defaultProps} />);
-    const cellsDisplay = screen.getByText("0,0");
-    expect(cellsDisplay).toBeInTheDocument();
+    expect(screen.getByTestId("maze-robot-cell")).toHaveAttribute(
+      "title",
+      "Robô em (0, 0)",
+    );
   });
 
   it("deve registrar erros de rede sem quebrar a interface", async () => {

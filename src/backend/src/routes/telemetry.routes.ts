@@ -54,14 +54,22 @@ router.post("/simulator", async (req, res) => {
     return res.json({ message: "Simulador parado e zerado.", running: false, paused: false });
   }
 
-  // Zera a memória do simulador no backend
+  // Zera a memória do simulador no backend e apaga passos órfãos
   if (action === "reset") {
-    resetSimulator();
-    return res.json({ message: "Simulador resetado e labirinto limpo.", running: false, paused: false });
+    await resetSimulator();
+    return res.json({
+      message: "Simulador resetado e labirinto limpo.",
+      running: false,
+      paused: false,
+    });
   }
 
   if (action === "commit") {
-    const sessionId = await commitSimulatorSession();
+    const { mazeCells, sessionName } = req.body ?? {};
+    const sessionId = await commitSimulatorSession({
+      mazeCells: Array.isArray(mazeCells) ? mazeCells : undefined,
+      sessionName: typeof sessionName === "string" ? sessionName : undefined,
+    });
     return res.json({ message: "Sessão consolidada no histórico.", sessionId, running: false, paused: false });
   }
 

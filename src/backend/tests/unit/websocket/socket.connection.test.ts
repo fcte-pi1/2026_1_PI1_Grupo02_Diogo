@@ -8,17 +8,19 @@ jest.mock("../../../src/lib/prisma", () => ({
 
 jest.mock("../../../src/services/telemetry.service", () => ({
   getOrphanStepsForReplay: jest.fn().mockResolvedValue([{ id: "orphan-1" }]),
+  clearLiveOrphanRun: jest.fn().mockResolvedValue(0),
 }));
 
 import http from "http";
 import type { Server } from "socket.io";
-import { getOrphanStepsForReplay } from "../../../src/services/telemetry.service";
+import { getOrphanStepsForReplay, clearLiveOrphanRun } from "../../../src/services/telemetry.service";
 import {
   initSocket,
   resetSocketForTests,
 } from "../../../src/websocket/socket";
 
 const getOrphanStepsMock = getOrphanStepsForReplay as jest.Mock;
+const clearLiveOrphanRunMock = clearLiveOrphanRun as jest.Mock;
 
 type SocketHandlers = Record<string, (...args: unknown[]) => void>;
 
@@ -78,6 +80,16 @@ describe("websocket/socket connection handlers", () => {
 
     expect(reject).toHaveBeenCalledWith(expect.any(Error));
     expect(allow).toHaveBeenCalledWith(null, "http://localhost:5173");
+  });
+
+  it("clears orphan run and sends empty history on fresh subscribe", async () => {
+    const { handlers, mockSocket } = connectMockClient(io);
+
+    await handlers["telemetry:subscribe"]({ limit: 50, fresh: true });
+
+    expect(clearLiveOrphanRunMock).toHaveBeenCalled();
+    expect(getOrphanStepsMock).not.toHaveBeenCalled();
+    expect(mockSocket.emit).toHaveBeenCalledWith("telemetry:history", []);
   });
 
   it("sends orphan replay history on telemetry subscribe", async () => {

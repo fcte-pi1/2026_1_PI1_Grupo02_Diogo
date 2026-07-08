@@ -25,6 +25,8 @@ export interface TelemetryData {
   conclusao?: boolean;
   estado?: string;
   modo?: string;
+  /** Direção absoluta reportada pela ESP (norte/sul/leste/oeste). */
+  direcao?: string;
 }
 
 export function useWebSocket() {
@@ -48,8 +50,8 @@ export function useWebSocket() {
 
     socket.on('connect', () => {
       setIsConnected(true);
-      // Notifica o backend para registrar a subscrição e puxar buffers órfãos
-      socket.emit("telemetry:subscribe", { limit: 50 });
+      // Nova carga da página = corrida ao vivo zerada (sem replay de órfãos antigos).
+      socket.emit("telemetry:subscribe", { limit: 50, fresh: true });
     });
 
     socket.on('disconnect', () => {
@@ -66,12 +68,15 @@ export function useWebSocket() {
       });
     });
 
-    // Captura o histórico acumulado recente para renderização instantânea ao dar F5
+    // Histórico vazio após F5 (fresh subscribe) ou replay explícito (fresh: false).
     socket.on('telemetry:history', (historyItems: TelemetryData[]) => {
-      if (historyItems.length > 0) {
-        setRobotData(historyItems[historyItems.length - 1]);
-        setSessionSteps(historyItems);
+      if (!historyItems || historyItems.length === 0) {
+        setRobotData(null);
+        setSessionSteps([]);
+        return;
       }
+      setRobotData(historyItems[historyItems.length - 1]);
+      setSessionSteps(historyItems);
     });
 
     // 🚀 O SEGREDO MÁGICO: Escuta o comando de reset para despintar o labirinto!

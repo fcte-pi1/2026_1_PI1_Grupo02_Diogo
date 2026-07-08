@@ -26,6 +26,7 @@ export const getSessionDetail = async (
     return null;
   }
 
+  // Desestruturamos para separar relações (steps e maze) dos dados brutos da sessão
   const { telemetrySteps, maze, ...metadata } = session;
 
   return {

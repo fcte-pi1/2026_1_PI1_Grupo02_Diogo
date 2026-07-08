@@ -8,7 +8,7 @@ describe('VisualizeDiv Component', () => {
       sessionName: 'Corrida Lab',
       algorithm: 'FLOOD FILL',
       mode: 'CORRIDA',
-      maze: { name: 'Lab_Oficial_UnB', width: 8, height: 8, cells: [] }
+      maze: { name: 'Lab_Oficial_UnB', width: 8, height: 8, cells: [] },
     },
     currentView: 'dashboard',
     connectionProps: { latency: '35' },
@@ -20,26 +20,20 @@ describe('VisualizeDiv Component', () => {
   it('deve renderizar as coordenadas filtradas em tempo real e o container do labirinto', () => {
     render(<VisualizeDiv {...defaultProps} />);
 
-    // Valida as coordenadas no painel superior
     expect(screen.getByTestId('maze-coords')).toHaveTextContent('COORDS: X-2, Y-3');
-    
-    // Valida se o container da malha real foi montado com sucesso
     expect(screen.getByTestId('maze-grid')).toBeInTheDocument();
-    
-    // Valida as tags de texto dinâmicas de rodapé
     expect(screen.getByText(/ALGORITMO: FLOOD FILL/i)).toBeInTheDocument();
   });
 
   it('deve aplicar a função defensiva clampCoord para limitar posições extrapoladas ao teto da malha 8x8', () => {
     render(
-      <VisualizeDiv 
-        {...defaultProps} 
-        posX={12} // Força a extrapolação do grid
-        posY={5} 
-      />
+      <VisualizeDiv
+        {...defaultProps}
+        posX={12}
+        posY={5}
+      />,
     );
 
-    // O limitador matemático deve travar o índice cartesiano em 7
     expect(screen.getByTestId('maze-coords')).toHaveTextContent('COORDS: X-7, Y-5');
   });
 
@@ -47,9 +41,9 @@ describe('VisualizeDiv Component', () => {
     render(
       <VisualizeDiv
         {...defaultProps}
-        posX={-2} // Robô partiu de outro canto: offset +2 desloca a matriz
+        posX={-2}
         posY={1}
-      />
+      />,
     );
 
     expect(screen.getByTestId('maze-coords')).toHaveTextContent('COORDS: X-0, Y-1');
@@ -63,5 +57,89 @@ describe('VisualizeDiv Component', () => {
     expect(screen.getByText('UAV-MOUSE-01')).toBeInTheDocument();
     expect(screen.getByText('BANCO_DE_DADOS')).toBeInTheDocument();
     expect(screen.getByText('online')).toBeInTheDocument();
+  });
+
+  it('pinta paredes descobertas em tempo real a partir dos steps da telemetria', () => {
+    render(
+      <VisualizeDiv
+        {...defaultProps}
+        steps={[
+          {
+            id: 's1',
+            stepOrder: 0,
+            posX: 0,
+            posY: 0,
+            voltage: 12,
+            current: 100,
+            createdAt: '2026-01-01T00:00:00.000Z',
+            walls: { north: true, south: false, east: true, west: false },
+          },
+          {
+            id: 's2',
+            stepOrder: 1,
+            posX: 1,
+            posY: 0,
+            voltage: 12,
+            current: 100,
+            createdAt: '2026-01-01T00:00:01.000Z',
+            walls: { north: false, south: true, east: false, west: true },
+          },
+        ]}
+        posX={1}
+        posY={0}
+      />,
+    );
+
+    const origin = screen.getByTitle('Coords: (0, 0)');
+    expect(origin).toHaveAttribute('data-wall-north', 'true');
+    expect(origin).toHaveAttribute('data-wall-east', 'true');
+
+    const next = screen.getByTitle('Robô em (1, 0)');
+    expect(next).toHaveAttribute('data-wall-south', 'true');
+    expect(next).toHaveAttribute('data-wall-west', 'true');
+  });
+
+  it('gira o ícone do robô conforme a direção da ESP ou o deslocamento', () => {
+    render(
+      <VisualizeDiv
+        {...defaultProps}
+        steps={[
+          {
+            id: 's1',
+            stepOrder: 0,
+            posX: 0,
+            posY: 0,
+            voltage: 12,
+            current: 100,
+            createdAt: '2026-01-01T00:00:00.000Z',
+          },
+          {
+            id: 's2',
+            stepOrder: 1,
+            posX: 1,
+            posY: 0,
+            voltage: 12,
+            current: 100,
+            createdAt: '2026-01-01T00:00:01.000Z',
+          },
+        ]}
+        robotData={{
+          id: 's2',
+          stepOrder: 1,
+          posX: 1,
+          posY: 0,
+          voltage: 12,
+          current: 100,
+          createdAt: '2026-01-01T00:00:01.000Z',
+          direcao: 'leste',
+        } as never}
+        posX={1}
+        posY={0}
+      />,
+    );
+
+    expect(
+      screen.getByTestId('maze-robot-cell').querySelector('[data-robot-rotation="90"]'),
+    ).toBeInTheDocument();
   });
 });

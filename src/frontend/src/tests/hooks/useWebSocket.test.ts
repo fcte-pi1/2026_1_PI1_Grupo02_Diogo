@@ -56,7 +56,10 @@ describe("useWebSocket", () => {
     });
 
     await waitFor(() => expect(result.current.isConnected).toBe(true));
-    expect(emitMock).toHaveBeenCalledWith("telemetry:subscribe", { limit: 50 });
+    expect(emitMock).toHaveBeenCalledWith("telemetry:subscribe", {
+      limit: 50,
+      fresh: true,
+    });
   });
 
   it("atualiza robotData ao receber telemetry:step", async () => {
@@ -80,6 +83,24 @@ describe("useWebSocket", () => {
     });
 
     await waitFor(() => expect(result.current.robotData?.id).toBe("new"));
+  });
+
+  it("limpa estado quando histórico vem vazio", async () => {
+    const { result } = renderHook(() => useWebSocket());
+
+    act(() => {
+      handlers.get("telemetry:step")?.(sampleStep);
+    });
+    await waitFor(() => expect(result.current.robotData).toEqual(sampleStep));
+
+    act(() => {
+      handlers.get("telemetry:history")?.([]);
+    });
+
+    await waitFor(() => {
+      expect(result.current.robotData).toBeNull();
+      expect(result.current.sessionSteps).toEqual([]);
+    });
   });
 
   it("desconecta e limpa listeners", async () => {

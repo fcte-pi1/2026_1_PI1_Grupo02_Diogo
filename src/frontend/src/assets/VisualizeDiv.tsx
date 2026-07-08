@@ -1,10 +1,8 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { Database, ComponentIcon, ComputerIcon, Unlink, Play } from "lucide-react";
 import { MazeGrid } from "./MazeGrid";
 import type { SessionStep } from "../types/session";
 import { computeMazeOffset } from "../utils/maze-translation";
-import { mergeLiveMazeCells } from "../utils/mergeLiveMazeCells";
-import { rotacaoDoRoboAoVivo } from "../utils/sensorRaycast";
 
 interface VisualizeDivProps {
   activeSession: {
@@ -70,34 +68,6 @@ export function VisualizeDiv({
   const safePosX = clampCoord(posX + offsetX, mazeWidth - 1);
   const safePosY = clampCoord(posY + offsetY, mazeHeight - 1);
 
-  // Paredes do DB (se houver) + descobertas ao vivo em cada telemetry:step
-  const liveWallSources = useMemo(() => {
-    const sources = [...resolvedSteps];
-    if (
-      robotData &&
-      !sources.some((step) => step.stepOrder === robotData.stepOrder)
-    ) {
-      sources.push(robotData);
-    }
-    return sources;
-  }, [resolvedSteps, robotData]);
-
-  const discoveredCells = useMemo(
-    () =>
-      mergeLiveMazeCells(activeSession?.maze?.cells ?? [], liveWallSources),
-    [activeSession?.maze?.cells, liveWallSources],
-  );
-
-  const robotRotation = useMemo(() => {
-    const trail = resolvedSteps.map((step) => ({
-      posX: step.posX,
-      posY: step.posY,
-    }));
-    const direcao = (robotData as { direcao?: string } | null | undefined)
-      ?.direcao;
-    return rotacaoDoRoboAoVivo(trail, direcao);
-  }, [resolvedSteps, robotData]);
-
   useEffect(() => {
     if (steps !== undefined) return;
     if (socketConnected && robotData) {
@@ -149,13 +119,12 @@ export function VisualizeDiv({
             <div className="flex flex-col items-center justify-center flex-1 w-full min-h-0 overflow-hidden">
               <div className="w-full flex-1 flex justify-center items-center min-h-0 max-h-[calc(100vh-290px)]">
                 <MazeGrid
-                  cells={discoveredCells}
+                  cells={activeSession?.maze?.cells || []}
                   steps={resolvedSteps}
                   currentX={posX}
                   currentY={posY}
                   width={mazeWidth}
                   height={mazeHeight}
-                  robotRotation={robotRotation}
                 />
               </div>
 

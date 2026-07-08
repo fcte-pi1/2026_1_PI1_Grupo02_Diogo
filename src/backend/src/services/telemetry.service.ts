@@ -3,10 +3,16 @@ import { Prisma } from "@prisma/client";
 import type { TelemetryPayloadDto } from "../dtos/telemetry.dto";
 import { validateTelemetryPayload } from "../dtos/telemetry.dto";
 import { prisma } from "../lib/prisma";
-import { findOrCreateDefaultMaze } from "../repositories/maze.repository";
+import {
+  createMazeSnapshot,
+  findOrCreateDefaultMaze,
+  findOrCreateSimulatorMaze,
+  type MazeCellWallInput,
+} from "../repositories/maze.repository";
 import { createConsolidatedSession } from "../repositories/session.repository";
 import {
   createOrphanSessionStep,
+  deleteOrphanSteps,
   findOrphanSteps,
   findOrphanStepsLimited,
   linkOrphanStepsToSession,
@@ -70,6 +76,20 @@ export const resetTelemetryRunContextForTests = (): void => {
   activeRunContext = null;
 };
 
+/** Limpa passos órfãos da corrida ao vivo e notifica o cockpit (F5 / nova sessão). */
+export const clearLiveOrphanRun = async (): Promise<number> => {
+  const removed = await deleteOrphanSteps();
+  activeRunContext = null;
+
+  try {
+    getSocket().emit("session_reset", { status: "cleared" });
+  } catch (error) {
+    console.error("[WS_RESET_ERROR] Falha ao emitir session_reset:", error);
+  }
+
+  return removed;
+};
+
 const parsePayload = (buffer: Buffer): ParsedTelemetry => {
   const raw = buffer.toString("utf-8");
   try {
@@ -97,13 +117,22 @@ const parsePayload = (buffer: Buffer): ParsedTelemetry => {
 };
 
 const ensureActiveRunContext = async (
-  espData: TelemetryPayloadDto
+  espData: TelemetryPayloadDto & { robotId?: string; sessionName?: string }
 ): Promise<ActiveRunContext> => {
   if (activeRunContext) {
     return activeRunContext;
   }
 
-  const maze = await findOrCreateDefaultMaze();
+  const isSimulator =
+    espData.robotId === "mock-simulator" ||
+    String(espData.sessionName ?? "")
+      .toLowerCase()
+      .includes("simul");
+
+  const maze = isSimulator
+    ? await findOrCreateSimulatorMaze()
+    : await findOrCreateDefaultMaze();
+
   activeRunContext = {
     algorithm: espData.modo,
     mode: espData.estado,
@@ -113,10 +142,45 @@ const ensureActiveRunContext = async (
   return activeRunContext;
 };
 
+// Adicione isso no seu telemetry.service.ts, na função recordOrphanTelemetryStep
 export const recordOrphanTelemetryStep = async (
   espData: TelemetryPayloadDto
 ) => {
-  await ensureActiveRunContext(espData);
+  // Capture a variável runContext para usarmos o mazeId
+  const runContext = await ensureActiveRunContext(espData);
+
+  // 🚀 MAGIA DA DESCOBERTA DE PAREDES
+  // Salva no banco (tabela Cell) para o Histórico carregar corretamente depois
+  if (espData.paredes) {
+    try {
+      await prisma.cell.upsert({
+        where: {
+          mazeId_posX_posY: {
+            mazeId: runContext.mazeId,
+            posX: espData.posicao.x,
+            posY: espData.posicao.y,
+          },
+        },
+        update: {
+          wallNorth: espData.paredes.norte || undefined,
+          wallSouth: espData.paredes.sul || undefined,
+          wallEast: espData.paredes.leste || undefined,
+          wallWest: espData.paredes.oeste || undefined,
+        },
+        create: {
+          mazeId: runContext.mazeId,
+          posX: espData.posicao.x,
+          posY: espData.posicao.y,
+          wallNorth: espData.paredes.norte,
+          wallSouth: espData.paredes.sul,
+          wallEast: espData.paredes.leste,
+          wallWest: espData.paredes.oeste,
+        },
+      });
+    } catch (dbError) {
+      console.error("Erro ao salvar parede descoberta:", dbError);
+    }
+  }
 
   const stepRecord = await createOrphanSessionStep({
     stepOrder: espData.step,
@@ -148,9 +212,9 @@ export const recordOrphanTelemetryStep = async (
       conclusao: espData.conclusao,
       estado: espData.estado,
       modo: espData.modo,
+      direcao: espData.direcao,
     };
 
-    // Emite o payload completo enriquecido para o useWebSocket do React escutar
     io.emit("telemetry:step", enrichedPayload);
   } catch (wsError) {
     console.error(
@@ -163,7 +227,8 @@ export const recordOrphanTelemetryStep = async (
 };
 
 export const consolidateSession = async (
-  espData: TelemetryPayloadDto
+  espData: TelemetryPayloadDto,
+  options?: { mazeCells?: MazeCellWallInput[] },
 ): Promise<string | null> => {
   const runContext = await ensureActiveRunContext(espData);
 
@@ -180,21 +245,28 @@ export const consolidateSession = async (
     const avgSpeed = computeAvgSpeedCmPerSecond(orphanSteps, durationMs);
     const avgCurrent = computeAvgCurrentMa(orphanSteps);
 
-    // 🚀 ADICIONADO: Pega o sessionName customizado se existir no payload (ex: "Teste - 1234")
-    // Fazemos um casting para any pois o sessionName é injetado pelo simulador, não está no DTO oficial
-    const customSessionName = (espData as any).sessionName;
+    const customSessionName = (espData as { sessionName?: string }).sessionName;
+    const sessionLabel =
+      customSessionName || `Corrida - ${new Date().toLocaleString("pt-BR")}`;
+
+    const snapshotMazeId = await createMazeSnapshot(
+      runContext.mazeId,
+      `${sessionLabel} (snapshot)`,
+      options?.mazeCells,
+      tx,
+    );
 
     const session = await createConsolidatedSession(
       {
-        sessionName: customSessionName || `Corrida - ${new Date().toLocaleString("pt-BR")}`,
+        sessionName: sessionLabel,
         algorithm: runContext.algorithm,
         mode: runContext.mode,
-        mazeId: runContext.mazeId,
+        mazeId: snapshotMazeId,
         durationMs,
         avgSpeed,
         initialVoltage: firstStep.voltage,
         finalVoltage: lastStep.voltage,
-        avgCurrent,
+        totalDrainMah: avgCurrent,
         startPosX: firstStep.posX,
         startPosY: firstStep.posY,
       },
@@ -208,6 +280,19 @@ export const consolidateSession = async (
 
     return session.id;
   });
+};
+
+/** Permite ao simulador forçar o maze 8x8 no contexto ativo antes do commit. */
+export const setActiveRunContextForSimulator = (ctx: {
+  mazeId: string;
+  algorithm: string;
+  mode: string;
+}) => {
+  activeRunContext = {
+    mazeId: ctx.mazeId,
+    algorithm: ctx.algorithm,
+    mode: ctx.mode,
+  };
 };
 
 export const storeTelemetry = async (

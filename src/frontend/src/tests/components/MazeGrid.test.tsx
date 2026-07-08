@@ -69,9 +69,10 @@ describe("MazeGrid", () => {
       "data-visits",
       "2"
     );
-    // Célula atual do robô nunca recebe marcação de trilha
-    expect(screen.getByTestId("maze-robot-cell")).not.toHaveAttribute(
-      "data-visits"
+    // Célula atual do robô também recebe marcação de trilha
+    expect(screen.getByTestId("maze-robot-cell")).toHaveAttribute(
+      "data-visits",
+      "1"
     );
   });
 
