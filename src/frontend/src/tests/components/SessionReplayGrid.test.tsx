@@ -83,16 +83,38 @@ describe("SessionReplayGrid", () => {
         steps={sessionDetailFixture.steps}
         activeIndex={0}
         maze={mazeFixture}
-      />
+      />,
     );
 
-    // Passo ativo é (0,0); os passos futuros (1,0) e (1,1) ainda não visitados
     expect(screen.getByTitle("Robô em (0, 0)")).toBeInTheDocument();
+    expect(screen.getByTestId("maze-robot-cell")).toHaveAttribute(
+      "data-visits",
+      "1",
+    );
     expect(screen.getByTitle("Coords: (1, 0)")).not.toHaveAttribute(
-      "data-visits"
+      "data-visits",
     );
     expect(screen.getByTitle("Coords: (1, 1)")).not.toHaveAttribute(
-      "data-visits"
+      "data-visits",
     );
+  });
+
+  it("encolhe maze 16x16 herdado para 8x8 quando o trajeto cabe no TestView", () => {
+    render(
+      <SessionReplayGrid
+        steps={sessionDetailFixture.steps}
+        activeIndex={1}
+        maze={{
+          ...mazeFixture,
+          width: 16,
+          height: 16,
+        }}
+      />,
+    );
+
+    const grid = screen.getByTestId("maze-grid");
+    expect(grid).toHaveStyle({
+      gridTemplateColumns: "repeat(8, minmax(0, 1fr))",
+    });
   });
 });

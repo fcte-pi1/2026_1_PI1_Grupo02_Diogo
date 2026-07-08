@@ -75,3 +75,13 @@ export const linkOrphanStepsToSession = async (
     data: { sessionId },
   });
 };
+
+/** Remove passos órfãos — usado no reset do simulador para não misturar sessões. */
+export const deleteOrphanSteps = async (
+  client: DbClient = prisma
+): Promise<number> => {
+  const result = await client.sessionStep.deleteMany({
+    where: { sessionId: null },
+  });
+  return result.count;
+};

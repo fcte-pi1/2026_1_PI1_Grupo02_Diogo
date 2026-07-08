@@ -40,7 +40,7 @@ describe("session.service", () => {
         avgSpeed: 3.6,
         initialVoltage: 12,
         finalVoltage: 11,
-        avgCurrent: 200,
+        totalDrainMah: 200,
       },
     ]);
 
@@ -57,7 +57,7 @@ describe("session.service", () => {
         avgSpeed: 3.6,
         initialVoltage: 12,
         finalVoltage: 11,
-        avgCurrent: 200,
+        totalDrainMah: 200,
       },
     ]);
   });
@@ -83,7 +83,7 @@ describe("session.service", () => {
       avgSpeed: 3.6,
       initialVoltage: 12,
       finalVoltage: 11,
-      avgCurrent: 200,
+      totalDrainMah: 200,
       telemetrySteps: [
         {
           id: "step-1",
@@ -109,7 +109,8 @@ describe("session.service", () => {
       avgSpeed: 3.6,
       initialVoltage: 12,
       finalVoltage: 11,
-      avgCurrent: 200,
+      totalDrainMah: 200,
+      maze: undefined,
       steps: [
         {
           id: "step-1",

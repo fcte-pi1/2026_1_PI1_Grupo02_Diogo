@@ -3,7 +3,7 @@ import type http from "http";
 import type { TelemetryRaw } from "@prisma/client";
 import { prisma } from '../lib/prisma';
 import { env } from "../config/env";
-import { getOrphanStepsForReplay } from "../services/telemetry.service";
+import { getOrphanStepsForReplay, clearLiveOrphanRun } from "../services/telemetry.service";
 
 export interface IWebSocketLog {
   socketId: string;
@@ -71,8 +71,9 @@ export const initSocket = (server: http.Server): Server => {
       timestamp: new Date()
     }, `🔌 Cliente conectado: ID ${socket.id}`);
 
-    socket.on("telemetry:subscribe", async (options: { limit?: number } = {}) => {
+    socket.on("telemetry:subscribe", async (options: { limit?: number; fresh?: boolean } = {}) => {
       const limit = typeof options.limit === "number" ? options.limit : env.telemetry.historyLimit;
+      const fresh = options.fresh === true;
 
       logWebSocketEvent({
         socketId: socket.id,
@@ -80,9 +81,15 @@ export const initSocket = (server: http.Server): Server => {
         event: "SUBSCRIBE",
         payload: options,
         timestamp: new Date(),
-      }, `📡 Subscrição de canal: telemetry:subscribe (Limite: ${limit})`);
+      }, `📡 Subscrição de canal: telemetry:subscribe (Limite: ${limit}, fresh: ${fresh})`);
 
       try {
+        if (fresh) {
+          await clearLiveOrphanRun();
+          socket.emit("telemetry:history", []);
+          return;
+        }
+
         const orphanSteps = await getOrphanStepsForReplay(limit);
         socket.emit("telemetry:history", orphanSteps);
       } catch (error) {

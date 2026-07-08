@@ -120,7 +120,7 @@ export const LabyrinthMap = memo(function LabyrinthMap({
 
     const isRobot = safeX === x && safeY === y;
     const trailIndex = trailIntensity.get(key);
-    const isVisited = trailIndex !== undefined;
+    const isVisited = trailIndex !== undefined && !isRobot;
 
     const hasNorth = cellData?.wallNorth ?? false;
     const hasSouth = cellData?.wallSouth ?? false;
@@ -137,11 +137,7 @@ export const LabyrinthMap = memo(function LabyrinthMap({
       <div
         key={key}
         data-testid={isRobot ? "maze-robot-cell" : undefined}
-        data-wall-north={hasNorth ? "true" : undefined}
-        data-wall-south={hasSouth ? "true" : undefined}
-        data-wall-east={hasEast ? "true" : undefined}
-        data-wall-west={hasWest ? "true" : undefined}
-        title={isRobot ? `Robô em (${x}, ${y})` : `Coords: (${x}, ${y})`}
+        // Removemos o bg-blue-500 daqui. A célula base é sempre escura.
         className={`relative h-12 w-12 box-border border-[0.5px] border-zinc-800 bg-zinc-900 ${
           isVisited ? "bg-emerald-950/40" : ""
         }`}
@@ -151,101 +147,68 @@ export const LabyrinthMap = memo(function LabyrinthMap({
             : undefined
         }
       >
-        {/* Paredes absolutas 4px — não quebram o grid CSS (gap-0) */}
-        {hasNorth && (
-          <div
-            data-testid="wall-north"
-            className="absolute top-0 left-0 right-0 z-10 h-[4px] bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.7)]"
-          />
-        )}
-        {hasSouth && (
-          <div
-            data-testid="wall-south"
-            className="absolute bottom-0 left-0 right-0 z-10 h-[4px] bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.7)]"
-          />
-        )}
-        {hasEast && (
-          <div
-            data-testid="wall-east"
-            className="absolute top-0 bottom-0 right-0 z-10 w-[4px] bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.7)]"
-          />
-        )}
-        {hasWest && (
-          <div
-            data-testid="wall-west"
-            className="absolute top-0 bottom-0 left-0 z-10 w-[4px] bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.7)]"
-          />
-        )}
+        {/* Paredes Absolutas (Não quebram o Grid CSS) */}
+        {hasNorth && <div className="absolute top-0 left-0 right-0 h-[3px] bg-emerald-400 z-10 shadow-[0_0_8px_#34d399]" />}
+        {hasSouth && <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-emerald-400 z-10 shadow-[0_0_8px_#34d399]" />}
+        {hasEast && <div className="absolute top-0 bottom-0 right-0 w-[3px] bg-emerald-400 z-10 shadow-[0_0_8px_#34d399]" />}
+        {hasWest && <div className="absolute top-0 bottom-0 left-0 w-[3px] bg-emerald-400 z-10 shadow-[0_0_8px_#34d399]" />}
 
+        {/* Coordenadas visuais bem clarinhas */}
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center text-[10px] text-zinc-600">
           {x},{y}
         </div>
 
+        {/* O RATO (Renderizado APENAS na célula atual do robô) */}
         {isRobot && (
           <div
             className="pointer-events-none absolute left-1/2 top-1/2 z-30 h-8 w-8 transition-transform duration-200 ease-out"
-            style={{
+            style={{ 
               transform: `translate(-50%, -50%) rotate(${robotRotation}deg)`,
-              transformOrigin: "center center",
+              transformOrigin: "center center" 
             }}
           >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-full w-full text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]"
-            >
-              <path
-                d="M12 21A5 5 0 0 0 17 16V9A5 5 0 0 0 7 9V16A5 5 0 0 0 12 21Z"
-                fill="#0891b2"
-                fillOpacity="0.4"
-                stroke="currentColor"
-                strokeWidth="1.5"
-              />
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-full h-full text-cyan-400 drop-shadow-[0_0_8px_rgba(34,211,238,0.8)]">
+              {/* Corpo do rato */}
+              <path d="M12 21A5 5 0 0 0 17 16V9A5 5 0 0 0 7 9V16A5 5 0 0 0 12 21Z" fill="#0891b2" fillOpacity="0.4" stroke="currentColor" strokeWidth="1.5"/>
+              {/* Focinho (Aponta pra cima no rotate 0) */}
               <path d="M12 3L9 8H15L12 3Z" fill="currentColor" />
+              {/* Orelhas */}
               <circle cx="7.5" cy="11.5" r="2" fill="currentColor" />
               <circle cx="16.5" cy="11.5" r="2" fill="currentColor" />
-              <path
-                d="M12 21V24"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-              />
+              {/* Rabo */}
+              <path d="M12 21V24" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
             </svg>
           </div>
         )}
 
+        {/* Controles do Editor de Paredes (Ativos apenas se editable for true) */}
         {editable && onToggleWall && (
           <>
             <button
               type="button"
-              aria-label={`Toggle north wall at (${x}, ${y})`}
               className={`absolute left-0 top-0 z-20 h-2.5 w-full transition-colors ${
-                hasNorth ? "bg-red-500/25" : "bg-transparent hover:bg-red-500/30"
+                hasNorth ? "bg-emerald-400/20" : "bg-transparent hover:bg-emerald-400/30"
               }`}
               onClick={() => onToggleWall(x, y, "North")}
             />
             <button
               type="button"
-              aria-label={`Toggle south wall at (${x}, ${y})`}
               className={`absolute bottom-0 left-0 z-20 h-2.5 w-full transition-colors ${
-                hasSouth ? "bg-red-500/25" : "bg-transparent hover:bg-red-500/30"
+                hasSouth ? "bg-emerald-400/20" : "bg-transparent hover:bg-emerald-400/30"
               }`}
               onClick={() => onToggleWall(x, y, "South")}
             />
             <button
               type="button"
-              aria-label={`Toggle east wall at (${x}, ${y})`}
               className={`absolute right-0 top-0 z-20 h-full w-2.5 transition-colors ${
-                hasEast ? "bg-red-500/25" : "bg-transparent hover:bg-red-500/30"
+                hasEast ? "bg-emerald-400/20" : "bg-transparent hover:bg-emerald-400/30"
               }`}
               onClick={() => onToggleWall(x, y, "East")}
             />
             <button
               type="button"
-              aria-label={`Toggle west wall at (${x}, ${y})`}
               className={`absolute left-0 top-0 z-20 h-full w-2.5 transition-colors ${
-                hasWest ? "bg-red-500/25" : "bg-transparent hover:bg-red-500/30"
+                hasWest ? "bg-emerald-400/20" : "bg-transparent hover:bg-emerald-400/30"
               }`}
               onClick={() => onToggleWall(x, y, "West")}
             />

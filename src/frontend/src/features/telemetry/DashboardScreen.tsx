@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import BatteryWidget from "./components/BatteryWidget";
 import EngineTelemetryWidget from "./components/EngineTelemetryWidget";
 import SensorGrid from "./components/SensorGrid";
@@ -6,12 +6,26 @@ import type { SessionStep } from "../../types/session";
 import { VisualizeDiv } from "../../components/VisualizeDiv";
 import { TelemetryData } from "../../hooks/useWebSocket";
 import { PopUp } from "../../components/pop-up";
+import { mergeLiveMazeCells } from "../../utils/mergeLiveMazeCells";
+import { lerSensoresAoVivo } from "../../utils/sensorRaycast";
 
 interface DashboardViewProps {
   activeSession: {
     sessionName: string;
     algorithm: string;
     mode: string;
+    maze?: {
+      width: number;
+      height: number;
+      cells: Array<{
+        posX: number;
+        posY: number;
+        wallNorth: boolean;
+        wallSouth: boolean;
+        wallEast: boolean;
+        wallWest: boolean;
+      }>;
+    };
   } | null;
   currentView: string;
   connectionProps: { latency: string };
@@ -52,6 +66,59 @@ export default function DashboardView({
     sensors: { front: 0, left: 0, right: 0 },
     walls: { north: false, south: false, east: false, west: false },
   };
+
+  const mazeWidth = activeSession?.maze?.width ?? 8;
+  const mazeHeight = activeSession?.maze?.height ?? 8;
+
+  const liveWallSources = useMemo(() => {
+    const sources: TelemetryData[] = [...sessionSteps];
+    if (
+      robotData &&
+      !sources.some((step) => step.stepOrder === robotData.stepOrder)
+    ) {
+      sources.push(robotData);
+    }
+    return sources;
+  }, [sessionSteps, robotData]);
+
+  const discoveredCells = useMemo(
+    () =>
+      mergeLiveMazeCells(
+        activeSession?.maze?.cells ?? [],
+        liveWallSources.map((step) => ({
+          posX: step.posX,
+          posY: step.posY,
+          walls: step.walls,
+        })),
+      ),
+    [activeSession?.maze?.cells, liveWallSources],
+  );
+
+  const sensorReadings = useMemo(
+    () =>
+      lerSensoresAoVivo(
+        discoveredCells,
+        liveWallSources.map((step) => ({
+          posX: step.posX,
+          posY: step.posY,
+          walls: step.walls,
+        })),
+        currentStep.posX,
+        currentStep.posY,
+        mazeWidth,
+        mazeHeight,
+        robotData?.direcao,
+      ),
+    [
+      discoveredCells,
+      liveWallSources,
+      currentStep.posX,
+      currentStep.posY,
+      mazeWidth,
+      mazeHeight,
+      robotData?.direcao,
+    ],
+  );
 
   const calculatePercentage = (v: number) => {
     if (v === 0) return 0;
@@ -125,10 +192,12 @@ export default function DashboardView({
           {/* Malha de Sensores de Distância (Infravermelhos) */}
           <SensorGrid
             sensorData={{
-              front: currentStep.sensors?.front ?? 0,
-              left: currentStep.sensors?.left ?? 0,
-              right: currentStep.sensors?.right ?? 0,
+              front: sensorReadings.front,
+              left: sensorReadings.left,
+              right: sensorReadings.right,
             }}
+            scanTick={currentStep.stepOrder ?? 0}
+            interactive
           />
 
           {/* Telemetria de Corrente e Consumo dos Motores */}

@@ -17,12 +17,18 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: 20
+          node-version: 22
           cache: "npm"
           cache-dependency-path: src/frontend/package-lock.json
 
       - name: Install dependencies
-        run: npm install
+        run: |
+          for attempt in 1 2 3; do
+            npm ci --no-audit --no-fund && exit 0
+            echo "npm ci failed (attempt $attempt), retrying..."
+            sleep $((attempt * 10))
+          done
+          exit 1
 
       - name: Lint
         run: npm run lint
