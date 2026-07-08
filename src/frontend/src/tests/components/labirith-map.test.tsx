@@ -7,7 +7,7 @@ describe("LabyrinthMap Component", () => {
   const mockStaticCells = [
     {
       posX: 0,
-      posY: 7,
+      posY: 15,
       wallNorth: true,
       wallSouth: false,
       wallEast: true,
@@ -15,7 +15,7 @@ describe("LabyrinthMap Component", () => {
     },
   ];
 
-  it("deve renderizar a malha do grid com a dimensão padrão de 8x8 (64 células)", () => {
+  it("deve renderizar a malha do grid com a dimensão padrão de 16x16 (256 células)", () => {
     render(
       <LabyrinthMap staticCells={[]} steps={[]} currentX={0} currentY={0} />,
     );
@@ -23,9 +23,9 @@ describe("LabyrinthMap Component", () => {
     const grid = screen.getByTestId("maze-grid");
     expect(grid).toBeInTheDocument();
     expect(grid).toHaveStyle({
-      gridTemplateColumns: "repeat(8, minmax(0, 1fr))",
+      gridTemplateColumns: "repeat(16, minmax(0, 1fr))",
     });
-    expect(grid.children.length).toBe(64);
+    expect(grid.children.length).toBe(256);
   });
 
   it("deve renderizar o robô na célula cartesiana correta", () => {
@@ -48,7 +48,7 @@ describe("LabyrinthMap Component", () => {
       />,
     );
 
-    const wallCell = screen.getByTitle("Coords: (0, 7)");
+    const wallCell = screen.getByTitle("Coords: (0, 15)");
     expect(wallCell).toHaveAttribute("data-wall-north", "true");
     expect(wallCell).toHaveAttribute("data-wall-east", "true");
     expect(wallCell).not.toHaveAttribute("data-wall-south");
@@ -69,10 +69,10 @@ describe("LabyrinthMap Component", () => {
 
     const grid = screen.getByTestId("maze-grid");
     const firstCell = grid.children[0] as HTMLElement;
-    const lastRowFirstCell = grid.children[56] as HTMLElement;
+    const lastRowFirstCell = grid.children[240] as HTMLElement;
 
-    // Linha 0 do CSS = topo = Y alto (7); última linha = Y 0 (robô em 0,0)
-    expect(firstCell).toHaveAttribute("title", "Coords: (0, 7)");
+    // Linha 0 do CSS = topo = Y alto (15); última linha = Y 0 (robô em 0,0)
+    expect(firstCell).toHaveAttribute("title", "Coords: (0, 15)");
     expect(lastRowFirstCell).toHaveAttribute("title", "Robô em (0, 0)");
   });
 

@@ -2,7 +2,7 @@ import { memo, useMemo } from "react";
 import type { MazeCell } from "../types/session";
 import { computeMazeOffset } from "../utils/maze-translation";
 
-const DEFAULT_GRID_SIZE = 8;
+const DEFAULT_GRID_SIZE = 16;
 const VISIT_ALPHA_CAP = 0.6;
 const VISIT_ALPHA_MIN = 0.15;
 

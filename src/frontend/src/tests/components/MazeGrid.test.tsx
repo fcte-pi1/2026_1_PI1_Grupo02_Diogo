@@ -76,9 +76,7 @@ describe("MazeGrid", () => {
     );
   });
 
-  it("translada a matriz inteira quando o robô sai para coordenadas negativas", () => {
-    // Robô partiu de outro canto: começou em (0,0) na visão dele,
-    // andou para (-1,0) e depois para (-1,-2)
+  it("limita coordenadas negativas a zero sem transladar a matriz", () => {
     const steps = [
       { posX: 0, posY: 0 },
       { posX: -1, posY: 0 },
@@ -89,25 +87,19 @@ describe("MazeGrid", () => {
       <MazeGrid cells={[]} steps={steps} currentX={-1} currentY={-2} />
     );
 
-    // Offset (+1, +2): a largada vira (1,2) e o robô fica em (0,0)
     const grid = screen.getByTestId("maze-grid");
-    expect(grid).toHaveAttribute("data-offset-x", "1");
-    expect(grid).toHaveAttribute("data-offset-y", "2");
+    expect(grid).not.toHaveAttribute("data-offset-x");
     expect(screen.getByTestId("maze-robot-cell")).toHaveAttribute(
       "title",
       "Robô em (0, 0)"
     );
-    expect(screen.getByTitle("Coords: (1, 2)")).toHaveAttribute(
-      "data-visits",
-      "1"
-    );
-    expect(screen.getByTitle("Coords: (0, 2)")).toHaveAttribute(
+    expect(screen.getByTestId("maze-robot-cell")).toHaveAttribute(
       "data-visits",
       "1"
     );
   });
 
-  it("não desloca a matriz quando o robô parte de (0,0)", () => {
+  it("mantém coordenadas absolutas quando o robô parte de (0,0)", () => {
     const steps = [
       { posX: 0, posY: 0 },
       { posX: 1, posY: 0 },
@@ -118,8 +110,7 @@ describe("MazeGrid", () => {
     );
 
     const grid = screen.getByTestId("maze-grid");
-    expect(grid).toHaveAttribute("data-offset-x", "0");
-    expect(grid).toHaveAttribute("data-offset-y", "0");
+    expect(grid).not.toHaveAttribute("data-offset-x");
     expect(screen.getByTestId("maze-robot-cell")).toHaveAttribute(
       "title",
       "Robô em (1, 0)"
@@ -133,7 +124,7 @@ describe("MazeGrid", () => {
 
     expect(screen.getByTestId("maze-robot-cell")).toHaveAttribute(
       "title",
-      "Robô em (7, 0)"
+      "Robô em (15, 0)"
     );
   });
 });
