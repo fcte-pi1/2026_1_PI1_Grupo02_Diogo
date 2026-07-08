@@ -3,12 +3,14 @@
 
 void inicializaIna(Adafruit_INA219 *ina219)
 {
-    // INA219 está fisicamente em SDA=18, SCL=2.
-    // Não há conflito funcional: Wire (I2C0) é exclusivo do INA219.
-    Wire.begin(18, 2);
+    // INA219 está fisicamente em SDA=18, SCL=17.
+    // GPIO 17 substituiu o GPIO 2 (strapping pin / LED) para evitar
+    // conflito de boot e interferência no LED embutido.
+    // Wire (I2C0) é exclusivo do INA219.
+    Wire.begin(18, 17);
     if (!ina219->begin())
     {
-        Serial.println("[INA219] ERRO ao iniciar (SDA=18 SCL=2)");
+        Serial.println("[INA219] ERRO ao iniciar (SDA=18 SCL=17)");
     }
     else
     {
