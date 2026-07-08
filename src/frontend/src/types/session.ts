@@ -9,6 +9,7 @@ export interface SessionMetadata {
   finalVoltage: number | null;
 }
 
+// Adicione ou atualize em types/session.ts
 export interface SessionStep {
   id: string;
   stepOrder: number;
@@ -17,6 +18,7 @@ export interface SessionStep {
   voltage: number;
   current: number;
   createdAt: string;
+  sensors?: { front: number; left: number; right: number }; // Garanta que exista
 }
 
 export interface MazeCell {

@@ -114,6 +114,7 @@ const emitTelemetryPulse = async () => {
   }
 };
 
+// Dentro de simulator.service.ts
 export const startSimulator = () => {
   isPaused = false;
   if (simulatorInterval) {
@@ -125,7 +126,7 @@ export const startSimulator = () => {
     if (!isPaused) {
       void emitTelemetryPulse();
     }
-  }, 1500);
+  }, 1000); // <-- ALTERADO PARA 1000 (1 SEGUNDO REAL)
 
   void emitTelemetryPulse();
 };

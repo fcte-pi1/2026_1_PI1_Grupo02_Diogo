@@ -4,6 +4,7 @@ import { computeMazeOffset } from "../utils/maze-translation";
 
 const DEFAULT_GRID_SIZE = 8;
 
+// Curva de intensidade da trilha: 1 visita ~0.20, 2 visitas ~0.40, 3+ visitas capado em 0.60
 const VISIT_ALPHA_CAP = 0.6;
 const VISIT_ALPHA_MIN = 0.15;
 
@@ -24,7 +25,6 @@ interface MazeGridProps {
   currentY: number;
   width?: number;
   height?: number;
-  robotRotation?: number; // NOVA PROP PARA GIRAR O RATO
   ariaLabel?: string;
 }
 
@@ -35,9 +35,10 @@ export const MazeGrid = memo(function MazeGrid({
   currentY,
   width = DEFAULT_GRID_SIZE,
   height = DEFAULT_GRID_SIZE,
-  robotRotation = 0,
   ariaLabel = "Mapeamento do labirinto",
 }: MazeGridProps) {
+  // Translação da matriz (issue #217): o robô se considera em (0,0) na largada,
+  // então coordenadas negativas deslocam o quadro inteiro antes do clamp
   const { offsetX, offsetY } = useMemo(
     () => computeMazeOffset(steps, currentX, currentY),
     [steps, currentX, currentY]
@@ -54,6 +55,8 @@ export const MazeGrid = memo(function MazeGrid({
     return map;
   }, [cells]);
 
+  // Passos consecutivos na mesma célula (robô parado emitindo telemetria) contam
+  // como uma única visita; só reentradas incrementam a contagem
   const visitCounts = useMemo(() => {
     const counts = new Map<string, number>();
     let previousKey: string | null = null;
@@ -82,6 +85,7 @@ export const MazeGrid = memo(function MazeGrid({
     const rowIndex = Math.floor(index / width);
     const colIndex = index % width;
 
+    // Origem cartesiana no canto inferior esquerdo (mesma convenção do mapa ao vivo)
     const y = height - 1 - rowIndex;
     const x = colIndex;
     const key = `${x},${y}`;
@@ -109,32 +113,35 @@ export const MazeGrid = memo(function MazeGrid({
         key={key}
         data-testid={isRobot ? "maze-robot-cell" : undefined}
         data-visits={isVisited ? visitCount : undefined}
-        className="relative w-full h-full box-border border-[0.5px] border-outline-variant/20 transition-colors duration-150"
+        // Container base da célula corrigido para não quebrar com bordas condicionais
+        className="relative w-full h-full box-border border-[0.5px] border-outline-variant/10 transition-colors duration-150"
         style={
           isVisited
             ? {
+                // Tinge apenas o fundo, mantendo a opacidade
                 backgroundColor: `color-mix(in srgb, var(--color-primary) ${Math.round(visitAlpha * 100)}%, transparent)`,
               }
             : undefined
         }
         title={isRobot ? `Robô em (${x}, ${y})` : `Coords: (${x}, ${y})`}
       >
+        {/* Coordenadas de fundo (exatamente como na sua imagem) */}
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center font-mono text-[10px] text-zinc-500/40">
           {x},{y}
         </div>
 
-        {/* PAREDES SINCRONIZADAS COM O LABYRINTH MAP (Néon Esmeralda) */}
-        {hasNorth && <div className="absolute top-0 left-0 right-0 h-[3px] bg-emerald-400 z-10 shadow-[0_0_8px_#34d399]" />}
-        {hasSouth && <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-emerald-400 z-10 shadow-[0_0_8px_#34d399]" />}
-        {hasEast && <div className="absolute top-0 bottom-0 right-0 w-[3px] bg-emerald-400 z-10 shadow-[0_0_8px_#34d399]" />}
-        {hasWest && <div className="absolute top-0 bottom-0 left-0 w-[3px] bg-emerald-400 z-10 shadow-[0_0_8px_#34d399]" />}
+        {/* Paredes absolutas (Não amassam o layout) */}
+        {hasNorth && <div className="absolute top-0 left-0 right-0 h-[3px] bg-red-500 z-10" />}
+        {hasSouth && <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-red-500 z-10" />}
+        {hasEast && <div className="absolute top-0 bottom-0 right-0 w-[3px] bg-red-500 z-10" />}
+        {hasWest && <div className="absolute top-0 bottom-0 left-0 w-[3px] bg-red-500 z-10" />}
 
-        {/* RATO ROTACIONANDO */}
+        {/* SVG do Rato centralizado */}
         {isRobot && (
           <div
             className="pointer-events-none absolute left-1/2 top-1/2 z-30 h-8 w-8 transition-transform duration-200 ease-out"
             style={{ 
-              transform: `translate(-50%, -50%) rotate(${robotRotation}deg)`,
+              transform: "translate(-50%, -50%)", // No MazeGrid normal, deixamos ele fixo ou você pode passar a prop de rotação depois
               transformOrigin: "center center" 
             }}
           >
@@ -156,6 +163,7 @@ export const MazeGrid = memo(function MazeGrid({
       data-testid="maze-grid"
       data-offset-x={offsetX}
       data-offset-y={offsetY}
+      // Fundo escuro garantido
       className="grid gap-0 bg-zinc-950 border border-outline-variant/50 p-2 shadow-inner w-fit h-full aspect-square mx-auto rounded-xl"
       style={{
         gridTemplateColumns: `repeat(${width}, minmax(0, 1fr))`,

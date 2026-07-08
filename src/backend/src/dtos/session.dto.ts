@@ -10,7 +10,13 @@ export type SessionMetadataDto = {
   avgSpeed: number | null;
   initialVoltage: number | null;
   finalVoltage: number | null;
-  avgCurrent: number | null;
+  totalDrainMah: number | null; // CORREÇÃO: Alinhado com o Prisma
+};
+
+export type SensorData = {
+  front: number;
+  left: number;
+  right: number;
 };
 
 export type SessionStepDto = {
@@ -21,6 +27,7 @@ export type SessionStepDto = {
   voltage: number;
   current: number;
   createdAt: string;
+  sensors?: SensorData;
 };
 
 export type MazeCellDto = {
@@ -45,6 +52,7 @@ export type SessionDetailDto = SessionMetadataDto & {
   maze?: MazeDto;
 };
 
+// CORREÇÃO: "avgCurrent" removido do Pick, substituído por "totalDrainMah"
 type SessionMetadataSource = Pick<
   Session,
   | "id"
@@ -56,7 +64,7 @@ type SessionMetadataSource = Pick<
   | "avgSpeed"
   | "initialVoltage"
   | "finalVoltage"
-  | "avgCurrent"
+  | "totalDrainMah"
 >;
 
 type SessionStepSource = Pick<
@@ -76,7 +84,7 @@ export const toSessionMetadataDto = (
   avgSpeed: session.avgSpeed,
   initialVoltage: session.initialVoltage,
   finalVoltage: session.finalVoltage,
-  avgCurrent: session.avgCurrent,
+  totalDrainMah: session.totalDrainMah, // CORREÇÃO AQUI
 });
 
 type MazeSource = {

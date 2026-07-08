@@ -113,10 +113,45 @@ const ensureActiveRunContext = async (
   return activeRunContext;
 };
 
+// Adicione isso no seu telemetry.service.ts, na função recordOrphanTelemetryStep
 export const recordOrphanTelemetryStep = async (
   espData: TelemetryPayloadDto
 ) => {
-  await ensureActiveRunContext(espData);
+  // Capture a variável runContext para usarmos o mazeId
+  const runContext = await ensureActiveRunContext(espData);
+
+  // 🚀 MAGIA DA DESCOBERTA DE PAREDES
+  // Salva no banco (tabela Cell) para o Histórico carregar corretamente depois
+  if (espData.paredes) {
+    try {
+      await prisma.cell.upsert({
+        where: {
+          mazeId_posX_posY: {
+            mazeId: runContext.mazeId,
+            posX: espData.posicao.x,
+            posY: espData.posicao.y,
+          },
+        },
+        update: {
+          wallNorth: espData.paredes.norte,
+          wallSouth: espData.paredes.sul,
+          wallEast: espData.paredes.leste,
+          wallWest: espData.paredes.oeste,
+        },
+        create: {
+          mazeId: runContext.mazeId,
+          posX: espData.posicao.x,
+          posY: espData.posicao.y,
+          wallNorth: espData.paredes.norte,
+          wallSouth: espData.paredes.sul,
+          wallEast: espData.paredes.leste,
+          wallWest: espData.paredes.oeste,
+        },
+      });
+    } catch (dbError) {
+      console.error("Erro ao salvar parede descoberta:", dbError);
+    }
+  }
 
   const stepRecord = await createOrphanSessionStep({
     stepOrder: espData.step,
@@ -150,7 +185,6 @@ export const recordOrphanTelemetryStep = async (
       modo: espData.modo,
     };
 
-    // Emite o payload completo enriquecido para o useWebSocket do React escutar
     io.emit("telemetry:step", enrichedPayload);
   } catch (wsError) {
     console.error(
@@ -194,7 +228,7 @@ export const consolidateSession = async (
         avgSpeed,
         initialVoltage: firstStep.voltage,
         finalVoltage: lastStep.voltage,
-        avgCurrent,
+        totalDrainMah: avgCurrent,
         startPosX: firstStep.posX,
         startPosY: firstStep.posY,
       },
