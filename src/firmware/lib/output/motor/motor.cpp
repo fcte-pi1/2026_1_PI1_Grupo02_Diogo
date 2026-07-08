@@ -211,13 +211,7 @@ static void _atualizaPosicao(Rato *rato)
 // -------------------------------------------------------------------------------
 void Andar(Rato *rato)
 {
-    _fowardMotors();
-    _esperarEncoder(PULSOS_POR_CELULA);
-    _atualizaPosicao(rato);
-
-    // Salva contagem total nos campos do micromouse
-    rato->encoder_esquerdo = *_encEsq;
-    rato->encoder_direito = *_encDir;
+    andarDistancia(13.8); // 13.8 está andando ~ 18cm
 }
 
 void VirarEsquerda(Rato *rato)
