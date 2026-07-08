@@ -101,7 +101,7 @@ void atualizaSensores()
         uint8_t mmF = _vlFrente.readRangeSingle();
         _distF = (_vlFrente.timeoutOccurred() || mmF == 255)
                  ? DISTANCIA_LIVRE_CM
-                 : mmF / 10.0f;
+                 : (mmF + VL6180X_OFFSET_MM) / 10.0f;
     }
 
     // -- Laterais: VL53L0X (modo contínuo, resultado em mm uint16) --

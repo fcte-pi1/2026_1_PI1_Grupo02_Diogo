@@ -28,8 +28,16 @@
 // ============================================================
 //  THRESHOLDS DE DETECÇÃO
 // ============================================================
-#define DISTANCIA_PAREDE_CM   12.0f   // abaixo disto = há parede
+#define DISTANCIA_PAREDE_CM   11.7f   // abaixo disto = há parede
 #define DISTANCIA_LIVRE_CM   400.0f   // valor sentinela quando o sensor falha
+
+// ============================================================
+//  CORREÇÃO DE OFFSET DO VL6180X (calibração empírica)
+//  O sensor lê sistematicamente ~23 mm a menos que a distância
+//  real. Este valor é somado à leitura bruta em mm.
+//  Calibrado em 2026-07-08 com alvo a 50–200 mm.
+// ============================================================
+#define VL6180X_OFFSET_MM   23
 
 // ============================================================
 //  API PÚBLICA
