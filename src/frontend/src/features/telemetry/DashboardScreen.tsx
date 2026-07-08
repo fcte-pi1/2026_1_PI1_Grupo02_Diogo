@@ -6,27 +6,9 @@ import type { SessionStep } from "../../types/session";
 import { VisualizeDiv } from "../../components/VisualizeDiv";
 import { TelemetryData } from "../../hooks/useWebSocket";
 import { PopUp } from "../../components/pop-up";
-import { mergeLiveMazeCells } from "../../utils/mergeLiveMazeCells";
-import { lerSensoresAoVivo } from "../../utils/sensorRaycast";
 
 interface DashboardViewProps {
-  activeSession: {
-    sessionName: string;
-    algorithm: string;
-    mode: string;
-    maze?: {
-      width: number;
-      height: number;
-      cells: Array<{
-        posX: number;
-        posY: number;
-        wallNorth: boolean;
-        wallSouth: boolean;
-        wallEast: boolean;
-        wallWest: boolean;
-      }>;
-    };
-  } | null;
+  activeSession: any; // Mantendo a tipagem do seu projeto
   currentView: string;
   connectionProps: { latency: string };
   robotData: TelemetryData | null;
@@ -42,7 +24,6 @@ export default function DashboardView({
   sessionSteps = [],
   isConnected,
 }: DashboardViewProps) {
-  // Estados locais para controle do Pop-up (Issue #100)
   const [isChallengeFinished, setIsChallengeFinished] = useState(false);
   const [hasDbError] = useState(false);
 
@@ -57,68 +38,16 @@ export default function DashboardView({
     }
   }, [sessionSteps]);
 
+  // Fallback seguro. Note a ausência de cálculos malucos locais.
   const currentStep = robotData || {
     stepOrder: 0,
-    posX: 0,
-    posY: 0,
+    posX: 7,
+    posY: 7,
     voltage: 0,
     current: 0,
     sensors: { front: 0, left: 0, right: 0 },
     walls: { north: false, south: false, east: false, west: false },
   };
-
-  const mazeWidth = activeSession?.maze?.width ?? 8;
-  const mazeHeight = activeSession?.maze?.height ?? 8;
-
-  const liveWallSources = useMemo(() => {
-    const sources: TelemetryData[] = [...sessionSteps];
-    if (
-      robotData &&
-      !sources.some((step) => step.stepOrder === robotData.stepOrder)
-    ) {
-      sources.push(robotData);
-    }
-    return sources;
-  }, [sessionSteps, robotData]);
-
-  const discoveredCells = useMemo(
-    () =>
-      mergeLiveMazeCells(
-        activeSession?.maze?.cells ?? [],
-        liveWallSources.map((step) => ({
-          posX: step.posX,
-          posY: step.posY,
-          walls: step.walls,
-        })),
-      ),
-    [activeSession?.maze?.cells, liveWallSources],
-  );
-
-  const sensorReadings = useMemo(
-    () =>
-      lerSensoresAoVivo(
-        discoveredCells,
-        liveWallSources.map((step) => ({
-          posX: step.posX,
-          posY: step.posY,
-          walls: step.walls,
-        })),
-        currentStep.posX,
-        currentStep.posY,
-        mazeWidth,
-        mazeHeight,
-        robotData?.direcao,
-      ),
-    [
-      discoveredCells,
-      liveWallSources,
-      currentStep.posX,
-      currentStep.posY,
-      mazeWidth,
-      mazeHeight,
-      robotData?.direcao,
-    ],
-  );
 
   const calculatePercentage = (v: number) => {
     if (v === 0) return 0;
@@ -128,7 +57,6 @@ export default function DashboardView({
     return Math.max(0, Math.min(100, Math.round(pct)));
   };
 
-  // Cálculo de delta matemático baseado nos pacotes recebidos para as estatísticas
   const firstStepTime =
     sessionSteps.length > 0
       ? new Date(sessionSteps[0].timestamp).getTime()
@@ -148,18 +76,10 @@ export default function DashboardView({
 
   const getPopUpStats = () => {
     if (sessionSteps.length === 0) return undefined;
-
     const mazeType = activeSession?.sessionName || "Labirinto Simplificado";
-
-    const pathCoordinates = sessionSteps.map(
-      (step) => `(${step.posX},${step.posY})`,
-    );
-    const uniquePath = pathCoordinates.filter(
-      (val, idx, self) => self.indexOf(val) === idx,
-    );
-    const pathString =
-      uniquePath.slice(-5).join(" -> ") + (uniquePath.length > 5 ? "..." : "");
-
+    const pathCoordinates = sessionSteps.map((step) => `(${step.posX},${step.posY})`);
+    const uniquePath = pathCoordinates.filter((val, idx, self) => self.indexOf(val) === idx);
+    const pathString = uniquePath.slice(-5).join(" -> ") + (uniquePath.length > 5 ? "..." : "");
     const initialBattery = calculatePercentage(sessionSteps[0].voltage);
     const currentBattery = calculatePercentage(currentStep.voltage);
     const batteryDelta = Math.max(0, initialBattery - currentBattery);
@@ -180,31 +100,27 @@ export default function DashboardView({
       className="w-full h-full p-6 flex flex-col overflow-hidden box-border bg-background select-none relative"
     >
       <div className="flex-1 grid grid-cols-1 xl:grid-cols-12 gap-5 min-h-0 w-full overflow-hidden">
-        {/* 📊 PAINEL ESQUERDO: Chassi de Status Fluído */}
         <div className="xl:col-span-4 flex flex-col gap-4 h-full min-h-0 overflow-hidden">
-          {/* Gerenciamento de Carga e Tensão */}
           <BatteryWidget
             voltage={currentStep.voltage}
             percentage={calculatePercentage(currentStep.voltage)}
             isCritical={currentStep.voltage > 0 && currentStep.voltage < 6.75}
           />
 
-          {/* Malha de Sensores de Distância (Infravermelhos) */}
+          {/* 🚀 LENDO DIRETAMENTE O QUE A ESP32 (OU BASH) ENVIA! */}
           <SensorGrid
             sensorData={{
-              front: sensorReadings.front,
-              left: sensorReadings.left,
-              right: sensorReadings.right,
+              front: currentStep.sensors?.front ?? 0,
+              left: currentStep.sensors?.left ?? 0,
+              right: currentStep.sensors?.right ?? 0,
             }}
             scanTick={currentStep.stepOrder ?? 0}
             interactive
           />
 
-          {/* Telemetria de Corrente e Consumo dos Motores */}
           <EngineTelemetryWidget velocity={0} />
         </div>
 
-        {/* 🗺️ PAINEL DIREITO: Percepção Espacial do Labirinto */}
         <div className="xl:col-span-8 flex flex-col h-full min-h-0 overflow-hidden">
           <div className="flex-1 w-full relative overflow-hidden rounded-none">
             <VisualizeDiv
@@ -227,15 +143,14 @@ export default function DashboardView({
                   : []
               }
               isSocketConnected={isConnected}
-              posX={robotData?.posX ?? 0}
-              posY={robotData?.posY ?? 0}
+              posX={currentStep.posX} // <-- Usando a coordenada não mascarada
+              posY={currentStep.posY} // <-- Usando a coordenada não mascarada
               connectionProps={connectionProps}
             />
           </div>
         </div>
       </div>
 
-      {/* Pop-up de conclusão e tratamento de erro de persistência (Issue #100) */}
       <PopUp
         isOpen={isChallengeFinished}
         onClose={() => setIsChallengeFinished(false)}

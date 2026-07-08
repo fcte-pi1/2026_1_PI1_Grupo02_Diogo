@@ -2,7 +2,7 @@ import { useMemo } from "react";
 import { MazeGrid } from "../../components/MazeGrid";
 import type { MazeData, SessionStep } from "../../types/session";
 
-const DEFAULT_GRID_SIZE = 8;
+const DEFAULT_GRID_SIZE = 16;
 /** Sessões antigas do TestView às vezes apontavam para o maze padrão 16x16. */
 const MAX_REPLAY_GRID_SIZE = 8;
 

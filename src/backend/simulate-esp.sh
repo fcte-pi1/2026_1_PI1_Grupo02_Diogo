@@ -2,18 +2,10 @@
 #
 # Simula telemetria da ESP32 publicando no MQTT (tópico rato/telemetria).
 #
-# Modo padrão (realista): percorre o labirinto 8x8 em zigue-zague, paredes só
-# nas bordas e telemetria estável — ideal para testar Dashboard / histórico.
+# Modo padrão (realista): percorre o labirinto 16x16 em zigue-zague, paredes só
+# nas bordas e telemetria atrelada à direção real do robô.
 #
 # Modo aleatório (legado, quadrados vermelhos): SIM_MODE=random ./simulate-esp.sh
-#
-# Pré-requisitos:
-#   1. Broker Mosquitto (docker compose up broker -d na pasta src/)
-#   2. Backend com MQTT_URL=mqtt://localhost:1883
-#   3. Frontend no Dashboard (Ctrl+D)
-#
-# Uso:
-#   cd src/backend && chmod +x simulate-esp.sh && ./simulate-esp.sh
 
 if [[ "$(uname -s)" == "Darwin" ]]; then
   MQTT_HOST="${MQTT_HOST:-host.docker.internal}"
@@ -26,7 +18,7 @@ fi
 MQTT_PORT="${MQTT_PORT:-1883}"
 MQTT_TOPIC="${MQTT_TOPIC:-rato/telemetria}"
 SIM_MODE="${SIM_MODE:-realistic}"
-MAZE_SIZE="${MAZE_SIZE:-8}"
+MAZE_SIZE="${MAZE_SIZE:-16}"
 MAX_IDX=$((MAZE_SIZE - 1))
 
 MODOS=("DFS" "FLOOD FILL" "CORRIDA")
@@ -37,36 +29,32 @@ get_bool() {
   [ $((RANDOM % 2)) -eq 1 ] && echo "true" || echo "false"
 }
 
-# Paredes determinísticas: só borda do labirinto 8x8 (alinha com o frontend).
-border_walls_json() {
-  local x=$1
-  local y=$2
-  local north="false"
-  local south="false"
-  local east="false"
-  local west="false"
-
-  [ "$y" -ge "$MAX_IDX" ] && north="true"
-  [ "$y" -le 0 ] && south="true"
-  [ "$x" -ge "$MAX_IDX" ] && east="true"
-  [ "$x" -le 0 ] && west="true"
-
-  echo "{\"norte\":$north,\"sul\":$south,\"leste\":$east,\"oeste\":$west}"
-}
-
-POS_X=0
-POS_Y=0
+POS_X=7
+POS_Y=7
 STEP=0
 DIRECAO="leste"
 ROW_DIR=1 # 1 = leste, -1 = oeste (zigue-zague)
 
 publish_payload() {
-  local walls_json
+  local w_n="false"
+  local w_s="false"
+  local w_e="false"
+  local w_w="false"
+
+  # Mapeamento estrito das paredes (Bordas do 16x16)
   if [ "$SIM_MODE" = "random" ]; then
-    walls_json="{\"norte\":$(get_bool),\"sul\":$(get_bool),\"leste\":$(get_bool),\"oeste\":$(get_bool)}"
+    w_n=$(get_bool)
+    w_s=$(get_bool)
+    w_e=$(get_bool)
+    w_w=$(get_bool)
   else
-    walls_json=$(border_walls_json "$POS_X" "$POS_Y")
+    [ "$POS_Y" -ge "$MAX_IDX" ] && w_n="true"
+    [ "$POS_Y" -le 0 ] && w_s="true"
+    [ "$POS_X" -ge "$MAX_IDX" ] && w_e="true"
+    [ "$POS_X" -le 0 ] && w_w="true"
   fi
+
+  local walls_json="{\"norte\":$w_n,\"sul\":$w_s,\"leste\":$w_e,\"oeste\":$w_w}"
 
   local modo estado movimento tensao conclusao
   if [ "$SIM_MODE" = "random" ]; then
@@ -83,15 +71,32 @@ publish_payload() {
     conclusao="false"
   fi
 
-  local sens_frente sens_esq sens_dir
+  # Lógica de Sensores Inteligente (Raycasting em Bash)
+  local sens_frente=25 sens_esq=30 sens_dir=25
+  
   if [ "$SIM_MODE" = "random" ]; then
     sens_frente=$((RANDOM % 100))
     sens_esq=$((RANDOM % 100))
     sens_dir=$((RANDOM % 100))
   else
-    sens_frente=25
-    sens_esq=30
-    sens_dir=25
+    # Cruza a direção do robô com as paredes absolutas do mapa
+    if [ "$DIRECAO" == "norte" ]; then
+      [ "$w_n" == "true" ] && sens_frente=4
+      [ "$w_w" == "true" ] && sens_esq=4
+      [ "$w_e" == "true" ] && sens_dir=4
+    elif [ "$DIRECAO" == "sul" ]; then
+      [ "$w_s" == "true" ] && sens_frente=4
+      [ "$w_e" == "true" ] && sens_esq=4
+      [ "$w_w" == "true" ] && sens_dir=4
+    elif [ "$DIRECAO" == "leste" ]; then
+      [ "$w_e" == "true" ] && sens_frente=4
+      [ "$w_n" == "true" ] && sens_esq=4
+      [ "$w_s" == "true" ] && sens_dir=4
+    elif [ "$DIRECAO" == "oeste" ]; then
+      [ "$w_w" == "true" ] && sens_frente=4
+      [ "$w_s" == "true" ] && sens_esq=4
+      [ "$w_n" == "true" ] && sens_dir=4
+    fi
   fi
 
   local payload
@@ -154,7 +159,6 @@ move_random() {
   fi
 }
 
-# Zigue-zague: (0,0)→(7,0)→(7,1)→(0,1)→…
 move_snake() {
   if [ "$ROW_DIR" -eq 1 ]; then
     DIRECAO="leste"
@@ -182,7 +186,7 @@ move_snake() {
   ((STEP++))
 }
 
-echo "▶ Simulador ESP (modo: $SIM_MODE, labirinto ${MAZE_SIZE}x${MAZE_SIZE})"
+echo "▶ Simulador ESP Inteligente (modo: $SIM_MODE, labirinto ${MAZE_SIZE}x${MAZE_SIZE})"
 echo "  Ctrl+C para parar | Modo caótico: SIM_MODE=random ./simulate-esp.sh"
 
 while true; do

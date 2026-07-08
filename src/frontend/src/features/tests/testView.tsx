@@ -35,7 +35,7 @@ const API_BASE_URL = (
   import.meta.env.VITE_API_URL ?? "http://127.0.0.1:3000"
 ).replace("http://localhost:3000", "http://127.0.0.1:3000");
 
-const GRID_SIZE = 8;
+const GRID_SIZE = 16;
 
 interface TestViewProps {
   robotData: TelemetryData | null;
@@ -96,8 +96,8 @@ export default function TestView({
   const [sensorFront, setSensorFront] = useState(40);
   const [sensorLeft, setSensorLeft] = useState(4);
   const [sensorRight, setSensorRight] = useState(40);
-  const [posX, setPosX] = useState(0);
-  const [posY, setPosY] = useState(0);
+  const [posX, setPosX] = useState(7);
+  const [posY, setPosY] = useState(7);
   const [robotRotation, setRobotRotation] = useState(0);
   const [activeRightTab, setActiveRightTab] = useState<RightTab>("map");
   const [selectedStepIndex, setSelectedStepIndex] = useState<number | null>(
@@ -448,8 +448,8 @@ export default function TestView({
         setSensorFront(25);
         setSensorLeft(25);
         setSensorRight(25);
-        setPosX(0);
-        setPosY(0);
+        setPosX(7);
+        setPosY(7);
         setMazeCells(normalizeMazeCells([], GRID_SIZE, GRID_SIZE));
         setStatus({ running: false, paused: false, stepOrder: 0 });
 
@@ -464,8 +464,8 @@ export default function TestView({
           wallSouth: false,
           wallEast: false,
           wallWest: false,
-          posX: 0,
-          posY: 0,
+          posX: 7,
+          posY: 7,
         });
       }
 
@@ -882,8 +882,8 @@ export default function TestView({
                 }
                 steps={displaySessionSteps}
                 isSocketConnected={isConnected}
-                posX={selectedStep?.posX ?? 0}
-                posY={selectedStep?.posY ?? 0}
+                posX={selectedStep?.posX ?? 7}
+                posY={selectedStep?.posY ?? 7}
                 connectionProps={{ latency: "0" }}
               />
             </div>

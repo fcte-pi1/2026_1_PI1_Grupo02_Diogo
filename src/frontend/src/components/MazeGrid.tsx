@@ -1,8 +1,7 @@
 import { memo, useMemo } from "react";
 import type { MazeCell } from "../types/session";
-import { computeMazeOffset } from "../utils/maze-translation";
 
-const DEFAULT_GRID_SIZE = 8;
+const DEFAULT_GRID_SIZE = 16;
 
 const VISIT_ALPHA_CAP = 0.6;
 const VISIT_ALPHA_MIN = 0.15;
@@ -24,7 +23,7 @@ interface MazeGridProps {
   currentY: number;
   width?: number;
   height?: number;
-  robotRotation?: number; // NOVA PROP PARA GIRAR O RATO
+  robotRotation?: number; 
   ariaLabel?: string;
 }
 
@@ -38,13 +37,10 @@ export const MazeGrid = memo(function MazeGrid({
   robotRotation = 0,
   ariaLabel = "Mapeamento do labirinto",
 }: MazeGridProps) {
-  const { offsetX, offsetY } = useMemo(
-    () => computeMazeOffset(steps, currentX, currentY),
-    [steps, currentX, currentY]
-  );
-
-  const safeX = clampCoord(currentX + offsetX, width - 1);
-  const safeY = clampCoord(currentY + offsetY, height - 1);
+  
+  // SEM OFFSETS! Coordenadas absolutas limpas e precisas.
+  const safeX = clampCoord(currentX, width - 1);
+  const safeY = clampCoord(currentY, height - 1);
 
   const cellWallsMap = useMemo(() => {
     const map = new Map<string, MazeCell>();
@@ -58,8 +54,8 @@ export const MazeGrid = memo(function MazeGrid({
     const counts = new Map<string, number>();
     let previousKey: string | null = null;
     steps.forEach((step) => {
-      const x = clampCoord(step.posX + offsetX, width - 1);
-      const y = clampCoord(step.posY + offsetY, height - 1);
+      const x = clampCoord(step.posX, width - 1);
+      const y = clampCoord(step.posY, height - 1);
       const key = `${x},${y}`;
       if (key !== previousKey) {
         counts.set(key, (counts.get(key) ?? 0) + 1);
@@ -67,7 +63,7 @@ export const MazeGrid = memo(function MazeGrid({
       previousKey = key;
     });
     return counts;
-  }, [steps, width, height, offsetX, offsetY]);
+  }, [steps, width, height]);
 
   const maxVisitCount = useMemo(() => {
     let max = 0;
@@ -127,21 +123,11 @@ export const MazeGrid = memo(function MazeGrid({
           {x},{y}
         </div>
 
-        {/* Paredes 4px vermelhas — mesmo contrato visual do LabyrinthMap */}
-        {hasNorth && (
-          <div className="absolute top-0 left-0 right-0 z-10 h-[4px] bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.7)]" />
-        )}
-        {hasSouth && (
-          <div className="absolute bottom-0 left-0 right-0 z-10 h-[4px] bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.7)]" />
-        )}
-        {hasEast && (
-          <div className="absolute top-0 bottom-0 right-0 z-10 w-[4px] bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.7)]" />
-        )}
-        {hasWest && (
-          <div className="absolute top-0 bottom-0 left-0 z-10 w-[4px] bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.7)]" />
-        )}
+        {hasNorth && <div className="absolute top-0 left-0 right-0 z-10 h-[4px] bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.7)]" />}
+        {hasSouth && <div className="absolute bottom-0 left-0 right-0 z-10 h-[4px] bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.7)]" />}
+        {hasEast && <div className="absolute top-0 bottom-0 right-0 z-10 w-[4px] bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.7)]" />}
+        {hasWest && <div className="absolute top-0 bottom-0 left-0 z-10 w-[4px] bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.7)]" />}
 
-        {/* RATO ROTACIONANDO */}
         {isRobot && (
           <div
             className="pointer-events-none absolute left-1/2 top-1/2 z-30 h-8 w-8 transition-transform duration-200 ease-out"
@@ -167,8 +153,6 @@ export const MazeGrid = memo(function MazeGrid({
   return (
     <div
       data-testid="maze-grid"
-      data-offset-x={offsetX}
-      data-offset-y={offsetY}
       className="grid gap-0 bg-zinc-950 border border-outline-variant/50 p-2 shadow-inner w-full h-full max-w-full max-h-full aspect-square mx-auto rounded-xl"
       style={{
         gridTemplateColumns: `repeat(${width}, minmax(0, 1fr))`,
