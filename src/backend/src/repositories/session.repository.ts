@@ -10,8 +10,10 @@ export const sessionMetadataSelect = {
   createdAt: true,
   isCompleted: true,
   durationMs: true,
+  avgSpeed: true,
   initialVoltage: true,
   finalVoltage: true,
+  avgCurrent: true,
 } satisfies Prisma.SessionSelect;
 
 export type SessionMetadataRecord = Prisma.SessionGetPayload<{
@@ -41,8 +43,10 @@ type CreateConsolidatedSessionData = {
   mode: string;
   mazeId: string;
   durationMs: number;
+  avgSpeed: number;
   initialVoltage: number;
   finalVoltage: number;
+  avgCurrent: number;
   startPosX: number;
   startPosY: number;
 };
