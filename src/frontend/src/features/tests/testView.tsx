@@ -149,7 +149,6 @@ export default function TestView({
         sensorRight: newSr,
       });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mazeMap, posX, posY, robotRotation]);
 
   const sensorReadings = useMemo(() => {

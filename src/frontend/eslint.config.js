@@ -7,7 +7,7 @@ import tsParser from '@typescript-eslint/parser'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  globalIgnores(['dist']),
+  globalIgnores(['dist', 'coverage', 'coverage-ssr', 'playwright-report', 'test-results', 'src/assets']),
   {
     files: ['**/*.{js,jsx}'],
     extends: [
@@ -22,7 +22,11 @@ export default defineConfig([
   },
   {
     files: ['**/*.{ts,tsx}'],
-    plugins: { '@typescript-eslint': tseslint },
+    plugins: {
+      '@typescript-eslint': tseslint,
+      'react-hooks': reactHooks,
+      'react-refresh': reactRefresh,
+    },
     languageOptions: {
       globals: globals.browser,
       parser: tsParser,
@@ -30,6 +34,9 @@ export default defineConfig([
     },
     rules: {
       ...tseslint.configs.recommended.rules,
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
+      'react-refresh/only-export-components': 'off',
     },
   },
 ])
