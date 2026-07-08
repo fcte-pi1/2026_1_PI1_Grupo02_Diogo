@@ -12,276 +12,136 @@
 #include "../lib/utils/dfs/dfs.h"
 #include "../lib/input/energia/energia.h"
 
-#pragma region Variáveis
-
-enum Modo // algoritmos de percorrer
-{
-    DFS,
-    FLOODFILL,  // volta: centro -> início (estado = EXPLORANDO)
-    CORRIDA_FF, // Corrida: inicio -> centro (estado = CORRIDA)
-};
-
-const char *MQTT_TOPIC = "rato/telemetria";
-const char *ROBOT_ID = "UAV-MOUSE-01";
-
-// -------------------------------------------------------------------------------
-//  PINOS
-// -------------------------------------------------------------------------------
-const uint8_t LED_PIN = 2;
-
-// INA219
-const uint8_t INA219_SDA = 21;
-const uint8_t INA219_SCL = 15;
-Adafruit_INA219 ina219;
-
-// Sensores Infravermelho (VL53L0X + VL6180X) - pinos XSHUT
-const uint8_t XSHUT_FRONT = 4;
-const uint8_t XSHUT_LEFT = 17;
-const uint8_t XSHUT_RIGHT = 18;
-
-// Motores
-const uint8_t MOTOR_LEFT_IN1 = 25;
-const uint8_t MOTOR_LEFT_IN2 = 26;
-const uint8_t MOTOR_RIGHT_IN1 = 27;
-const uint8_t MOTOR_RIGHT_IN2 = 14;
-
-// Encoders
-const uint8_t ENCODER_LEFT_A = 34;
-const uint8_t ENCODER_LEFT_B = 35;
-const uint8_t ENCODER_RIGHT_A = 32;
-const uint8_t ENCODER_RIGHT_B = 33;
-
-// -------------------------------------------------------------------------------
-//  LABIRINTO - posições de início e destino
-// -------------------------------------------------------------------------------
-#define INICIO_X 15
-#define INICIO_Y 15
-
-// vou usar dps pra floodfill (-1 pq não encontrou ainda)
-int destinoX = -1;
-int destinoY = -1;
-
-// -------------------------------------------------------------------------------
-//  ESTADOS
+// =================================================================================
+//  MAIN DE TESTE - SEQUÊNCIA HARDCODE DE MOVIMENTOS
 //
-//  PARADO --> EXPLORANDO --> EXPLORANDO (Volta) --> CORRIDA --> CONCLUIDO
-//
-//  EXPLORANDO : DFS (desconhecido = sem parede)
-//               robô vai de INICIO até DEST descobrindo o labirinto e a posição final
-//                     --> Volta pro começo usando FloodFill
-//
-//  CORRIDA  : Usa caminho descoberto no Floodfill
-//              --> robô volta de DEST a INICIO pelo melhor caminho
-//
-//  O enum Estado é definido em dfs.h (para ser compartilhado com passoDFS).
-// -------------------------------------------------------------------------------
-Estado estado = PARADO;
-Modo modo = DFS;
+//  Objetivo: validar Andar() / VirarDireita() / VirarEsquerda() isoladamente,
+//  sem DFS, floodfill, sensores ou MQTT no meio.
 
-// -------------------------------------------------------------------------------
-//  GLOBAIS
-// -------------------------------------------------------------------------------
-// Variáveis Voláteis para Interrupções
-volatile long encoderLeftCount = 0;
+
+// -- Pinos (iguais ao main.cpp do projeto) ---------------------------------------
+const uint8_t MOTOR_LEFT_IN1  = 26;
+const uint8_t MOTOR_LEFT_IN2  = 25;
+const uint8_t MOTOR_RIGHT_IN1 = 14;
+const uint8_t MOTOR_RIGHT_IN2 = 27;
+
+const uint8_t ENCODER_LEFT_A  = 32;
+const uint8_t ENCODER_RIGHT_A = 34;
+
+volatile long encoderLeftCount  = 0;
 volatile long encoderRightCount = 0;
 
-// Gerenciamento de Timers Assíncronos
-unsigned long lastTelemetrySend = 0;
-unsigned long lastMotorToggle = 0;
-unsigned long lastLedBlink = 0;
-unsigned long lastSerialLog = 0;
+void IRAM_ATTR encoderLeftISR()  { encoderLeftCount++; }
+void IRAM_ATTR encoderRightISR() { encoderRightCount++; }
 
-bool ledState = false;
-bool concluido = false;
-unsigned long stepCounter = 0;
+// -- Sequência hardcode (43 comandos) --------------------------------------------
+const char SEQUENCIA[] = {
+    'f', 'e',
+    'f', 'd',
+    'f', 'f',
 
-// Pausa entre FF (entre volta e corrida)
-bool aguardandoCorrida = false;
-unsigned long inicioEspera = 0;
-const unsigned long TEMPO_ESPERA_CORRIDA_MS = 10000;
+    'd', 'd',
+    
+    'f', 'f',
+    'e', 'f',
+    'd', 'f',
+
+    'd', 'd'
+
+    // 'd','d','d','d',
+    // 'e','e','e','e',
+    //     'd','d','d','d',
+    //     'e','e','e','e',
+
+
+
+    // 'f', 'f', 'f', 'f', 'f', 'f', 'f'
+};
+const int TOTAL_PASSOS = sizeof(SEQUENCIA) / sizeof(SEQUENCIA[0]);
 
 Rato rato;
-Labirinto lab;
 
-// wifiClient e mqttClient são definidos em conexoes.cpp (declarados em conexoes.h)
+const unsigned long PAUSA_ENTRE_PASSOS_MS = 100;
 
-#pragma endregion
-
-#pragma region Encoders
-// -------------------------------------------------------------------------------
-//  ISRs - ENCODERS
-// -------------------------------------------------------------------------------
-void IRAM_ATTR encoderLeftISR()
-{ 
-    encoderLeftCount++;
-}
-
-void IRAM_ATTR encoderRightISR()
+void executaPasso(char comando)
 {
-    encoderRightCount++;
+    switch (comando)
+    {
+    case 'f':
+    Serial.println("-> Andar (frente)");
+    andarDistancia(13.8);          // com 13.8 está andando aproximadamente 18cm
+    if (rato.direcao == 'N') rato.y++;
+    else if (rato.direcao == 'S') rato.y--;
+    else if (rato.direcao == 'L') rato.x++;
+    else if (rato.direcao == 'O') rato.x--;
+    break;
+case 'd':
+    Serial.println("-> Girar 90 direita");
+    VirarDireita(&rato);
+    if (rato.direcao=='N') rato.direcao='L';
+    else if (rato.direcao=='L') rato.direcao='S';
+    else if (rato.direcao=='S') rato.direcao='O';
+    else if (rato.direcao=='O') rato.direcao='N';
+    break;
+case 'e':
+    Serial.println("-> Girar 90 esquerda");
+    VirarEsquerda(&rato);
+    if (rato.direcao=='N') rato.direcao='O';
+    else if (rato.direcao=='O') rato.direcao='S';
+    else if (rato.direcao=='S') rato.direcao='L';
+    else if (rato.direcao=='L') rato.direcao='N';
+    break;
+    default:
+        Serial.println("-> Comando desconhecido, ignorado");
+        break;
+    }
+    Serial.printf("   pos=(%d,%d) dir=%c | encL=%ld encR=%ld\n",
+                  rato.x, rato.y, rato.direcao, encoderLeftCount, encoderRightCount);
 }
-
-#pragma endregion
-
-// -------------------------------------------------------------------------------
-// SETUP
-// -------------------------------------------------------------------------------
-
-#pragma endregion
-
-// -------------------------------------------------------------------------------
-// -------------------------------------------------------------------------------
-// -------------------------------------------------------------------------------
-#pragma region Setup
 
 void setup()
 {
+    
     Serial.begin(115200);
-    mqttClient.setBufferSize(1024);
-    
-    // LED
-    pinMode(LED_PIN, OUTPUT);
-    
-    // Encoders - ISRs definidas neste arquivo, ponteiros passados para a lib
+    delay(1000);
+
     pinMode(ENCODER_LEFT_A, INPUT_PULLUP);
     pinMode(ENCODER_RIGHT_A, INPUT_PULLUP);
     attachInterrupt(digitalPinToInterrupt(ENCODER_LEFT_A), encoderLeftISR, RISING);
     attachInterrupt(digitalPinToInterrupt(ENCODER_RIGHT_A), encoderRightISR, RISING);
-
-    // Sensores Infravermelho (I2C - XSHUT)
-    inicializaSensores(XSHUT_FRONT, XSHUT_LEFT, XSHUT_RIGHT);
-    // Motores (pinos + referência aos contadores de encoder)
     inicializaMotores(MOTOR_LEFT_IN1, MOTOR_LEFT_IN2,
         MOTOR_RIGHT_IN1, MOTOR_RIGHT_IN2,
         &encoderLeftCount, &encoderRightCount);
-            
-    inicializaIna(&ina219);
-            
+        setupMotores();
+        stopMotors();
     inicializaRato(&rato);
-    
-    inicializaLabirinto(&lab);
-    
-    // Rede
-    connectWiFi();
-    connectMQTT();
-    
-    delay(1000); // só um tempo pra começar dps
 
-    resetDFS();          // garante pilha/flags zeradas antes de explorar
-    estado = EXPLORANDO; // inicia a exploração por DFS
-    modo = DFS;
+    delay(5000);
 }
-#pragma endregion
-
-// -------------------------------------------------------------------------------
-// LOOP
-// -------------------------------------------------------------------------------
-// -------------------------------------------------------------------------------
-#pragma region Loop
 
 void loop()
 {
-    
-    if (WiFi.status() != WL_CONNECTED)
-    connectWiFi();
-    if (!mqttClient.connected())
-    connectMQTT();
-    
-    mqttClient.loop();
-    
-    unsigned long currentMillis = millis();
-    
-    // Telemetria MQTT (2s)
-    if (currentMillis - lastTelemetrySend >= 2000)
+
+    Serial.println("=== INICIANDO TESTE DE MOTORES ===");
+    Serial.printf("Total de passos: %d\n", TOTAL_PASSOS);
+    delay(5000);
+
+    for (int i = 0; i < TOTAL_PASSOS; i++)
     {
-        lastTelemetrySend = currentMillis;
+        if(i == 0){
+            encoderLeftCount = 0;
+            encoderRightCount = 0;
+        }
 
-        const char *ultimoMovimento;
-        if (modo == DFS)
-            ultimoMovimento = getUltimoMovimentoDFS();
-        else    // FLOODFILL (volta) ou CORRIDA_FF usam a mesma escolha de caminho
-            ultimoMovimento = getUltimoMovimentoFloodFill();
-
-            lerDadosEnergeticos(&rato, &ina219);
-            publishTelemetry(rato, lab, mqttClient, MQTT_TOPIC, ROBOT_ID, stepCounter, estado, motorsRunning, ultimoMovimento, concluido);
-
-    }
-    
-    // Serial (2s)
-    if (currentMillis - lastSerialLog >= 2000)
-    {
-        lastSerialLog = currentMillis;
-        Serial.println("\n--- [TELEMETRIA LOCAL] ---");
-        Serial.printf("Distâncias -> F: %.2f cm | E: %.2f cm | D: %.2f cm\n", rato.distancia_frente, rato.distancia_esquerda, rato.distancia_direita);
-        Serial.printf("Encoders   -> L: %ld | R: %ld\n", encoderLeftCount, encoderRightCount);
-        Serial.printf("Motores    -> Status: %s\n", motorsRunning ? "EM MOVIMENTO" : "PARADO");
+        // if( i == 8)
+        //     delay(5000);
+ 
+        Serial.printf("[Passo %d/%d] comando='%c'\n", i + 1, TOTAL_PASSOS, SEQUENCIA[i]);
+        executaPasso(SEQUENCIA[i]);
+        delay(PAUSA_ENTRE_PASSOS_MS);
     }
 
-  
+    stopMotors();
+    Serial.println("=== TESTE CONCLUIDO ===");
 
-    // Ações baseadas no Estado do Robô
-    switch (estado)
-    {
-    case EXPLORANDO:
-        switch (modo)
-        {
-        case DFS:
-            passoDFS(&rato, &lab, &motorsRunning, &stepCounter,
-                     &destinoX, &destinoY, &concluido, &estado);
-            break;
-        case FLOODFILL:
-            // Volta: do centro (posição atual) até o início do labirinto
-            passoFloodFill(&rato, &lab, &motorsRunning,
-                           INICIO_X, INICIO_Y,
-                           &concluido, &estado);
-            break;
-        default:
-            break;
-        }
-        break;
-    case CORRIDA:
-        // Corrida: do início até o centro (destinoX/Y já descobertos pelo DFS)
-        passoFloodFill(&rato, &lab, &motorsRunning,
-                       destinoX, destinoY,
-                       &concluido, &estado);
-        break;
-
-    case CONCLUIDO:
-        if (modo == DFS)
-        {
-            // Achou o centro 2x2 -> prepara e inicia a volta pro início
-            modo = FLOODFILL;
-            concluido = false;
-            resetFloodFill();
-            estado = EXPLORANDO;
-        }
-        else if (modo == FLOODFILL)
-        {
-            if (!aguardandoCorrida)
-            {
-                // Voltou pro início -> espera 10s
-                aguardandoCorrida = true;
-                inicioEspera = currentMillis;
-                motorsRunning = false;
-            }
-            else if (currentMillis - inicioEspera >= TEMPO_ESPERA_CORRIDA_MS)
-            {
-                // Esperou os 10s -> começa corrida (início -> centro)
-                aguardandoCorrida = false;
-                modo = CORRIDA_FF;
-                concluido = false;
-                resetFloodFill();
-                estado = CORRIDA;
-            }
-        }
-        atualizaSensores();
-        break;
-    case PARADO:
-    default:
-        stopMotors();
-        break;
-
-    }
 }
-
-#pragma endregion
