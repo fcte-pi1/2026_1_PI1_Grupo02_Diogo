@@ -4,20 +4,41 @@
 #include "../../utils/rato/rato.h"
 
 // --------------------------------------------------------
-// Encoders 
+// Geometria do robô (base para todos os cálculos de pulso)
 // --------------------------------------------------------
-// -- Calibração (tem que alterar) -----------------------------------
-#define PULSOS_POR_CELULA 200 // pulsos de encoder para avançar uma célula
-#define PULSOS_GIRO_90 95     // pulsos de encoder para girar 90°
+#define DIAMETRO_RODA_CM 4.4f           // (44 mm)
+#define PULSOS_POR_VOLTA_RODA 146.0f    // pulsos de encoder por volta completa da roda
+#define TAMANHO_CELULA_CM 18.0f         // tamanho de 1 célula do labirinto
+#define COMPRIMENTO_ROBO_CM 13.5f       // comprimento do carrinho
+#define DISTANCIA_ENTRE_RODAS_CM 9.5f  // distância minima entre as rodas - usada no cálculo de giro
 
+extern const float CM_POR_PULSO;
+extern const long PULSOS_POR_CELULA;
+extern const long PULSOS_GIRO_90;
+extern const long PULSOS_GIRO_180;
+extern int VELOCIDADE_BASE_PWM;
+// --------------------------------------------------------
+// Encoders
+// --------------------------------------------------------
 void inicializaMotores(uint8_t in1L, uint8_t in2L,
                        uint8_t in1R, uint8_t in2R,
                        volatile long *encEsq, volatile long *encDir);
 
+// Converte distância (cm) / ângulo (graus)  em pulsos de encoder (parece ter um erro, entãoe estou passando medidas diferentes para 18cm e 90°)
+long calculaPulsosDistancia(float distanciaCm);
+long calculaPulsosAngulo(float graus);
+
+// -- Movimentos "de grade" (os mesmos usados pelo DFS/FloodFill) ---------------
+//    1 célula (18 cm) / giro de 90° / giro de 180°. Assinatura inalterada.
 void Andar(Rato *rato);
 void VirarEsquerda(Rato *rato);
 void VirarDireita(Rato *rato);
 void Virar180(Rato *rato);
+
+// -- Movimentos livres (uso em testes/calibração de bancada) -------------------
+//    distância ou ângulo quaisquer, não presos ao grid do labirinto.
+void AndarCm(Rato *rato, float distanciaCm);
+void GirarGraus(Rato *rato, float graus); // graus > 0 => direita (horário) | graus < 0 => esquerda (anti-horário)
 
 
 // --------------------------------------------------------
@@ -39,7 +60,7 @@ void meiaVolta180();
 
 
 // --------------------------------------------------------
-// NOVO: Odometria em cm/s e Alinhamento PID
+// Odometria em cm/s e Alinhamento PID
 // --------------------------------------------------------
 // Variáveis públicas para envio na telemetria local/MQTT
 extern float velocidadeEsqCmS;

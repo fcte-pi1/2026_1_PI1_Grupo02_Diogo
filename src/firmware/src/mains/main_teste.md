@@ -1,14 +1,7 @@
-// ============================================================
-// main_teste.md — Bancada de teste do Micromouse
-//
-// Testa todos os componentes em ciclo fixo:
-//   • VL6180X frontal  (Wire1: SDA=21, SCL=19)
-//   • INA219           (Wire:  SDA=19, SCL=2)
-//   • Motores N20 via LEDC/PWM
-//   • Encoders (interrupts)
-//   • WiFi + MQTT + telemetria
-//   • OTA
-// ============================================================
+/*
+    Esse código testa os motores, conexão wifi / mqtt e sensores
+*/
+
 #include <Arduino.h>
 #include <WiFi.h>
 #include <PubSubClient.h>
