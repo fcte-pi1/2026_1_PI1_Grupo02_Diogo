@@ -76,7 +76,7 @@ describe("MazeGrid", () => {
     );
   });
 
-  it("limita coordenadas negativas a zero sem transladar a matriz", () => {
+  it("translada a matriz quando o trajeto usa coordenadas negativas", () => {
     const steps = [
       { posX: 0, posY: 0 },
       { posX: -1, posY: 0 },
@@ -88,7 +88,8 @@ describe("MazeGrid", () => {
     );
 
     const grid = screen.getByTestId("maze-grid");
-    expect(grid).not.toHaveAttribute("data-offset-x");
+    expect(grid).toHaveAttribute("data-offset-x", "1");
+    expect(grid).toHaveAttribute("data-offset-y", "2");
     expect(screen.getByTestId("maze-robot-cell")).toHaveAttribute(
       "title",
       "Robô em (0, 0)"
@@ -110,7 +111,8 @@ describe("MazeGrid", () => {
     );
 
     const grid = screen.getByTestId("maze-grid");
-    expect(grid).not.toHaveAttribute("data-offset-x");
+    expect(grid).toHaveAttribute("data-offset-x", "0");
+    expect(grid).toHaveAttribute("data-offset-y", "0");
     expect(screen.getByTestId("maze-robot-cell")).toHaveAttribute(
       "title",
       "Robô em (1, 0)"
