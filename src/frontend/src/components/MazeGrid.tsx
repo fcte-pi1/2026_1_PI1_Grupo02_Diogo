@@ -145,6 +145,7 @@ export const MazeGrid = memo(function MazeGrid({
         {isRobot && (
           <div
             className="pointer-events-none absolute left-1/2 top-1/2 z-30 h-8 w-8 transition-transform duration-200 ease-out"
+            data-robot-rotation={robotRotation}
             style={{ 
               transform: `translate(-50%, -50%) rotate(${robotRotation}deg)`,
               transformOrigin: "center center" 

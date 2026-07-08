@@ -10,6 +10,7 @@ import {
 import { createConsolidatedSession } from "../repositories/session.repository";
 import {
   createOrphanSessionStep,
+  deleteOrphanSteps,
   findOrphanSteps,
   findOrphanStepsLimited,
   linkOrphanStepsToSession,
@@ -71,6 +72,20 @@ const computeAvgCurrentMa = (steps: SessionStep[]): number => {
 
 export const resetTelemetryRunContextForTests = (): void => {
   activeRunContext = null;
+};
+
+/** Limpa passos órfãos da corrida ao vivo e notifica o cockpit (F5 / nova sessão). */
+export const clearLiveOrphanRun = async (): Promise<number> => {
+  const removed = await deleteOrphanSteps();
+  activeRunContext = null;
+
+  try {
+    getSocket().emit("session_reset", { status: "cleared" });
+  } catch (error) {
+    console.error("[WS_RESET_ERROR] Falha ao emitir session_reset:", error);
+  }
+
+  return removed;
 };
 
 const parsePayload = (buffer: Buffer): ParsedTelemetry => {

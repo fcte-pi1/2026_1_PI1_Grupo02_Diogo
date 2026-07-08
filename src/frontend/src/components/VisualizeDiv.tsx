@@ -4,6 +4,7 @@ import { MazeGrid } from "./MazeGrid";
 import type { SessionStep } from "../types/session";
 import { computeMazeOffset } from "../utils/maze-translation";
 import { mergeLiveMazeCells } from "../utils/mergeLiveMazeCells";
+import { rotacaoDoRoboAoVivo } from "../utils/sensorRaycast";
 
 interface VisualizeDivProps {
   activeSession: {
@@ -87,6 +88,16 @@ export function VisualizeDiv({
     [activeSession?.maze?.cells, liveWallSources],
   );
 
+  const robotRotation = useMemo(() => {
+    const trail = resolvedSteps.map((step) => ({
+      posX: step.posX,
+      posY: step.posY,
+    }));
+    const direcao = (robotData as { direcao?: string } | null | undefined)
+      ?.direcao;
+    return rotacaoDoRoboAoVivo(trail, direcao);
+  }, [resolvedSteps, robotData]);
+
   useEffect(() => {
     if (steps !== undefined) return;
     if (socketConnected && robotData) {
@@ -144,6 +155,7 @@ export function VisualizeDiv({
                   currentY={posY}
                   width={mazeWidth}
                   height={mazeHeight}
+                  robotRotation={robotRotation}
                 />
               </div>
 

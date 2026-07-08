@@ -98,4 +98,48 @@ describe('VisualizeDiv Component', () => {
     expect(next).toHaveAttribute('data-wall-south', 'true');
     expect(next).toHaveAttribute('data-wall-west', 'true');
   });
+
+  it('gira o ícone do robô conforme a direção da ESP ou o deslocamento', () => {
+    render(
+      <VisualizeDiv
+        {...defaultProps}
+        steps={[
+          {
+            id: 's1',
+            stepOrder: 0,
+            posX: 0,
+            posY: 0,
+            voltage: 12,
+            current: 100,
+            createdAt: '2026-01-01T00:00:00.000Z',
+          },
+          {
+            id: 's2',
+            stepOrder: 1,
+            posX: 1,
+            posY: 0,
+            voltage: 12,
+            current: 100,
+            createdAt: '2026-01-01T00:00:01.000Z',
+          },
+        ]}
+        robotData={{
+          id: 's2',
+          stepOrder: 1,
+          posX: 1,
+          posY: 0,
+          voltage: 12,
+          current: 100,
+          createdAt: '2026-01-01T00:00:01.000Z',
+          direcao: 'leste',
+        } as never}
+        posX={1}
+        posY={0}
+      />,
+    );
+
+    expect(
+      screen.getByTestId('maze-robot-cell').querySelector('[data-robot-rotation="90"]'),
+    ).toBeInTheDocument();
+  });
 });
