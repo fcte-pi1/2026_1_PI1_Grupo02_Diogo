@@ -1,8 +1,21 @@
 \documentclass[12pt,openright,oneside,a4paper,english,french,spanish,brazil,nohyperref]{abntex2}
+
+% --- Importações Padrão do Template ---
 \input{fixos/pacotes}
 \input{fixos/comandos}
 \usepackage{fixos/customizacoes}
 
+% =========================================================
+% PACOTES ADICIONAIS DO PROJETO
+% =========================================================
+% Declarados diretamente no main para evitar erros de escopo
+\usepackage{multicol}   % Para as duas colunas na lista de siglas
+\usepackage{pdflscape}  % Para as tabelas rotacionadas em modo paisagem
+\usepackage{tabularx}   % Para tabelas dinâmicas que ocupam toda a página
+\usepackage{amsmath}    % Para as renderizações matemáticas avançadas
+% =========================================================
+
+% --- Configurações Iniciais ---
 \input{editaveis/00_informacoes}
 \input{fixos/informacoes}
 \input{fixos/setup}
@@ -10,17 +23,23 @@
 \begin{document}
 
 \frenchspacing
+
+% ----------------------------------------------------------
+% ELEMENTOS PRÉ-TEXTUAIS
+% ----------------------------------------------------------
 \imprimircapa
-\imprimirfolhaderosto* {}
+\imprimirfolhaderosto*{}
 
 \input{fixos/fichaCatalografica}
 
 \input{editaveis/02_resumo}
 \input{fixos/listasAutomaticas}
-\input{editaveis/01_abreviaturas}
-\input{editaveis/01_simbolos}
-\input{fixos/indiceAutomatico}
+\input{editaveis/01_abreviaturas} % Padrão ABNT: Siglas sempre ANTES do sumário
+\input{fixos/indiceAutomatico}    % O Sumário fecha a etapa pré-textual
 
+% ----------------------------------------------------------
+% ELEMENTOS TEXTUAIS (Os capítulos do documento)
+% ----------------------------------------------------------
 \textual
 
 \input{editaveis/03_introducao}
@@ -32,7 +51,10 @@
 \input{editaveis/09_resultados}
 \input{editaveis/10_licoes}
 
-\bookmarksetup{startatroot}
+% ----------------------------------------------------------
+% ELEMENTOS PÓS-TEXTUAIS
+% ----------------------------------------------------------
+\bookmarksetup{startatroot} % Destrava os marcadores do sumário para os apêndices
 
 \postextual
 
