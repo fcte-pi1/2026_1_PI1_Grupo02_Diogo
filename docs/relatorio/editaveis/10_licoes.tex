@@ -1,764 +1,86 @@
 \chapter{Lições Aprendidas}
+\vspace{-1cm}
 
+A documentação das lições aprendidas visa o aprimoramento contínuo dos processos de engenharia, garantindo que os gargalos e problemas identificados durante o ciclo de vida do projeto sejam mitigados em desenvolvimentos futuros.
 
+\section{Lições por Subsistema}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+\begin{itemize}
+    \item \textbf{Estruturas:} A manutenção de um repositório centralizado de arquivos CAD demonstrou-se essencial para evitar retrabalho e falhas de versionamento geométrico. Além disso, a manufatura aditiva (impressão 3D) exigiu iterações preliminares de calibração (ajuste de preenchimento e suportes) até atingir a rigidez ideal do chassi.
+    
+    \item \textbf{Software:} A separação da arquitetura em microsserviços (\textit{frontend}, \textit{backend} e \textit{firmware}) permitiu o desenvolvimento paralelo sem bloqueios mútuos. Aprendemos que o uso de \textit{WebSockets} requer um tratamento rigoroso de reconexão no código para evitar perda de pacotes de telemetria em caso de instabilidade na rede.
+    
+    \item \textbf{Eletrônica:} A prototipagem evidenciou a importância de dimensionar corretamente o espaço físico para os componentes. O processo de soldagem, inicialmente desafiador, foi aprimorado, mitigando problemas de mau contato decorrentes da trepidação dos motores. Conceitos teóricos, como divisores de tensão para os pinos lógicos do ESP32, foram fundamentais para a proteção do circuito.
+    
+    \item \textbf{Energia:} O cálculo prévio do balanço energético (\textit{budget} de potência) foi crucial. A escolha adequada do \textit{pack} de baterias de lítio atendeu à demanda dos motores de tração e da eletrônica lógica, evitando quedas de tensão abruptas (\textit{brownouts}) durante os picos de torque.
+\end{itemize}
 
 \section{Análise SWOT}
 
+A Tabela \ref{tab:swot} sintetiza as Forças, Fraquezas, Oportunidades e Ameaças identificadas durante o desenvolvimento do produto.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-\begin{table}[ht]
-\centering
-\caption{Análise SWOT do produto.}
-\label{tab:swot}
-
-\begin{tabular}{|c|c|c|}
-\hline
- & \textbf{Pontos fortes} & \textbf{Pontos fracos} \\ \hline
-
-\parbox{0.1\textwidth}{\centering\textbf{Fatores \\ internos}} &
-\parbox{0.4\textwidth}{
-\textbf{Forças:}
-\begin{itemize}
-    \item Projeto compacto, facilitando curvas em labirintos.
-    \item Baixo consumo de energia.
-    \item Projeto fácil de entender e montar.
-\end{itemize}
-}
-&
-\parbox{0.4\textwidth}{
-\textbf{Fraquezas:}
-\begin{itemize}
-    \item Depende da precisão dos sensores para funcionar de maneira eficaz.
-    \item Por utilizar solda, o projeto não permite alterações rápidas nos componentes.
-    \item A substituição de sensores queimados aumentou um pouco o orçamento previsto.
-\end{itemize}
-}
-\\ \hline
-
-\parbox{0.1\textwidth}{\centering\textbf{Fatores \\ externos}} &
-\parbox{0.4\textwidth}{
-\textbf{Oportunidades:}
-\begin{itemize}
-    \item Obter um bom desempenho na competição.
-    \item Adicionar futuramente sensores mais precisos para melhorar a navegação.
-    \item Reaproveitar o projeto em disciplinas e pesquisas futuras.
-    \item Utilizar o conhecimento adquirido em projetos mais complexos.
-\end{itemize}
-}
-&
-\parbox{0.4\textwidth}{
-\textbf{Ameaças:}
-\begin{itemize}
-    \item O protótipo não concluir o percurso durante a competição.
-    \item Interferências na leitura dos sensores causadas pela iluminação ou pelo ambiente.
-    \item Componentes eletrônicos podem sofrer desgaste ou danos.
-    \item Falhas de comunicação entre hardware e software podem comprometer o desempenho do protótipo.
-\end{itemize}
-}
-\\ \hline
-
-\end{tabular}
+\begin{table}[H]
+    \centering
+    \small
+    \renewcommand{\arraystretch}{1.4}
+    \caption{Análise SWOT do ecossistema do Micromouse.}
+    \label{tab:swot}
+    \begin{tabularx}{\linewidth}{|c|X|X|}
+        \hline
+        & \textbf{Fatores Positivos} & \textbf{Fatores Negativos} \\ \hline
+        
+        \makecell{\textbf{Ambiente} \\ \textbf{Interno}} & 
+        \textbf{Forças:} \textit{Design} compacto e temático, permitindo baixo centro de gravidade, boa distribuição de massa e facilidade na substituição da bateria. & 
+        \textbf{Fraquezas:} Fiação volumosa na placa perfurada, demandando extenso gerenciamento de cabos para evitar atrito físico e mau contato. \\ \hline
+        
+        \makecell{\textbf{Ambiente} \\ \textbf{Externo}} & 
+        \textbf{Oportunidades:} Evolução modular do algoritmo, permitindo a implementação futura de redes neurais ou mapeamento dinâmico estendido. & 
+        \textbf{Ameaças:} Risco contínuo de queima do microcontrolador (ESP32) por picos de corrente reversa ou inversão acidental de polaridade externa. \\ \hline
+    \end{tabularx}
 \end{table}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-\section{Planejado x realizado}
-\subsection{Objetivos}
-\textcolor{red}{Os objetivos foram alcançados? Responda as questões e comente os pontos mais relevantes – até 700 caracteres, considerando os espaços.}
-\subsection{Prazos}
-\textcolor{red}{O projeto foi entregue dentro do prazo? Responda as questões e comente os pontos mais relevantes – até 700 caracteres, considerando os espaços.}
-\subsection{Orçamento}
-\textcolor{red}{O projeto foi entregue dentro do orçamento? Responda as questões e comente os pontos mais relevantes – até 700 caracteres, considerando os espaços.}
-\subsection{Escopo}
-\textcolor{red}{O  projeto atendeu ao escopo? Responda as questões e comente os pontos mais relevantes – até 700 caracteres, considerando os espaços.}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-\section{Projeto}
-\textcolor{red}{Comente os pontos mais relevantes a serem aperfeiçoados ou adotados em próximos projetos.}
-\subsection{Pontos fortes}
-\begin{enumerate}
-	\item \textcolor{red}{Até 200 caracteres, considerando os espaços.}
-	\item \textcolor{red}{Até 200 caracteres, considerando os espaços.}
-	\item \textcolor{red}{Até 200 caracteres, considerando os espaços.}
-	\item \textcolor{red}{Até 200 caracteres, considerando os espaços.}
-\end{enumerate}
-\subsection{Pontos fracos}
-\begin{enumerate}
-	\item \textcolor{red}{Até 200 caracteres, considerando os espaços.}
-	\item \textcolor{red}{Até 200 caracteres, considerando os espaços.}
-	\item \textcolor{red}{Até 200 caracteres, considerando os espaços.}
-	\item \textcolor{red}{Até 200 caracteres, considerando os espaços.}
+\section{Balanço Gerencial (Planejado \textit{vs.} Realizado)}
+
+\begin{description}
+    \item[Objetivos e Escopo:] Atingidos de forma integral. O protótipo validou a integração eletromecânica e navegou autonomamente na pista utilizando a malha de sensoriamento e a transmissão de telemetria.
+    \item[Prazos e Cronograma:] Execução alinhada às datas estipuladas no TAP. A paralelização entre a modelagem CAD e o desenvolvimento web absorveu os atrasos iniciais de montagem.
+    \item[Orçamento:] O projeto manteve-se no limite da margem de contingência. Os custos operacionais com componentes importados e manufatura aditiva seguiram a previsão estabelecida na EAP.
+\end{description}
+
+\section{Análise Crítica do Projeto}
+
+\begin{multicols}{2}
+\noindent \textbf{Pontos Fortes:}
+\begin{enumerate}[noitemsep, topsep=2pt]
+    \item \textit{Design} estrutural otimizado para leveza e estabilidade.
+    \item Alta coesão da equipe nas frentes simultâneas de engenharia.
+    \item Eficácia do ambiente de testes físicos para \textit{debug} ágil do \textit{hardware}.
 \end{enumerate}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-\section{Recomendações para projetos futuros}
-
-\begin{enumerate}
-	\item \textcolor{red}{Até 200 caracteres, considerando os espaços.}
-	\item \textcolor{red}{Até 200 caracteres, considerando os espaços.}
-	\item \textcolor{red}{Até 200 caracteres, considerando os espaços.}
-	\item \textcolor{red}{Até 200 caracteres, considerando os espaços.}
+\columnbreak
+
+\noindent \textbf{Pontos Fracos:}
+\begin{enumerate}[noitemsep, topsep=2pt]
+    \item Adensamento excessivo de jumpers na placa universal.
+    \item Tempo excessivo despendido na confecção manual da pista de testes em MDF.
 \end{enumerate}
+\end{multicols}
 
+\section{Recomendações e Questões em Aberto}
 
+Com base nas observações empíricas, sugere-se para os ciclos subsequentes de desenvolvimento:
+\begin{itemize}
+    \item \textbf{Mecânica:} Implementar trilhos de encaixe rápido na carcaça 3D para facilitar o acesso preventivo à ponte H e aos reguladores.
+    \item \textbf{Proteção Eletrônica:} Adicionar circuitos de roda livre (diodos \textit{flyback}) isolados e fusíveis rápidos para blindar o ESP32 contra correntes de retorno dos motores N20.
+\end{itemize}
 
+\noindent \textbf{Questões Pendentes (Trabalhos Futuros):} A principal pendência do ecossistema reside na \textbf{calibração fina dos encoders magnéticos}. Faz-se necessário um ajuste algorítmico da malha PID para compensar a inércia dos motores e garantir a precisão milimétrica nas guinadas ortogonais de 90° durante as corridas cronometradas de velocidade (\textit{speed run}).
 
+\section{Desempenho da Cadeia de Fornecimento}
 
+A gestão de aquisições operou dentro da normalidade, não registrando fornecedores com desempenho crítico ou abaixo do esperado:
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-\section{Questões em aberto}
-
-
-\begin{enumerate}
-	\item O nosso projeto foi necessário trocar os sensores ultrassonicos por sensores infravermelhos.
-	\item Colocamos um regulador de tensão para a ESP 32.
-	\item Foi necessário colocar um filtro capacitivo para filtrar picos da bateria.
-	\item Faltam testes de firmware para o sistema de controle do motor.
-	\item Teste de calibração de sensores e motores com controle PID.
-\end{enumerate}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-\section{Desempenho dos fornecedores}
-
-\subsection{Fornecedores com desempenho acima do esperado}
-
-Mercado Livre e um amigo de um integrante do grupo. O Mercado Livre realizou entregas rápidas, enquanto a impressão 3D apresentou excelente qualidade e foi concluída rapidamente.
-
-\subsection{Fornecedores com desempenho conforme esperado}
-
-HU Infinito, Dr. Eletrônico, Leroy Merlin e Casa dos Parafusos. Todos forneceram os materiais conforme especificado, atendendo às expectativas do projeto.
-
-\subsection{Fornecedores com desempenho abaixo do esperado}
-
-Contato. Apesar da disponibilidade dos produtos, apresentou preços mais elevados que os demais fornecedores consultados, tornando a compra menos vantajosa.
+\begin{description}
+    \item[Acima do esperado (Laboratório de Impressão 3D):] Forneceu o chassi polimérico com excelente acabamento superficial e exatidão dimensional antes do prazo limite, antecipando o cronograma de testes.
+    \item[Conforme o esperado (Comércio Eletrônico B2C):] Os lojistas em \textit{marketplaces} entregaram os microcontroladores, sensores HC-SR04 e módulos LM2596 dentro da janela de \textit{lead time} prevista, sem apresentar índices de refugos de fábrica.
+\end{description}

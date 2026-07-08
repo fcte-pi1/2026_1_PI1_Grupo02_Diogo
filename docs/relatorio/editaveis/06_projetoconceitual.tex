@@ -1,20 +1,18 @@
 \chapter{Projeto Conceitual do Produto}
-
+\vspace{-1cm}
 \section{Características gerais}
 
-O projeto consiste no desenvolvimento de um \textit{micromouse}, capaz de percorrer um labirinto de forma autônoma e armazenar os dados do percurso em tempo real. O sistema utiliza sensores e algoritmos de navegação para tomada de decisão durante a exploração do ambiente.
-Para a gestão do projeto, foi utilizada a Estrutura Analítica do Projeto (EAP), com o objetivo de organizar as atividades e definir as responsabilidades de cada integrante da equipe.
-A equipe foi dividida em quatro áreas principais: eletrônica, software, estrutura e energia. Em cada uma dessas áreas, foi estabelecida uma hierarquia de atividades a serem desenvolvidas, permitindo uma melhor organização das tarefas e acompanhamento do progresso do projeto.
-\begin{landscape}
+O projeto consiste no desenvolvimento de um micromouse, um robô autônomo que utiliza sensores e algoritmos para navegar por um labirinto e registrar os dados do percurso em tempo real. Para organizar as atividades e definir as responsabilidades da equipe, foi utilizada a Estrutura Analítica do Projeto (EAP). Essa ferramenta dividiu o trabalho de forma hierárquica em quatro áreas principais — eletrônica, software, estrutura e energia —, garantindo uma melhor gestão das tarefas e do progresso do projeto.
+
 \begin{figure}[H]
     \centering
-    \includegraphics[width=\linewidth]{figuras/EAP.png}
+    \includegraphics[width=1\linewidth]{figuras/EAP.png}
     \caption{Estrutura Analítica do Projeto (EAP) do sistema Ratobô}
     \label{fig:eap}
 \end{figure}
-\end{landscape}
-\section{Estrutura}
+\vspace{-1cm}
 
+\section{Estrutura}
 \subsection{Desenhos do carrinho}
 
 Os modelos e a montagem do projeto foram feitos no Fusion 360. A escolha dos locais dos componentes buscou acomodar todos os elementos do carrinho, mantendo facilidade de acesso à parte eletrônica.
@@ -23,16 +21,24 @@ As Figuras~\ref{fig:desenhos_carrinho_1} e~\ref{fig:desenhos_carrinho_2} apresen
 
 \begin{figure}[!ht]
     \centering
-    \includegraphics[page=1,width=0.65\textwidth]{figuras/desenhos-carrinho.pdf}
-    \caption{Desenhos técnicos do carrinho — página 1.}
-    \label{fig:desenhos_carrinho_1}
-\end{figure}
-
-\begin{figure}[!ht]
-    \centering
-    \includegraphics[page=2,width=0.65\textwidth]{figuras/desenhos-carrinho.pdf}
-    \caption{Desenhos técnicos do carrinho — página 2.}
-    \label{fig:desenhos_carrinho_2}
+    % Primeira Figura (Esquerda)
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[page=1,width=\textwidth]{figuras/desenhos-carrinho.pdf}
+        \caption{Página 1.}
+        \label{fig:desenhos_carrinho_1}
+    \end{subfigure}
+    \hfill % Preenche o espaço horizontal entre as duas imagens
+    % Segunda Figura (Direita)
+    \begin{subfigure}[b]{0.48\textwidth}
+        \centering
+        \includegraphics[page=2,width=\textwidth]{figuras/desenhos-carrinho.pdf}
+        \caption{Página 2.}
+        \label{fig:desenhos_carrinho_2}
+    \end{subfigure}
+    
+    \caption{Desenhos técnicos do carrinho.}
+    \label{fig:desenhos_carrinho_geral}
 \end{figure}
 
 \FloatBarrier
@@ -40,19 +46,18 @@ As Figuras~\ref{fig:desenhos_carrinho_1} e~\ref{fig:desenhos_carrinho_2} apresen
 \subsection{Desenho do labirinto}
 
 
-O modelo e a montagem do labirinto foram feitos no Fusion 360. A escolha do MDF buscou garantir leveza, resistência e facilidade de montagem da estrutura, além de proporcionar baixo custo e boa estabilidade para o percurso. A Figura~\ref{fig:desenho-tecnico-labirinto} apresenta as vistas lateral, superior, frontal e isométrica do labirinto, além das dimensões utilizadas na estrutura.
-
+O modelo e a montagem do labirinto foram feitos no Fusion 360. A Figura~\ref{fig:desenho-tecnico-labirinto} apresenta as vistas lateral, superior, frontal e isométrica do labirinto, além das dimensões utilizadas na estrutura.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\textwidth]{figuras/Labirinto-Desenho.pdf}
+    \includegraphics[width=0.5\textwidth]{figuras/Labirinto-Desenho.pdf}
     \caption{Desenho técnico com cotas da peça do labirinto.}
     \label{fig:desenho-tecnico-labirinto}
 \end{figure}
 
 \subsection{Decisões de projeto}
 
-O motor escolhido foi o OEM N20 750 RPM, pois é um motor versátil e atende à tensão necessária para o projeto. A roda foi escolhida por ter adaptação direta com o motor e tamanho adequado para garantir conforto no manuseio do carrinho. Além disso, a parte de borracha permite boa aderência mesmo em superfícies não ideais. Com o objetivo de alocar todos os componentes e facilitar o manuseio das diferentes partes, foi integrado um segundo andar com o uso de parafusos espaçadores de 25 mm. Essa estrutura serve para apoiar a bateria e permitir a presença de componentes na parte inferior. Como o projeto não requer sensor na parte inferior para reconhecer as cores do labirinto, foi escolhida uma roda dianteira com maior liberdade de movimento. O labirinto foi projetado em MDF por ser um material leve, resistente e de fácil corte e montagem, além de apresentar baixo custo e boa estabilidade para a estrutura do percurso.
+O projeto utiliza o motor N20 (750 RPM) com roda emborrachada de encaixe direto para garantir aderência. A estrutura possui um segundo andar (fixado por espaçadores de 25 mm) para acomodar a bateria e proteger os componentes. Sem a necessidade de sensores de cor, optou-se por uma roda boba dianteira para maior mobilidade. O labirinto foi construído em MDF, garantindo leveza, resistência e facilidade de montagem.
 
 \FloatBarrier
 \section{Descrição de \textit{hardware}}
@@ -121,20 +126,18 @@ A arquitetura foi dividida em cinco subsistemas principais: unidade de processam
 
     \begin{figure}[h]
         \centering
-        \includegraphics[width=0.9\linewidth]{figuras/Diagrama-de-Blocos.png}
+        \includegraphics[width=0.7\linewidth]{figuras/Diagrama-de-Blocos.png}
         \caption{{Diagrama de Blocos do sistema Ratobô.}}
         \label{fig:diagrama_blocos}
     \end{figure}
 
-    \begin{landscape}
     \begin{figure}
         \centering
-        \includegraphics[width=0.9\linewidth]{figuras/Esquematico2.png}
+        \includegraphics[width=0.7\linewidth]{figuras/Esquematico2.png}
         \caption{{Esquemático do Sistema Ratobô.}}
         \label{fig:esquematico}
     \end{figure}
-    \end{landscape}
-
+\newpage
 \section{Análise de consumo energético}
 
 Abaixo, apresenta-se o detalhamento do consumo energético do sistema, considerando os componentes selecionados e o regime de operação previsto para o produto.
@@ -176,451 +179,148 @@ Abaixo, apresenta-se o detalhamento do consumo energético do sistema, considera
     A validação compara a autonomia teórica com a real. Diferenças encontradas são atribuídas à eficiência do LM2596 (80-90\%) e dissipação por Efeito Joule nos condutores.
 \end{itemize}
 
-\section{Descrição de \textit{software}}
+\section{Descrição de Software}
 
-\begin{itemize}
-    \item \textbf{Diagrama Atividades UML:}  O seguinte diagrama de atividades UML representa o fluxo de comportamento entre o micromouse e site.
-    
-    \begin{figure}[H]
-        \centering
-        \includegraphics[width=\textwidth]{figuras/UML.png}
-        \caption{UML de atividade}
-        \label{fig:UML-de-atividade}
-    \end{figure}
-      
-    
-    \item Entradas:
-    \begin{itemize}
-        \item Sensores ultrassônico;
-        \item Sensor de tensão;
-        \item Encoders dos motores;
-        \item Cronômetro da ESP32;
-        \item Chaves seletoras.
-    \end{itemize} 
-    
-    \item Telemetria:
-    \begin{itemize}
-        \item Passo atual;
-        \item Tempo atual;
-        \item Modo do micromouse atual;
-        \item Estado do robo (Ex: "Explorando", "parado", etc);
-        \item Posição na matriz;
-        \item Direção;
-        \item Ultimo movimento;
-        \item Paredes na posição atual (norte, sul, leste, oeste);
-        \item PWM dos motores;
-        \item Distância dos sensores ultrassônicos;
-        \item Tensão e corrente;
-        \item Status de conclusão.
-    \end{itemize} 
-    
-    \item Modos do micromouse: 
-    \begin{itemize}
-        \item Procura DFS: Utiliza o algoritmo de busca em profundidade (DFS) até chegar na área de conclusão;
-        \item Retorno: Utiliza o algoritmo de \textit{Floofill} para voltar ao início;
-        \item Percurso otimizado: Escolhe a melhor rota a partir dos dados coletados nos outros modos e vai até a área de conclusão.
-    \end{itemize} 
-    
-\item \textbf{Backlog do Produto:}
-\begin{itemize}
-    \item \textbf{Histórias de Usuário}
-        \begin{landscape}
-        \begin{table}[H]
-            \centering
-            \renewcommand{\arraystretch}{1.2}
-            \begin{tabularx}{\linewidth}{|>{\raggedright\arraybackslash}p{0.18\linewidth}|>{\raggedright\arraybackslash}p{0.52\linewidth}|>{\raggedright\arraybackslash}p{0.12\linewidth}|>{\raggedright\arraybackslash}p{0.16\linewidth}|}
-                \hline
-                \textbf{Título da HU} & \textbf{Eu-como-para} & \textbf{RF} & \textbf{RNF} \\
-                \hline
+\subsection*{Fluxo de Comportamento e Telemetria}
 
-                HU-01: Visualização do labirinto &
-                Eu como aluno da disciplina, quero visualizar o mapa do labirinto em tempo real, para acompanhar a exploração realizada pelo micromouse &
-                RF-09 &
-                RNF-01, RNF-02 \\
-                \hline
+O diagrama de atividades UML apresentado na Figura \ref{fig:UML-de-atividade} ilustra o fluxo de comportamento entre o subsistema embarcado do \textit{micromouse} e a interface de telemetria web.
 
-                HU-02: Visualização de telemetria &
-                Eu como aluno da disciplina, quero visualizar os dados de telemetria em tempo real, para monitorar o comportamento do robô durante a execução &
-                RF-08 &
-                RNF-01, RNF-03 \\
-                \hline
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.65\textwidth]{figuras/UML.png}
+    \caption{Diagrama de atividades UML do sistema.}
+    \label{fig:UML-de-atividade}
+\end{figure}
 
-                HU-03: Consulta ao histórico &
-                Eu como aluno da disciplina, quero acessar corridas anteriores, para comparar resultados e identificar oportunidades de melhoria &
-                RF-07, RF-10 &
-                RNF-04 \\
-                \hline
+A arquitetura de dados e modos de operação do software está estruturada conforme os parâmetros descritos a seguir:
 
-                HU-04: Análise do desempenho do algoritmo &
-                Eu como aluno da disciplina, quero visualizar métricas de execução do robô, para avaliar a eficiência dos algoritmos implementados &
-                RF-04, RF-10 &
-                RNF-01, RNF-04 \\
-                \hline
-
-                HU-05: Avaliação do projeto &
-                Eu como professor da disciplina, quero consultar o histórico das execuções realizadas, para avaliar o desempenho e evolução da solução desenvolvida pela equipe &
-                RF-07, RF-10 &
-                RNF-04, RNF-05 \\
-                \hline
-
-                HU-06: Acompanhamento em tempo real &
-                Eu como professor da disciplina, quero acompanhar a execução do micromouse em tempo real, para verificar o funcionamento correto do sistema durante demonstrações e avaliações &
-                RF-08, RF-09 &
-                RNF-01, RNF-02 \\
-                \hline
-
-            \end{tabularx}
-            \caption{Histórias de Usuário}
-            \label{tab:historias_usuario}
-        \end{table}
-        \end{landscape}
+\begin{multicols}{2}
+\noindent \textbf{Entradas de Hardware:}
+\begin{itemize}[noitemsep, topsep=2pt]
+    \item Sensores ultrassônicos;
+    \item Sensor de tensão elétrico;
+    \item Encoders acoplados aos motores;
+    \item Cronômetro interno (ESP32);
+    \item Chaves seletoras de modo.
 \end{itemize}
 
-            
+\columnbreak
 
-\item \textbf{Requisitos Funcionais (RF):}
-
-\subsubsection*{RF-01 – Completar labirinto}
-
-\begin{itemize}
-    \item \textbf{Descrição:}
-    O micromousse deve conseguir chegar no destino final dos labirintos de tamanho 4x4, 8x8 e 16x16, o destino final é dado por um espaço 2x2 no mapa.
-
-    \item \textbf{Prioridade (MoSCoW):}
-    Must Have
-
-    \item \textbf{Critérios de Aceitação:}
-    \begin{enumerate}
-        \item O micromouse deve usar o algoritmo de busca em profundidade (DFS) para explorar o labirinto.
-        \item O micromouse deve conseguir identificar o destino final do labirinto.
-        \item O micromouse deve completar o labirinto de 4x4.
-        \item O micromouse deve completar o labirinto de 8x8.
-        \item O micromouse deve completar o labirinto de 16x16.
-    \end{enumerate}
+\noindent \textbf{Modos do Micromouse:}
+\begin{itemize}[noitemsep, topsep=2pt]
+    \item \textbf{Procura DFS:} Algoritmo de busca em profundidade até a área central.
+    \item \textbf{Retorno:} Algoritmo \textit{Flood-fill} para retorno ao ponto inicial.
+    \item \textbf{Percurso Otimizado:} Cálculo da melhor rota com base na matriz mapeada.
 \end{itemize}
+\end{multicols}
 
-\subsubsection*{RF-02 – Mapear labirinto}
-
-\begin{itemize}
-    \item \textbf{Descrição:}
-    O micromousse deve conseguir mapear o labirinto através da coleta de dados dos sensores ultrassônicos.
-
-    \item \textbf{Prioridade (MoSCoW):}
-    Must Have
-
-    \item \textbf{Critérios de Aceitação:}
-    \begin{enumerate}
-        \item O micromouse deve coletar os dados dos sensores ultrassônicos.
-        \item O micromouse deve usar os dados coletados para atualizar a matriz interna que representa o labirinto, marcando se ja passou na celula e suas paredes.
-    \end{enumerate}
+\noindent \textbf{Métricas de Telemetria Transmitidas:}
+\begin{multicols}{2}
+\begin{itemize}[noitemsep, topsep=0pt]
+    \item Passo incremental e tempo atual;
+    \item Modo de operação e estado lógico;
+    \item Posição cartesiana na matriz;
+    \item Orientação e último movimento;
+    \item Mapeamento local de paredes;
+    \item Sinal PWM aplicado aos motores;
+    \item Distância bruta dos sensores;
+    \item Tensão, corrente e status final.
 \end{itemize}
-
-\subsubsection*{RF-03 – Completar volta}
-
-\begin{itemize}
-    \item \textbf{Descrição:}
-    O micromousse deve conseguir, a partir do destino final, voltar para a posição inicial do labirinto.
-
-    \item \textbf{Prioridade (MoSCoW):}
-    Should Have
-
-    \item \textbf{Critérios de Aceitação:}
-    \begin{enumerate}
-        \item O micromouse deve armazenar a posição incial e final no labirinto.
-        \item O micromouse deve usar o algoritmo de FloodFill para ir do final para o início do labirinto.
-        \item O micromouse deve atualizar os dados do mapa durante o caminho de volta
-    \end{enumerate}
-\end{itemize}
-
-\subsubsection*{RF-04 – Completar corrida}
-
-\begin{itemize}
-    \item \textbf{Descrição:}
-    O micromousse deve conseguir usar os percursos anteriores para otimizar a rota de corrida.
-
-    \item \textbf{Prioridade (MoSCoW):}
-    Should Have
-
-    \item \textbf{Critérios de Aceitação:}
-    \begin{enumerate}
-        \item O micromouse deve utilizar os dados coletados nos percursos anteriores e escolher sua rota ideal.
-        \item O micromouse deve percorrer o caminho otimizado do início até a posição final.
-    \end{enumerate}
-\end{itemize}
-
-\subsubsection*{RF-05 – Enviar telemetria}
-
-\begin{itemize}
-    \item \textbf{Descrição:}
-    O micromousse deve enviar seus dados para o broker MQTT.
-
-    \item \textbf{Prioridade (MoSCoW):}
-    Must Have
-
-    \item \textbf{Critérios de Aceitação:}
-    \begin{enumerate}
-        \item O micromouse deve enviar os dados coletados dos sensores ultrassônicos.
-        \item O micromouse deve enviar os dados dos seus motores com encoders e ponte H.
-        \item O micromouse deve enviar os dados da sua bateria como, tensão, corrente e nível atual.
-        \item O micromouse deve enviar os dados da sua posição e direção no mapa, além do seu modo atual.
-        \item O micromouse deve enviar os dados através do broker MQTT para que o backend do site possa receber.
-    \end{enumerate}
-\end{itemize}
-
-\subsubsection*{RF-06 – Receber dados}
-
-\begin{itemize}
-    \item \textbf{Descrição:}
-    O backend do site deve receber os dados enviados pelo micromouse através do broker MQTT.
-
-    \item \textbf{Prioridade (MoSCoW):}
-    Must Have
-
-    \item \textbf{Critérios de Aceitação:}
-    \begin{enumerate}
-      \item O backend do site se conecta com o broker MQTT.
-      \item O backend do site recebe os dados via MQTT.
-      \item O backend do site trata os dados recebidos.
-      \item O backend do site disponibiliza os dados tratados para o frontend.
-    \end{enumerate}
-\end{itemize}
-
-\subsubsection*{RF-07 – Armazenar histórico}
-
-\begin{itemize}
-    \item \textbf{Descrição:}
-    O backend do site deve armazenar os dados das corridas anteriores.
-
-    \item \textbf{Prioridade (MoSCoW):}
-    Must Have
-
-    \item \textbf{Critérios de Aceitação:}
-    \begin{enumerate}
-      \item O backend guarda os dados das corridas anteriores (telemetria, tempo, tipo do labirinto e percursos).
-      \item O backend do site disponibiliza os dados para o frontend.
-    \end{enumerate}
-\end{itemize}
-
-\subsubsection*{RF-08 – Exibir telemetria}
-
-\begin{itemize}
-    \item \textbf{Descrição:}
-    O frontend do site deve exibir os dados recebidos no backend em tempo real.
-
-    \item \textbf{Prioridade (MoSCoW):}
-    Must Have
-
-    \item \textbf{Critérios de Aceitação:}
-    \begin{enumerate}
-      \item O frontend do site deve pegar os dadaos do backend em tempo real via websocket.
-      \item O frontend do site deve exibir os dados da telemetria ao lado do mapa do labiriinto.
-    \end{enumerate}
-\end{itemize}
-
-\subsubsection*{RF-09 – Exibir labirinto}
-
-\begin{itemize}
-    \item \textbf{Descrição:}
-    O frontend do site deve exibir o labirinto e posição do micromouse.
-
-    \item \textbf{Prioridade (MoSCoW):}
-    Must Have
-
-    \item \textbf{Critérios de Aceitação:}
-    \begin{enumerate}
-      \item O frontend do site deve mostrar o mapa labirinto que o micromouse está percorrendo.
-      \item A posição do micromouse e preenchimento das paredes deve ser feito em tempo real.
-    \end{enumerate}
-\end{itemize}
-
-\subsubsection*{RF-10 – Exibir histórico}
-
-\begin{itemize}
-    \item \textbf{Descrição:}
-    O frontend do site deve exibir uma página com os histórico de labirintos anteriores.
-
-    \item \textbf{Prioridade (MoSCoW):}
-    Must Have
-
-    \item \textbf{Critérios de Aceitação:}
-    \begin{enumerate}
-      \item O frontend do site deve apresentar uma lista com o histórico de labirintos percorridos.
-      \item Cada item da lista deve ser clicável de forma a levar para um resumo do percurso realizado.
-      \item O resumo deve conter: tamanho do labirinto, mapa do labirinto, tempo de conclusão e percurso de cada modo.
-    \end{enumerate}
-\end{itemize}
-
-\item \textbf{Requisitos Não Funcionais (RNF):}
-
-\subsubsection*{RNF-01 – Desempenho de Atualização em Tempo Real}
-
-\begin{itemize}
-    \item \textbf{Descrição:}
-    O sistema deve apresentar os dados de telemetria e atualização do mapa com baixa latência, permitindo o acompanhamento da execução do micromouse em tempo real.
-
-    \item \textbf{Prioridade (MoSCoW):}
-    Must Have
-
-    \item \textbf{Critérios de Aceitação:}
-    \begin{enumerate}
-        \item O frontend deve receber atualizações via WebSocket.
-        \item O atraso entre o recebimento do dado pelo backend e sua exibição no frontend não deve exceder 1 segundo em condições normais de operação.
-    \end{enumerate}
-\end{itemize}
-
-\subsubsection*{RNF-02 – Disponibilidade da Comunicação}
-
-\begin{itemize}
-    \item \textbf{Descrição:}
-    O sistema deve manter a comunicação entre micromouse, broker MQTT, backend e frontend durante toda a execução da corrida.
-
-    \item \textbf{Prioridade (MoSCoW):}
-    Must Have
-
-    \item \textbf{Critérios de Aceitação:}
-    \begin{enumerate}
-        \item O backend deve detectar falhas de conexão com o broker MQTT.
-        \item O frontend deve informar ao usuário quando não estiver recebendo atualizações em tempo real.
-    \end{enumerate}
-\end{itemize}
-
-\subsubsection*{RNF-03 – Compatibilidade}
-
-\begin{itemize}
-    \item \textbf{Descrição:}
-    O sistema web deve ser compatível com os principais navegadores modernos.
-
-    \item \textbf{Prioridade (MoSCoW):}
-    Should Have
-
-    \item \textbf{Critérios de Aceitação:}
-    \begin{enumerate}
-        \item A interface deve funcionar corretamente nos navegadores Google Chrome, Mozilla Firefox e Microsoft Edge.
-        \item Não devem ocorrer erros críticos de renderização ou navegação.
-    \end{enumerate}
-\end{itemize}
-
-\subsubsection*{RNF-04 – Persistência e Integridade dos Dados}
-
-\begin{itemize}
-    \item \textbf{Descrição:}
-    O sistema deve armazenar corretamente os dados das execuções realizadas pelo micromouse.
-
-    \item \textbf{Prioridade (MoSCoW):}
-    Must Have
-
-    \item \textbf{Critérios de Aceitação:}
-    \begin{enumerate}
-        \item As informações das corridas devem permanecer disponíveis após reinicialização do sistema.
-        \item Não devem ocorrer perdas de dados durante o armazenamento no banco de dados.
-    \end{enumerate}
-\end{itemize}
-
-\subsubsection*{RNF-05 – Usabilidade}
-
-\begin{itemize}
-    \item \textbf{Descrição:}
-    A interface deve permitir que alunos e professores interpretem facilmente os resultados das execuções do micromouse.
-
-    \item \textbf{Prioridade (MoSCoW):}
-    Should Have
-
-    \item \textbf{Critérios de Aceitação:}
-    \begin{enumerate}
-        \item O mapa do labirinto deve ser exibido de forma clara e legível.
-        \item Os dados de telemetria devem estar organizados e identificados adequadamente.
-        \item O histórico de corridas deve ser facilmente acessível através da interface.
-    \end{enumerate}
-\end{itemize}
-
-\subsubsection*{RNF-06 – Manutenibilidade}
-
-\begin{itemize}
-    \item \textbf{Descrição:}
-    O sistema deve ser desenvolvido de forma modular, facilitando futuras modificações e evolução do projeto.
-
-    \item \textbf{Prioridade (MoSCoW):}
-    Should Have
-
-    \item \textbf{Critérios de Aceitação:}
-    \begin{enumerate}
-        \item Backend, frontend e firmware devem possuir responsabilidades bem definidas.
-        \item O código-fonte deve seguir padrões de organização e documentação estabelecidos pela equipe.
-    \end{enumerate}
-\end{itemize}
-
-\subsubsection*{RNF-07 – Portabilidade}
-
-\begin{itemize}
-    \item \textbf{Descrição:}
-    O sistema deve poder ser executado em diferentes ambientes de desenvolvimento e implantação.
-
-    \item \textbf{Prioridade (MoSCoW):}
-    Could Have
-
-    \item \textbf{Critérios de Aceitação:}
-    \begin{enumerate}
-        \item O backend e frontend devem ser executáveis através de contêineres Docker.
-        \item A instalação do ambiente deve ser documentada e reproduzível por outros integrantes da equipe.
-    \end{enumerate}
-\end{itemize}
-
-\subsubsection*{RNF-08 – Frequência de Atualização dos Sensores}
-
-\begin{itemize}
-    \item \textbf{Descrição:}
-    O micromouse deve realizar a leitura periódica dos sensores necessários para navegação e tomada de decisão, garantindo que as informações do ambiente estejam atualizadas durante a execução dos algoritmos de exploração e corrida.
-
-    \item \textbf{Prioridade (MoSCoW):}
-    Must Have
-
-    \item \textbf{Critérios de Aceitação:}
-    \begin{enumerate}
-        \item Os sensores ultrassônicos devem ser atualizados continuamente durante a execução do sistema.
-        \item A frequência mínima de aquisição dos sensores deve ser de 10 Hz (uma leitura a cada 100 ms).
-        \item As leituras dos sensores não devem bloquear a execução dos algoritmos de navegação por períodos superiores a 80 ms.
-        \item As informações obtidas pelos sensores devem estar disponíveis para os módulos de navegação e telemetria imediatamente após sua aquisição.
-    \end{enumerate}
-\end{itemize}
-
-
-\subsubsection*{RNF-09 – Frequência de Envio de Telemetria}
-
-\begin{itemize}
-    \item \textbf{Descrição:}
-    O sistema deve transmitir periodicamente os dados de telemetria do micromouse para o broker MQTT, permitindo o monitoramento em tempo real do robô.
-
-    \item \textbf{Prioridade (MoSCoW):}
-    Must Have
-
-    \item \textbf{Critérios de Aceitação:}
-    \begin{enumerate}
-        \item O micromouse deve publicar dados de telemetria no broker MQTT durante toda a execução da corrida.
-        \item A frequência mínima de envio deve ser de 2 Hz (uma publicação a cada 500 ms).
-        \item Cada mensagem de telemetria deve conter informações de posição, sensores, estado dos motores e dados energéticos.
-        \item A perda de uma mensagem não deve interromper o envio das mensagens subsequentes.
-    \end{enumerate}
-\end{itemize}
-
-
-\subsubsection*{RNF-10 – Segurança Operacional em Caso de Falha de Comunicação}
-
-\begin{itemize}
-    \item \textbf{Descrição:}
-    O sistema deve adotar um comportamento seguro quando ocorrer perda de comunicação com a infraestrutura de telemetria, evitando que o robô continue operando sem supervisão.
-
-    \item \textbf{Prioridade (MoSCoW):}
-    Must Have
-
-    \item \textbf{Critérios de Aceitação:}
-    \begin{enumerate}
-        \item O micromouse deve monitorar continuamente o estado da conexão com o broker MQTT.
-        \item Caso a conexão com o broker MQTT permaneça indisponível por mais de 4 segundos consecutivos, o robô deve interromper sua movimentação.
-        \item Após a interrupção, o algoritmo de navegação deve ser colocado em estado de pausa.
-        \item O sistema somente poderá retomar a execução após o restabelecimento da comunicação e validação do estado operacional.
-        \item O evento de perda de comunicação deve ser registrado nos logs do sistema.
-    \end{enumerate}
-\end{itemize}
+\end{multicols}
+
+\subsection*{Backlog do Produto (Histórias de Usuário)}
+
+As necessidades de negócio do sistema de monitoramento foram traduzidas em histórias de usuário (HU), mapeadas diretamente aos requisitos do projeto na Tabela \ref{tab:historias_usuario}.
+
+\begin{table}[H]
+    \centering
+    \small
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabularx}{\linewidth}{|l|X|c|c|}
+        \hline
+        \textbf{Cód.} & \textbf{História de Usuário (Eu-como-para)} & \textbf{RF} & \textbf{RNF} \\ \hline
+        \textbf{HU-01} & Como aluno, quero visualizar o labirinto em tempo real para acompanhar a exploração do robô. & RF-09 & \makecell{RNF-01 \\ RNF-02} \\ \hline
+        \textbf{HU-02} & Como aluno, quero visualizar os dados de telemetria para monitorar o comportamento dinâmico do robô. & RF-08 & \makecell{RNF-01 \\ RNF-03} \\ \hline
+        \textbf{HU-03} & Como aluno, quero acessar corridas anteriores para comparar os resultados do sistema. & \makecell{RF-07 \\ RF-10} & RNF-04 \\ \hline
+        \textbf{HU-04} & Como aluno, quero visualizar métricas de execução para avaliar a eficiência do algoritmo aplicado. & \makecell{RF-04 \\ RF-10} & \makecell{RNF-01 \\ RNF-04} \\ \hline
+        \textbf{HU-05} & Como professor, quero consultar o histórico de execuções para avaliar a evolução da equipe. & \makecell{RF-07 \\ RF-10} & \makecell{RNF-04 \\ RNF-05} \\ \hline
+        \textbf{HU-06} & Como professor, quero acompanhar a telemetria ao vivo para validar o sistema em bancada de testes. & \makecell{RF-08 \\ RF-09} & \makecell{RNF-01 \\ RNF-02} \\ \hline
+    \end{tabularx}
+    \caption{Histórias de usuário aplicadas ao ecossistema de software.}
+    \label{tab:historias_usuario}
+\end{table}
+
+\subsection*{Mapeamento de Requisitos Funcionais}
+
+A Tabela \ref{tab:requisitos_funcionais} apresenta o detalhamento dos requisitos funcionais (RF) do sistema, interligando-os às suas prioridades e às histórias de usuário (HU) originárias.
+
+\begin{table}[H]
+    \centering
+    \small
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabularx}{\linewidth}{|>{\raggedright\arraybackslash}p{0.18\linewidth}|X|>{\centering\arraybackslash}p{0.14\linewidth}|>{\centering\arraybackslash}p{0.16\linewidth}|}
+        \hline
+        \textbf{ID / Requisito} & \textbf{Descrição e Critérios de Aceitação} & \textbf{Prioridade} & \textbf{HU Relacionada} \\ \hline
+        
+        RF-01: Completar labirinto & O micromouse deve conseguir chegar no destino final 2x2 dos labirintos de tamanho 4x4, 8x8 e 16x16 usando busca em profundidade (DFS). & Must Have & HU-01, HU-06 \\ \hline
+        
+        RF-02: Mapear labirinto & O micromouse deve conseguir mapear o labirinto e atualizar sua matriz interna através da coleta de dados dos sensores ultrassônicos. & Must Have & HU-01, HU-06 \\ \hline
+        
+        RF-03: Completar volta & O micromouse deve conseguir, a partir do destino final, voltar para a posição inicial do labirinto utilizando o algoritmo de FloodFill. & Should Have & HU-01 \\ \hline
+        
+        RF-04: Completar corrida & O micromouse deve conseguir usar os percursos anteriores e dados coletados para escolher e percorrer uma rota de corrida otimizada. & Should Have & HU-04 \\ \hline
+        
+        RF-05: Enviar telemetria & O micromouse deve enviar dados (sensores, motores, bateria, posição e modo) para o broker MQTT para consumo do backend do site. & Must Have & HU-02, HU-06 \\ \hline
+        
+        RF-06: Receber dados & O backend do site deve se conexão com o broker MQTT, receber os dados enviados, tratá-los e disponibilizá-los para o frontend. & Must Have & HU-02, HU-06 \\ \hline
+        
+        RF-07: Armazenar histórico & O backend do site deve armazenar os dados das corridas anteriores (telemetria, tempo, tipo do labirinto e percursos) e enviá-los ao frontend. & Must Have & HU-03, HU-05 \\ \hline
+        
+        RF-08: Exibir telemetria & O frontend do site deve pegar os dados do backend em tempo real via websocket e exibi-los ao lado do mapa do labirinto. & Must Have & HU-02, HU-06 \\ \hline
+        
+        RF-09: Exibir labirinto & O frontend do site deve mostrar o mapa do labirinto que o micromouse está percorrendo, preenchendo as paredes e posição em tempo real. & Must Have & HU-01, HU-06 \\ \hline
+        
+        RF-10: Exibir histórico & O frontend deve apresentar uma lista clicável de labirintos anteriores, levando a um resumo com tamanho, mapa, tempo e percursos de cada modo. & Must Have & HU-03, HU-04, HU-05 \\ \hline
+    \end{tabularx}
+    \caption{Mapeamento dos Requisitos Funcionais (RF).}
+    \label{tab:requisitos_funcionais}
+\end{table}
+
+\subsection*{Mapeamento de Requisitos Não Funcionais}
+
+A Tabela \ref{tab:requisitos_nao_funcionais} categoriza as restrições e premissas de qualidade (RNF) exigidas para o ecossistema do micromouse.
+
+\begin{table}[H]
+    \centering
+    \small
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabularx}{\linewidth}{|>{\raggedright\arraybackslash}p{0.18\linewidth}|X|>{\centering\arraybackslash}p{0.14\linewidth}|>{\centering\arraybackslash}p{0.16\linewidth}|}
+        \hline
+        \textbf{ID / Requisito} & \textbf{Descrição e Critérios de Aceitação} & \textbf{Prioridade} & \textbf{HU Relacionada} \\ \hline
+        
+        RNF-01: Desempenho de Atualização & Apresentar telemetria e atualização do mapa com baixa latência via WebSocket, não excedendo o atraso de 1 segundo. & Must Have & HU-01, HU-02, HU-04, HU-06 \\ \hline
+        
+        RNF-02: Disponibilidade da Comunicação & Manter comunicação estável entre robô, MQTT, backend e frontend. Frontend avisa se as atualizações pararem. & Must Have & HU-01, HU-06 \\ \hline
+        
+        RNF-03: Compatibilidade & Interface web funcional e sem erros críticos nos navegadores Google Chrome, Mozilla Firefox e Microsoft Edge. & Should Have & HU-02 \\ \hline
+        
+        RNF-04: Persistência e Integridade & Armazenar os dados das corridas sem perdas, garantindo que permaneçam disponíveis após reinicialização do sistema. & Must Have & HU-03, HU-04, HU-05 \\ \hline
+        
+        RNF-05: Usabilidade & Interface clara e legível para fácil interpretação do mapa, dados de telemetria organizados e histórico acessível. & Should Have & HU-05 \\ \hline
+        
+        RNF-06: Manutenibilidade & Desenvolvimento modular com responsabilidades bem definidas entre backend, frontend e firmware, seguindo padrões de código. & Should Have & Todas \\ \hline
+        
+        RNF-07: Portabilidade & Backend e frontend executáveis via contêineres Docker, com ambiente de instalação documentado e reproduzível. & Could Have & Todas \\ \hline
+        
+        RNF-08: Frequência dos Sensores & Leitura contínua dos ultrassônicos a no mínimo 10 Hz (100 ms). Leituras não podem bloquear a navegação por mais de 80 ms. & Must Have & HU-01, HU-06 \\ \hline
+        
+        RNF-09: Frequência da Telemetria & Publicação periódica no broker MQTT com frequência mínima de 2 Hz (500 ms) contendo posição, motores, sensores e bateria. & Must Have & HU-02, HU-06 \\ \hline
+        
+        RNF-10: Segurança Operacional & Robô deve parar a movimentação e pausar a navegação caso a conexão MQTT caia por mais de 4 segundos consecutivos. & Must Have & HU-01, HU-02, HU-06 \\ \hline
+    \end{tabularx}
+    \caption{Mapeamento dos Requisitos Não Funcionais (RNF).}
+    \label{tab:requisitos_nao_funcionais}
+\end{table}
 
     \item \textbf{Protótipo da Interface de Monitoramento:}
         \begin{itemize}
@@ -668,141 +368,67 @@ Abaixo, apresenta-se o detalhamento do consumo energético do sistema, considera
 
     \item \textbf{Persistência de dados:}
 
-A solução proposta utiliza um banco de dados relacional PostgreSQL para armazenamento das informações do sistema de monitoramento e controle do micromouse. O modelo de persistência foi estruturado utilizando o Prisma ORM, permitindo representar tanto a estrutura física dos labirintos quanto os dados históricos das execuções realizadas pelo robô.
+\section{Persistência de Dados}
 
-O Modelo Entidade-Relacionamento (MER) foi projetado para atender às necessidades de armazenamento de mapas, corridas, telemetria e auditoria do sistema. As principais entidades identificadas são: \textit{Maze}, \textit{Cell}, \textit{Session}, \textit{SessionStep}, \textit{TelemetryLog} e \textit{TelemetryRaw}.
+O sistema utiliza PostgreSQL e Prisma ORM para persistência de dados, modelando a estrutura física dos labirintos e o histórico de execuções do \textit{micromouse}. O Modelo Entidade-Relacionamento (MER) foi projetado para assegurar a rastreabilidade da telemetria e a integridade da auditoria de sistema.
 
 \subsubsection*{Entidade Maze}
-
-A entidade \textit{Maze} representa um labirinto cadastrado no sistema. Cada labirinto possui um identificador único, nome, dimensões (largura e altura) e data de criação. Esta entidade funciona como elemento central da modelagem física do ambiente percorrido pelo robô.
-
-\textbf{Atributos:}
-
+Elemento central da modelagem do ambiente, representa um labirinto cadastrado e suas dimensões físicas padrão.
+\begin{multicols}{2}
 \begin{itemize}
-    \item id;
-    \item name;
-    \item width;
-    \item height;
-    \item createdAt.
+    \item id; \item name; \item width; \item height; \item createdAt.
 \end{itemize}
+\end{multicols}
 
 \subsubsection*{Entidade Cell}
-
-A entidade \textit{Cell} representa uma célula individual pertencente a um labirinto. Cada célula armazena sua posição na matriz e a existência de paredes em cada uma das quatro direções cardeais.
-
-\textbf{Atributos:}
-
+Mapeia uma célula individual, sua posição $(x,y)$ na matriz e a existência de paredes nas direções cardeais. Possui restrição de unicidade composta (\textit{mazeId}, \textit{posX}, \textit{posY}).
+\begin{multicols}{2}
 \begin{itemize}
-    \item id;
-    \item mazeId;
-    \item posX;
-    \item posY;
-    \item wallNorth;
-    \item wallSouth;
-    \item wallEast;
-    \item wallWest.
+    \item id; \item mazeId; \item posX; \item posY; \item wallNorth; \item wallSouth; \item wallEast; \item wallWest.
 \end{itemize}
-
-Existe uma restrição de unicidade composta pelos atributos \textit{mazeId}, \textit{posX} e \textit{posY}, garantindo que não existam duas células ocupando a mesma posição dentro de um mesmo labirinto.
+\end{multicols}
 
 \subsubsection*{Entidade Session}
-
-A entidade \textit{Session} representa uma execução completa do micromouse. Ela armazena informações referentes ao algoritmo utilizado, modo de execução, métricas de desempenho e dados energéticos coletados durante a corrida.
-
-\textbf{Atributos:}
-
+Registra uma execução completa do robô, armazenando o algoritmo, modo de operação, métricas de desempenho e dados energéticos coletados durante a corrida.
+\begin{multicols}{2}
 \begin{itemize}
-    \item id;
-    \item sessionName;
-    \item algorithm;
-    \item mode;
-    \item createdAt;
-    \item totalDurationMs;
-    \item DFSDurationMs;
-    \item FloodFillDurationMs;
-    \item avgSpeed;
-    \item isCompleted;
-    \item startPosX;
-    \item startPosY;
-    \item initialVoltage;
-    \item finalVoltage;
-    \item totalDrainMah;
-    \item fastestPath;
-    \item mazeId.
+    \item id; \item sessionName; \item algorithm; \item mode; \item createdAt; \item durationMs; \item avgSpeed; \item isCompleted; \item startPosX; \item startPosY; \item initialVoltage; \item finalVoltage; \item totalDrainMah; \item fastestPath; \item mazeId.
 \end{itemize}
+\end{multicols}
 
 \subsubsection*{Entidade SessionStep}
-
-A entidade \textit{SessionStep} registra a evolução temporal da execução do robô. Cada registro corresponde a um instante específico da corrida, permitindo reconstruir completamente o percurso realizado.
-
-\textbf{Atributos:}
-
+Registra a evolução temporal da telemetria, permitindo a reconstrução exata do percurso e do consumo a cada instante da execução.
+\begin{multicols}{2}
 \begin{itemize}
-    \item id;
-    \item sessionId;
-    \item timestamp;
-    \item stepOrder;
-    \item posX;
-    \item posY;
-    \item voltage;
-    \item current;
-    \item consumption.
+    \item id; \item sessionId; \item timestamp; \item stepOrder; \item posX; \item posY; \item voltage; \item current; \item consumption.
 \end{itemize}
+\end{multicols}
 
-\subsubsection*{Entidade TelemetryLog}
+\subsubsection*{Entidades de Telemetria (Log e Raw)}
+A entidade \textbf{\textit{TelemetryLog}} armazena eventos do sistema para diagnóstico. A \textbf{\textit{TelemetryRaw}} guarda mensagens MQTT em formato bruto (\textit{payload} JSON) para auditoria completa.
 
-A entidade \textit{TelemetryLog} é responsável pelo armazenamento de eventos relevantes ocorridos durante a execução do sistema. Seu objetivo é fornecer mecanismos de auditoria, rastreabilidade e diagnóstico.
-
-\textbf{Atributos:}
-
+\begin{multicols}{2}
+\textbf{Atributos (TelemetryLog):}
 \begin{itemize}
-    \item id;
-    \item sessionId;
-    \item timestamp;
-    \item logType;
-    \item message.
+    \item id; \item sessionId; \item timestamp; \item logType; \item message.
 \end{itemize}
-
-\subsubsection*{Entidade TelemetryRaw}
-
-A entidade \textit{TelemetryRaw} armazena as mensagens MQTT recebidas em formato bruto antes de qualquer processamento ou transformação. Essa estrutura permite auditoria completa dos dados recebidos pelo sistema.
-
-\textbf{Atributos:}
-
+\columnbreak
+\textbf{Atributos (TelemetryRaw):}
 \begin{itemize}
-    \item id;
-    \item createdAt;
-    \item topic;
-    \item robotId;
-    \item payload.
+    \item id; \item createdAt; \item topic; \item robotId; \item payload.
 \end{itemize}
+\end{multicols}
 
 \subsubsection*{Relacionamentos e Cardinalidades}
-
-Os relacionamentos definidos no modelo são apresentados a seguir:
-
+Os relacionamentos definidos no esquema do Prisma garantem a integridade referencial do sistema:
+\begin{multicols}{2}
 \begin{itemize}
-
-    \item \textbf{Maze -- Cell (1:N)}
-
-    Um labirinto pode possuir várias células, enquanto cada célula pertence obrigatoriamente a um único labirinto.
-
-    \item \textbf{Maze -- Session (1:N)}
-
-    Um mesmo labirinto pode ser utilizado em diversas execuções do robô. Entretanto, cada sessão está associada a apenas um labirinto.
-
-    \item \textbf{Session -- SessionStep (1:N)}
-
-    Uma sessão é composta por diversos passos sequenciais registrados durante a execução do robô. Cada passo pertence a uma única sessão.
-
-    \item \textbf{Session -- TelemetryLog (1:N)}
-
-    Uma sessão pode gerar diversos registros de auditoria, enquanto cada log pertence a apenas uma sessão.
-
+    \item \textbf{Maze -- Cell (1:N):} Labirinto possui várias células.
+    \item \textbf{Maze -- Session (1:N):} Labirinto utilizado em múltiplas sessões.
+    \item \textbf{Session -- SessionStep (1:N):} Sessão composta por múltiplos passos.
+    \item \textbf{Session -- TelemetryLog (1:N):} Sessão gera múltiplos logs de auditoria.
 \end{itemize}
-
-Dessa forma, o modelo permite armazenar tanto a configuração estrutural dos labirintos quanto o histórico detalhado das corridas executadas pelo micromouse, incluindo dados de navegação, consumo energético, eventos de sistema e telemetria recebida via MQTT.
-
+\end{multicols}
 \subsubsection*{Diagrama Entidade-Relacionamento (DER)}
 
 A Figura \ref{fig:der} apresenta o Diagrama Entidade-Relacionamento derivado do modelo descrito anteriormente.
@@ -816,294 +442,81 @@ A Figura \ref{fig:der} apresenta o Diagrama Entidade-Relacionamento derivado do 
 
         \end{itemize}
     
-    \item {\textbf{ Roteiro de testes funcionais:} }
-    \subsubsection*{CT01 – Exibição do tipo do labirinto}
-\begin{itemize}
-    \item \textbf{Código do caso de teste:} CT01
-    \item \textbf{Nome do caso de teste:} Exibir tipo do labirinto
-    \item \textbf{Tipo do caso de teste:} Sistema
-    \item \textbf{Objetivo do caso de teste:} Verificar se o tipo do labirinto é exibido corretamente no sistema.
-    \item \textbf{Pré-condições:} Micromouse enviando dados de telemetria.
-    \item \textbf{Descrição dos procedimentos:}
-    \begin{enumerate}
-        \item Acessar o sistema.
-        \item Iniciar envio de telemetria.
-        \item Observar o campo “Tipo do labirinto”.
-    \end{enumerate}
-    \item \textbf{Resultado esperado:} O tipo do labirinto é exibido corretamente e o valor corresponde ao dado enviado.
-    \item \textbf{Especificação do reparo a ser executado:} \textit    Descrever a correção necessária caso o valor exibido esteja incorreto
-    \item \textbf{Resultado após reparo:} \textit    Registrar o comportamento do sistema após a correção
-\end{itemize}
+\item {\textbf{Roteiro de Testes do Sistema e Algoritmo Principal:}}
 
-\subsubsection*{CT02 – Exibição do trajeto no labirinto}
-\begin{itemize}
-    \item \textbf{Código do caso de teste:} CT02
-    \item \textbf{Nome do caso de teste:} Exibir trajeto do micromouse
-    \item \textbf{Tipo do caso de teste:} Sistema
-    \item \textbf{Objetivo do caso de teste:} Verificar se o trajeto percorrido é exibido corretamente.
-    \item \textbf{Pré-condições:} Sistema recebendo dados em tempo real.
-    \item \textbf{Descrição dos procedimentos:}
-    \begin{enumerate}
-        \item Acessar o sistema.
-        \item Iniciar execução do micromouse.
-        \item Observar a visualização do trajeto.
-    \end{enumerate}
-    \item \textbf{Resultado esperado:} O trajeto é exibido corretamente e atualizado em tempo real.
-    \item \textbf{Especificação do reparo a ser executado:} \textit    Descrever ajustes necessários caso o trajeto esteja incorreto
-    \item \textbf{Resultado após reparo:} \textit    Registrar se o trajeto passou a ser exibido corretamente
-\end{itemize}
+Os casos de teste foram segregados em três categorias de avaliação técnica para garantir o isolamento escopado dos subsistemas, conforme apresentado a seguir em orientação de paisagem para melhor legibilidade dos procedimentos.
 
-\subsubsection*{CT03 – Exibição do consumo de bateria}
-\begin{itemize}
-    \item \textbf{Código do caso de teste:} CT03
-    \item \textbf{Nome do caso de teste:} Exibir consumo de bateria
-    \item \textbf{Tipo do caso de teste:} Sistema
-    \item \textbf{Objetivo do caso de teste:} Verificar se o consumo de bateria é exibido corretamente.
-    \item \textbf{Pré-condições:} Micromouse enviando dados.
-    \item \textbf{Descrição dos procedimentos:}
-    \begin{enumerate}
-        \item Acessar o sistema.
-        \item Iniciar envio de telemetria.
-        \item Observar o campo de bateria.
-    \end{enumerate}
-    \item \textbf{Resultado esperado:} O consumo é exibido corretamente e os valores são atualizados em tempo real.
-    \item \textbf{Especificação do reparo a ser executado:} \textit    Corrigir inconsistências nos dados exibidos ou na atualização
-    \item \textbf{Resultado após reparo:} \textit    Verificar se os valores passaram a ser exibidos corretamente
-\end{itemize}
+\begin{landscape}
 
-\subsubsection*{CT04 – Exibição da velocidade média}
-\begin{itemize}
-    \item \textbf{Código do caso de teste:} CT04
-    \item \textbf{Nome do caso de teste:} Exibir velocidade média
-    \item \textbf{Tipo do caso de teste:} Sistema
-    \item \textbf{Objetivo do caso de teste:} Verificar se a velocidade média é exibida corretamente.
-    \item \textbf{Pré-condições:} Micromouse enviando dados.
-    \item \textbf{Descrição dos procedimentos:}
-    \begin{enumerate}
-        \item Acessar o sistema.
-        \item Iniciar envio de telemetria.
-        \item Observar o campo de velocidade.
-    \end{enumerate}
-    \item \textbf{Resultado esperado:} A velocidade média é exibida corretamente e os valores são atualizados em tempo real.
-    \item \textbf{Especificação do reparo a ser executado:} \textit    Ajustar cálculo ou exibição da velocidade
-    \item \textbf{Resultado após reparo:} \textit    Velocidade exibida corretamente
-\end{itemize}
+% ================= TABELA 1: SISTEMA =================
+\subsection*{Testes de Sistema — Cockpit Web}
+A Tabela \ref{tab:testes_sistema_web} apresenta os cenários funcionais projetados para validar os requisitos de renderização e a integridade da interface web do usuário.
 
-\subsubsection*{CT05 – Exibição do tempo de conclusão}
-\begin{itemize}
-    \item \textbf{Código do caso de teste:} CT05
-    \item \textbf{Nome do caso de teste:} Exibir tempo de conclusão
-    \item \textbf{Tipo do caso de teste:} Sistema
-    \item \textbf{Objetivo do caso de teste:} Verificar se o tempo de conclusão é exibido corretamente.
-    \item \textbf{Pré-condições:} Execução do micromouse finalizada.
-    \item \textbf{Descrição dos procedimentos:}
-    \begin{enumerate}
-        \item Executar o micromouse.
-        \item Aguardar o término da execução.
-        \item Observar o campo de tempo.
-    \end{enumerate}
-    \item \textbf{Resultado esperado:} O tempo de conclusão é exibido corretamente.
-    \item \textbf{Especificação do reparo a ser executado:} \textit Corrigir exibição do tempo
-    \item \textbf{Resultado após reparo:} \textit Tempo correto exibido
-\end{itemize}
+\begin{center}
+\begin{longtable}{|c|p{4.5cm}|c|p{8cm}|p{6cm}|}
+\caption{Cronograma e especificação por atividade para a camada de interface (Front-end).} \label{tab:justificativas_atraso} \\
+\hline
+\textbf{Ativ.} & \textbf{Nome do Teste} & \textbf{Tipo} & \textbf{Objetivo / Procedimento} & \textbf{Resultado Esperado} \\ \hline
+\endhead
+\hline \multicolumn{5}{|r|}{{Continua na próxima página}} \\ \hline
+\endfoot
+\hline \hline
+\endlastfoot
 
-\subsubsection*{CT06 – Exibição do status do desafio}
-\begin{itemize}
-    \item \textbf{Código do caso de teste:} CT06
-    \item \textbf{Nome do caso de teste:} Exibir desafio cumprido
-    \item \textbf{Tipo do caso de teste:} Sistema
-    \item \textbf{Objetivo do caso de teste:} Verificar se o sistema exibe corretamente o status do desafio.
-    \item \textbf{Pré-condições:} Execução finalizada.
-    \item \textbf{Descrição dos procedimentos:}
-    \begin{enumerate}
-        \item Executar o micromouse.
-        \item Finalizar o percurso.
-        \item Observar o campo “Desafio cumprido”.
-    \end{enumerate}
-    \item \textbf{Resultado esperado:} O sistema exibe “Sim” quando o desafio é concluído e “Não” quando não concluído.
-    \item \textbf{Especificação do reparo a ser executado:} \textit Ajustar lógica de status
-    \item \textbf{Resultado após reparo:} \textit Status correto exibido
-\end{itemize}
+\textbf{CT01} & Exibir tipo do labirinto & Sistema & Verificar exibição do labirinto. \par 1. Acessar o sistema. \par 2. Iniciar telemetria. & O tipo exibido corresponde exatamente ao dado real enviado. \\ \hline
+\textbf{CT02} & Exibir trajeto do micromouse & Sistema & Verificar renderização do caminho. \par 1. Iniciar execução do robô. \par 2. Monitorar a interface. & O trajeto é renderizado graficamente em tempo real. \\ \hline
+\textbf{CT03} & Exibir consumo de bateria & Sistema & Verificar monitoramento de tensão. \par 1. Iniciar fluxo de dados. \par 2. Observar widget de energia. & O consumo de bateria exibe valores coerentes atualizados. \\ \hline
+\textbf{CT04} & Exibir velocidade média & Sistema & Verificar exibição da velocidade. \par 1. Iniciar fluxo do simulador. \par 2. Checar painel técnico. & Velocidade média calculada e renderizada continuamente. \\ \hline
+\textbf{CT05} & Exibir tempo de conclusão & Sistema & Verificar cronômetro da sessão. \par 1. Finalizar o percurso da corrida. \par 2. Avaliar log. & O tempo de conclusão final é fixado no painel e guardado. \\ \hline
+\textbf{CT06} & Exibir desafio cumprido & Sistema & Validar status lógico. \par 1. Finalizar trajeto. \par 2. Checar modal de encerramento. & Sistema exibe status correto de sucesso ("Sim" ou "Não"). \\ \hline
+\textbf{CT07} & Atualização em tempo real & Sistema & Validar pipeline de dados. \par 1. Ligar fluxo via WebSocket. \par 2. Checar interface. & Painel atualiza dinamicamente sem recarregar a página. \\ \hline
+\end{longtable}
+\end{center}
 
-\subsubsection*{CT07 – Atualização em tempo real}
-\begin{itemize}
-    \item \textbf{Código do caso de teste:} CT07
-    \item \textbf{Nome do caso de teste:} Atualização contínua dos dados
-    \item \textbf{Tipo do caso de teste:} Sistema
-    \item \textbf{Objetivo do caso de teste:} Verificar se os dados são atualizados em tempo real.
-    \item \textbf{Pré-condições:} Sistema recebendo dados continuamente.
-    \item \textbf{Descrição dos procedimentos:}
-    \begin{enumerate}
-        \item Acessar o sistema.
-        \item Iniciar envio contínuo de dados.
-        \item Observar os campos.
-    \end{enumerate}
-    \item \textbf{Resultado esperado:} Os dados são atualizados automaticamente, não sendo necessário recarregar a página.
-    \item \textbf{Especificação do reparo a ser executado:} \textit Corrigir mecanismo de atualização
-    \item \textbf{Resultado após reparo:} \textit Dados atualizados corretamente
-\end{itemize}
-\item \textbf{Roteiro de testes do algoritmo principal:}
+% ================= TABELA 2: UNITÁRIOS =================
+\subsection*{Testes Unitários — Algoritmo de Navegação}
+A Tabela \ref{tab:testes_unitarios_alg} descreve a validação isolada das funções lógicas de mapeamento, orientação espacial e tomada de decisão do algoritmo embarcado.
 
-\subsubsection*{CT01 – Inicialização do mapa interno}
-\begin{itemize}
-    \item \textbf{Código do caso de teste:} CT01
-    \item \textbf{Nome do caso de teste:} Inicialização da estrutura de dados do labirinto
-    \item \textbf{Tipo do caso de teste:} Unitário
-    \item \textbf{Objetivo do caso de teste:} Verificar se a estrutura de dados que representa o mapa interno do labirinto é inicializada corretamente antes do início de qualquer exploração.
-    \item \textbf{Pré-condições:} Firmware carregado no microcontrolador; nenhuma leitura de sensor realizada; mapa não inicializado.
-    \item \textbf{Descrição dos procedimentos:}
-    \begin{enumerate}
-        \item Executar a função de inicialização do mapa.
-        \item Inspecionar o estado de cada célula via debug serial.
-        \item Verificar as bordas externas e a posição inicial do robô.
-    \end{enumerate}
-    \item \textbf{Resultado esperado:} Todas as células marcadas como inexploradas; bordas externas marcadas como paredes; posição do robô definida na célula de partida; nenhum dado residual de execução anterior.
-    \item \textbf{Especificação do reparo a ser executado:} \textit{Revisar a função de inicialização para garantir que todos os campos da estrutura sejam explicitamente atribuídos; verificar se há uso de memória estática não zerada.}
-    \item \textbf{Resultado após reparo:} \textit{Registrar o comportamento do sistema após a correção.}
-\end{itemize}
+\begin{center}
+\begin{longtable}{|c|p{4.5cm}|c|p{8cm}|p{6cm}|}
+\caption{Casos de teste unitários do algoritmo principal.} \label{tab:testes_unitarios_alg} \\
+\hline
+\textbf{Cód.} & \textbf{Nome do Teste} & \textbf{Tipo} & \textbf{Objetivo / Procedimento} & \textbf{Resultado Esperado} \\ \hline
+\endhead
+\hline \multicolumn{5}{|r|}{{Continua na próxima página}} \\ \hline
+\endfoot
+\hline \hline
+\endlastfoot
 
-\subsubsection*{CT02 – Atualização de paredes por sensores}
-\begin{itemize}
-    \item \textbf{Código do caso de teste:} CT02
-    \item \textbf{Nome do caso de teste:} Atualização de paredes a partir de leituras de sensores
-    \item \textbf{Tipo do caso de teste:} Unitário
-    \item \textbf{Objetivo do caso de teste:} Verificar se as leituras dos sensores de proximidade são corretamente convertidas em paredes registradas no mapa interno.
-    \item \textbf{Pré-condições:} Mapa inicializado (CT01 aprovado); valores de sensores injetados manualmente indicando parede à frente e à esquerda, livre à direita.
-    \item \textbf{Descrição dos procedimentos:}
-    \begin{enumerate}
-        \item Injetar leituras simuladas indicando parede frontal e esquerda.
-        \item Chamar a função de atualização do mapa.
-        \item Inspecionar o mapa resultante via debug serial.
-    \end{enumerate}
-    \item \textbf{Resultado esperado:} Apenas as paredes frontal e esquerda da célula atual são marcadas como presentes; parede direita permanece ausente; demais células não são alteradas.
-    \item \textbf{Especificação do reparo a ser executado:} \textit{Verificar o mapeamento entre os índices de sensor e a orientação atual do robô; corrigir erros de indexação ou de conversão de coordenadas locais para globais.}
-    \item \textbf{Resultado após reparo:} \textit{Registrar se as paredes passaram a ser registradas corretamente no mapa.}
-\end{itemize}
+\textbf{CT08} & Inicialização do mapa interno & Unitário & Verificar limpeza de memória inicial. \par 1. Executar setup do mapa. \par 2. Avaliar via serial. & Células limpas como inexploradas e bordas setadas como paredes. \\ \hline
+\textbf{CT09} & Atualização de paredes & Unitário & Validar conversão local-global. \par 1. Injetar leitura de sensores. \par 2. Inspecionar matriz. & Paredes frontal/esquerda marcadas; direita mantida livre. \\ \hline
+\textbf{CT10} & Cálculo do próximo movimento & Unitário & Verificar prioridade de decisão. \par 1. Simular corredor reto. \par 2. Chamar lógica do DFS. & O algoritmo retorna o comando restrito de avançar reto. \\ \hline
+\textbf{CT11} & Atualização de pose & Unitário & Validar odometria e eixos. \par 1. Avançar 1 nó. \par 2. Girar 90°. \par 3. Avançar 1 nó. & Coordenadas internas e orientação atualizadas com precisão. \\ \hline
+\textbf{CT12} & Detecção da célula objetivo & Unitário & Validar parada central. \par 1. Forçar coordenadas centrais. \par 2. Avaliar flag. & Retorna verdadeiro apenas no centro do labirinto (4×4, 8×8, 16×16). \\ \hline
+\end{longtable}
+\end{center}
 
-\subsubsection*{CT03 – Cálculo do próximo movimento}
-\begin{itemize}
-    \item \textbf{Código do caso de teste:} CT03
-    \item \textbf{Nome do caso de teste:} Cálculo do próximo movimento em corredor reto
-    \item \textbf{Tipo do caso de teste:} Unitário
-    \item \textbf{Objetivo do caso de teste:} Verificar se a função de decisão retorna o movimento correto dado um estado de mapa com apenas uma saída disponível.
-    \item \textbf{Pré-condições:} Mapa configurado manualmente com corredor reto (paredes à esquerda, direita e atrás; livre à frente); robô na posição inicial com orientação Norte.
-    \item \textbf{Descrição dos procedimentos:}
-    \begin{enumerate}
-        \item Configurar o mapa com o cenário descrito nas pré-condições.
-        \item Chamar a função de decisão do algoritmo.
-        \item Registrar o movimento retornado via debug serial.
-    \end{enumerate}
-    \item \textbf{Resultado esperado:} A função retorna o comando de avançar; nenhum outro movimento é considerado.
-    \item \textbf{Especificação do reparo a ser executado:} \textit{Revisar a lógica de prioridade de movimentos; verificar se a consulta ao mapa está usando a orientação correta do robô.}
-    \item \textbf{Resultado após reparo:} \textit{Registrar se o movimento correto passou a ser retornado.}
-\end{itemize}
+% ================= TABELA 3: INTEGRAÇÃO =================
+\subsection*{Testes de Integração e Sistema — Firmware e Hardware}
+A Tabela \ref{tab:testes_integracao_firm} detalha os ensaios de acoplamento físico-lógico entre os cálculos matemáticos do microcontrolador e a resposta mecânica dos atuadores em pista física.
 
-\subsubsection*{CT04 – Atualização de posição e orientação}
-\begin{itemize}
-    \item \textbf{Código do caso de teste:} CT04
-    \item \textbf{Nome do caso de teste:} Atualização de posição e orientação após movimentos
-    \item \textbf{Tipo do caso de teste:} Unitário
-    \item \textbf{Objetivo do caso de teste:} Verificar se a posição e a orientação internas do robô são atualizadas corretamente após uma sequência de movimentos.
-    \item \textbf{Pré-condições:} Posição inicial (0,0); orientação Norte; mapa sem restrições de parede.
-    \item \textbf{Descrição dos procedimentos:}
-    \begin{enumerate}
-        \item Emitir comando de avançar uma célula.
-        \item Emitir comando de girar 90° à direita.
-        \item Emitir comando de avançar uma célula.
-        \item Inspecionar posição e orientação resultantes via debug serial.
-    \end{enumerate}
-    \item \textbf{Resultado esperado:} A posição e a orientação internas refletem corretamente os movimentos executados, de acordo com o sistema de coordenadas adotado pela equipe.
-    \item \textbf{Especificação do reparo a ser executado:} \textit{Verificar os incrementos de coordenada para cada direção; corrigir o mapeamento entre orientação e variação de posição.}
-    \item \textbf{Resultado após reparo:} \textit{Registrar se a posição e orientação passaram a ser atualizadas corretamente.}
-\end{itemize}
+\begin{center}
+\begin{longtable}{|c|p{4.5cm}|c|p{8cm}|p{6cm}|}
+\caption{Casos de teste de integração e sistema embarcado.} \label{tab:testes_integracao_firm} \\
+\hline
+\textbf{Cód.} & \textbf{Nome do Teste} & \textbf{Tipo} & \textbf{Objetivo / Procedimento} & \textbf{Resultado Esperado} \\ \hline
+\endhead
+\hline \multicolumn{5}{|r|}{{Continua na próxima página}} \\ \hline
+\endfoot
+\hline \hline
+\endlastfoot
 
-\subsubsection*{CT05 – Detecção da célula objetivo}
-\begin{itemize}
-    \item \textbf{Código do caso de teste:} CT05
-    \item \textbf{Nome do caso de teste:} Detecção da célula objetivo
-    \item \textbf{Tipo do caso de teste:} Unitário
-    \item \textbf{Objetivo do caso de teste:} Verificar se o algoritmo identifica corretamente quando o \textit{micromouse} atingiu a área central do labirinto.
-    \item \textbf{Pré-condições:} Mapa inicializado; coordenadas do objetivo definidas conforme o tamanho do labirinto em teste.
-    \item \textbf{Descrição dos procedimentos:}
-    \begin{enumerate}
-        \item Setar manualmente a posição atual para as coordenadas da célula objetivo.
-        \item Chamar a função de verificação de objetivo.
-        \item Repetir o teste com coordenadas fora da área objetivo.
-    \end{enumerate}
-    \item \textbf{Resultado esperado:} A função retorna verdadeiro para as coordenadas do objetivo e falso para todas as demais coordenadas testadas.
-    \item \textbf{Especificação do reparo a ser executado:} \textit{Corrigir as coordenadas de objetivo ou o cálculo dinâmico do centro para cada tamanho de labirinto (4×4, 8×8 e 16×16).}
-    \item \textbf{Resultado após reparo:} \textit{Registrar se a detecção passou a funcionar corretamente.}
-\end{itemize}
+\textbf{CT13} & Integração algoritmo-motores & Integração & Validar tempo de pulso. \par 1. Rodar loop por 3 nós retos. \par 2. Medir deslocamento. & Robô avança 54 cm (3 nós de 18 cm) em linha reta sem colisões. \\ \hline
+\textbf{CT14} & Exploração autônoma 4×4 & Sistema & Validar operação sem fio. \par 1. Ligar robô na partida. \par 2. Aguardar parada autônoma. & Mapeamento completo executado, centro achado e dados salvos no banco. \\ \hline
+\textbf{CT15} & Repetibilidade da navegação & Sistema & Investigar determinismo. \par 1. Repetir corrida 3 vezes. \par 2. Comparar tempos e mapas. & Mapas gerados são idênticos e variação de tempo é menor que 20\%. \\ \hline
+\end{longtable}
+\end{center}
 
-\subsubsection*{CT06 – Integração entre algoritmo e motores}
-\begin{itemize}
-    \item \textbf{Código do caso de teste:} CT06
-    \item \textbf{Nome do caso de teste:} Integração entre algoritmo de decisão e controle de motores
-    \item \textbf{Tipo do caso de teste:} Integração
-    \item \textbf{Objetivo do caso de teste:} Verificar se o movimento calculado pelo algoritmo resulta no acionamento correto dos motores.
-    \item \textbf{Pré-condições:} CT03 e CT04 aprovados; \textit{micromouse} em superfície plana com corredor livre de três células.
-    \item \textbf{Descrição dos procedimentos:}
-    \begin{enumerate}
-        \item Configurar o mapa com um corredor reto de três células.
-        \item Executar o loop principal do algoritmo por três iterações.
-        \item Observar e registrar os movimentos físicos do \textit{micromouse}.
-    \end{enumerate}
-    \item \textbf{Resultado esperado:} O \textit{micromouse} avança três células em linha reta sem desvios perceptíveis; posição interna atualizada corretamente ao final das três iterações.
-    \item \textbf{Especificação do reparo a ser executado:} \textit{Verificar o tempo de ativação dos motores para uma célula (18 cm); calibrar encoders ou tempo de pulso para garantir deslocamento correto.}
-    \item \textbf{Resultado após reparo:} \textit{Registrar se o deslocamento passou a ocorrer corretamente.}
-\end{itemize}
+\textit{* Nota: Para qualquer inconsistência detectada nos ensaios descritos, a especificação do reparo consiste na recalibração empírica das constantes físicas de leitura (18 cm/nó), ajuste dos encoders de quadratura ou tratamento de exceções nulas na camada de mapeamento do frontend.}
 
-\subsubsection*{CT07 – Exploração autônoma no labirinto 4×4}
-\begin{itemize}
-    \item \textbf{Código do caso de teste:} CT07
-    \item \textbf{Nome do caso de teste:} Exploração autônoma completa no labirinto 4×4
-    \item \textbf{Tipo do caso de teste:} Sistema
-    \item \textbf{Objetivo do caso de teste:} Validar que o algoritmo explora todas as células acessíveis do labirinto 4×4 de forma autônoma, sem intervenção humana, e detecta corretamente o objetivo central.
-    \item \textbf{Pré-condições:} Pista 4×4 da equipe montada com paredes brancas, topos vermelhos e chão preto; mapa interno zerado; \textit{micromouse} posicionado no canto de partida.
-    \item \textbf{Descrição dos procedimentos:}
-    \begin{enumerate}
-        \item Ligar o \textit{micromouse} na posição de partida.
-        \item Aguardar até que o robô pare ou sinalize conclusão.
-        \item Registrar via telemetria o mapa gerado, o trajeto percorrido e o tempo de conclusão.
-        \item Verificar se houve colisão com alguma parede.
-    \end{enumerate}
-    \item \textbf{Resultado esperado:} Todas as células acessíveis marcadas como exploradas; objetivo central encontrado; nenhuma colisão com paredes; dados de telemetria exibidos no sistema web ao final.
-    \item \textbf{Especificação do reparo a ser executado:} \textit{Identificar células não exploradas no mapa e revisar a lógica de seleção do próximo destino; calibrar sensores se houver colisões.}
-    \item \textbf{Resultado após reparo:} \textit{Registrar se o labirinto passou a ser explorado corretamente.}
-\end{itemize}
-
-\subsubsection*{CT08 – Repetibilidade da navegação}
-\begin{itemize}
-    \item \textbf{Código do caso de teste:} CT08
-    \item \textbf{Nome do caso de teste:} Repetibilidade da navegação no labirinto 4×4
-    \item \textbf{Tipo do caso de teste:} Sistema
-    \item \textbf{Objetivo do caso de teste:} Verificar se o algoritmo produz resultados consistentes em múltiplas execuções com o mesmo labirinto fixo.
-    \item \textbf{Pré-condições:} CT07 aprovado; labirinto 4×4 com configuração de paredes fixa; \textit{micromouse} reiniciado entre execuções.
-    \item \textbf{Descrição dos procedimentos:}
-    \begin{enumerate}
-        \item Executar o CT07 três vezes consecutivas.
-        \item Registrar o mapa gerado e o tempo de conclusão em cada execução.
-    \end{enumerate}
-    \item \textbf{Resultado esperado:} Os três mapas gerados são idênticos entre si; os tempos de conclusão variam menos de 20\% entre as execuções.
-    \item \textbf{Especificação do reparo a ser executado:} \textit{Investigar fontes de não-determinismo no algoritmo, como ruído nos sensores ou condições de corrida em interrupções; implementar filtros de leitura.}
-    \item \textbf{Resultado após reparo:} \textit{Registrar se os resultados passaram a ser consistentes entre execuções.}
-
-\end{itemize}
-
-% \textcolor{red}{Com relação ao \textit{software}, será necessário apresentar os seguintes itens: % pacotes de componentes de \textit{software}, suas funções e características, e explicar as decisões de projeto:
-% \begin{enumerate}
-%     \item Um diagrama do processo de negócio do problema que a máquina se propõe a resolver (BPNM) – não é UML, mas é fundamental para entender como o sistema se comporta como um todo, incluindo o usuário;
-%     \item Lista de casos de uso (backlog do sistema). Backlog funcional;
-%     \item Lista de requisitos não-funcionais a serem satisfeitos pelo sistema;
-%     \item Diagrama de casos de uso: mostrando os requisitos funcionais, seus atores e como eles interagem entre si;
-%     \item Diagrama de Classes: apresentando quais dados são manipulados pelo sistema (internamente e externamente – ex.: resultados de experimentos);
-%     \item Diagrama de arquitetura, identificando todos os componentes da máquina e suas iterações com o software;
-%     \item Diagrama de estados da máquina (sistema);
-%     \item Descrição dos testes dos componentes da máquina e dos testes funcionais que deveriam ser feitos para avaliar o funcionamento da máquina e identificar defeitos. São importantes os testes unitários (componentes) e de integração (conjunto de componentes) e o roteiro de testes.
-% \end{enumerate}
-% }
-%\textcolor{red}{Com relação ao \textit{software}, será necessário apresentar pacotes de componentes de \textit{software}, suas funções e características, e explicar as decisões de projeto.}
-
-    \textbf{Roteiro de testes funcionais:}
-   
-\end{itemize}
+\end{landscape}
