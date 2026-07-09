@@ -1,4 +1,3 @@
-// src/hooks/useWebSocket.ts
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { io, Socket } from 'socket.io-client';
 
@@ -12,10 +11,27 @@ export interface TelemetryData {
   voltage: number;
   current: number;
   consumption?: number;
+  sensors?: {
+    front: number;
+    left: number;
+    right: number;
+  };
+  walls?: {
+    north: boolean;
+    south: boolean;
+    east: boolean;
+    west: boolean;
+  };
+  conclusao?: boolean;
+  estado?: string;
+  modo?: string;
+  /** Direção absoluta reportada pela ESP (norte/sul/leste/oeste). */
+  direcao?: string;
 }
 
 export function useWebSocket() {
   const [robotData, setRobotData] = useState<TelemetryData | null>(null);
+  const [sessionSteps, setSessionSteps] = useState<TelemetryData[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const socketRef = useRef<Socket | null>(null);
 
@@ -23,33 +39,50 @@ export function useWebSocket() {
   const connect = useCallback(() => {
     if (socketRef.current?.connected) return;
 
-    const serverUrl = import.meta.env.VITE_WS_URL || 'http://localhost:3000';
+    const serverUrl = import.meta.env.VITE_WS_URL ?? import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:3000';
     
+    // Configuração com suporte inicial a polling para contornar restrições rígidas do Firefox
     const socket = io(serverUrl, {
-      transports: ['websocket'],
-      autoConnect: true
+      transports: ['polling', 'websocket'],
+      autoConnect: true,
+      withCredentials: true
     });
 
     socket.on('connect', () => {
       setIsConnected(true);
-      // 🚀 Alinhado com o server.ts: Notifica o backend para assinar o canal de streaming
-      socket.emit("telemetry:subscribe", { limit: 50 });
+      // Nova carga da página = corrida ao vivo zerada (sem replay de órfãos antigos).
+      socket.emit("telemetry:subscribe", { limit: 50, fresh: true });
     });
 
     socket.on('disconnect', () => {
       setIsConnected(false);
+      setSessionSteps([]);
     });
 
-    // 🚀 Alinhado com a sua responsabilidade da issue: Escuta o pipeline do MQTT -> Banco -> WS
+    // Escuta ativa do pipeline vindo do serviço relacional
     socket.on('telemetry:step', (data: TelemetryData) => {
       setRobotData(data);
+      setSessionSteps((prev) => {
+        if (prev.some((step) => step.stepOrder === data.stepOrder)) return prev;
+        return [...prev, data];
+      });
     });
 
-    // Tratamento opcional para capturar o replay histórico ao dar F5
+    // Histórico vazio após F5 (fresh subscribe) ou replay explícito (fresh: false).
     socket.on('telemetry:history', (historyItems: TelemetryData[]) => {
-      if (historyItems.length > 0) {
-        setRobotData(historyItems[historyItems.length - 1]); // Carrega o último passo conhecido
+      if (!historyItems || historyItems.length === 0) {
+        setRobotData(null);
+        setSessionSteps([]);
+        return;
       }
+      setRobotData(historyItems[historyItems.length - 1]);
+      setSessionSteps(historyItems);
+    });
+
+    // 🚀 O SEGREDO MÁGICO: Escuta o comando de reset para despintar o labirinto!
+    socket.on('session_reset', () => {
+      setSessionSteps([]);
+      setRobotData(null);
     });
 
     socketRef.current = socket;
@@ -60,16 +93,17 @@ export function useWebSocket() {
     if (socketRef.current) {
       socketRef.current.off('telemetry:step');
       socketRef.current.off('telemetry:history');
+      socketRef.current.off('session_reset'); // Limpeza do ouvinte de reset
       socketRef.current.disconnect();
       socketRef.current = null;
       setIsConnected(false);
+      setSessionSteps([]);
     }
   }, []);
 
-  // 🔌 MUDANÇA CRÍTICA: Sistema agora liga automático no nascimento do app!
+  // Inicialização automatizada no carregamento do Cockpit
   useEffect(() => {
-    connect(); // Conecta direto para dar feedback nas telas de Welcome e Loading
-    
+    connect(); 
     return () => disconnect();
   }, [connect, disconnect]);
 
@@ -79,5 +113,5 @@ export function useWebSocket() {
     }
   }, []);
 
-  return { robotData, isConnected, sendRaceAction, connect, disconnect };
+  return { robotData, sessionSteps, isConnected, sendRaceAction, connect, disconnect };
 }

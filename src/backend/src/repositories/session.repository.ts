@@ -3,6 +3,7 @@ import { prisma } from "../lib/prisma";
 
 type DbClient = Prisma.TransactionClient | typeof prisma;
 
+// CORREÇÃO: Trocado avgCurrent por totalDrainMah para refletir o schema do Prisma
 export const sessionMetadataSelect = {
   id: true,
   sessionName: true,
@@ -10,8 +11,10 @@ export const sessionMetadataSelect = {
   createdAt: true,
   isCompleted: true,
   durationMs: true,
+  avgSpeed: true,
   initialVoltage: true,
   finalVoltage: true,
+  totalDrainMah: true, 
 } satisfies Prisma.SessionSelect;
 
 export type SessionMetadataRecord = Prisma.SessionGetPayload<{
@@ -35,14 +38,17 @@ type CloseSessionData = {
   totalDrainMah: number;
 };
 
+// CORREÇÃO: Atualizada a propriedade do DTO interno de criação de avgCurrent para totalDrainMah
 type CreateConsolidatedSessionData = {
   sessionName: string;
   algorithm: string;
   mode: string;
   mazeId: string;
   durationMs: number;
+  avgSpeed: number;
   initialVoltage: number;
   finalVoltage: number;
+  totalDrainMah: number; 
   startPosX: number;
   startPosY: number;
 };
@@ -123,6 +129,24 @@ export const findSessionDetailWithSteps = async (id: string) =>
           voltage: true,
           current: true,
           timestamp: true,
+        },
+      },
+      maze: {
+        select: {
+          id: true,
+          name: true,
+          width: true,
+          height: true,
+          cells: {
+            select: {
+              posX: true,
+              posY: true,
+              wallNorth: true,
+              wallSouth: true,
+              wallEast: true,
+              wallWest: true,
+            },
+          },
         },
       },
     },

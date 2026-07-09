@@ -1,5 +1,24 @@
 #include "./telemetria.h"
 
+static const char* _estadoParaDto(Estado estado){
+    switch(estado)
+    {
+        case CONCLUIDO:
+            return "FINALIZADO";
+        case CORRIDA:
+            // CORRIDA não existe no enum do DTO — mapeamos como EXPLORANDO
+            // pois o robô ainda está em movimento ativo no labirinto
+            return "EXPLORANDO";
+        case EXPLORANDO:
+            return "EXPLORANDO";
+        case ERRO:
+            return "ERRO";
+        case PARADO:
+        default:
+            return "PARADO";
+    }
+}
+
 void publishTelemetry(
     const Rato &rato,
     const Labirinto &lab,
@@ -7,6 +26,7 @@ void publishTelemetry(
     const char *mqttTopic,
     const char *robotId,
     unsigned long &stepCounter,
+    Estado estado,
     bool motorsRunning,
     const char *ultimoMovimento,
     bool concluded)
@@ -14,13 +34,14 @@ void publishTelemetry(
     if (WiFi.status() != WL_CONNECTED || !mqttClient.connected())
         return;
 
-    StaticJsonDocument<768> doc;
+    // 1024 bytes: margem segura para o payload completo com todos os campos aninhados
+    StaticJsonDocument<1024> doc;
 
     doc["robotId"] = robotId;
     doc["step"] = stepCounter; // incremento fica a cargo do passoDFS()
     doc["tempoMs"] = millis();
     doc["modo"] = "DFS";
-    doc["estado"] = motorsRunning ? "EXPLORANDO" : "PARADO";
+    doc["estado"] = _estadoParaDto(estado);
 
     JsonObject posicao = doc.createNestedObject("posicao");
     posicao["x"] = rato.x;
@@ -49,12 +70,13 @@ void publishTelemetry(
     sensores["direitaCm"] = rato.distancia_direita;
 
     JsonObject energia = doc.createNestedObject("energia");
-    energia["tensaoV"] = 0.0;
-    energia["correnteMa"] = 0.0;
+    energia["tensaoV"] = rato.tensao;
+    energia["correnteMa"] = rato.corrente;
 
     doc["conclusao"] = concluded;
 
-    char buffer[512];
+    // 768 bytes: suficiente para serializar o JSON sem truncamento silencioso
+    char buffer[768];
     serializeJson(doc, buffer);
     mqttClient.publish(mqttTopic, buffer);
 }

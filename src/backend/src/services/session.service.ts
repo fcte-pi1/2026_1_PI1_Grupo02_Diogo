@@ -1,4 +1,5 @@
 import {
+  toMazeDto,
   toSessionMetadataDto,
   toSessionStepDto,
   type SessionDetailDto,
@@ -25,11 +26,13 @@ export const getSessionDetail = async (
     return null;
   }
 
-  const { telemetrySteps, ...metadata } = session;
+  // Desestruturamos para separar relações (steps e maze) dos dados brutos da sessão
+  const { telemetrySteps, maze, ...metadata } = session;
 
   return {
     ...toSessionMetadataDto(metadata),
     steps: telemetrySteps.map(toSessionStepDto),
+    maze: maze ? toMazeDto(maze) : undefined,
   };
 };
 

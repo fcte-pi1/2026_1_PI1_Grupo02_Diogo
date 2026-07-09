@@ -1,775 +1,87 @@
 \chapter{Lições Aprendidas}
+\vspace{-1cm}
 
-\textcolor{red}{Documentar as lições aprendidas de modo a aperfeiçoar os processos e evitar que os erros e problemas encontrados se repitam em futuros projetos.}
+A documentação das lições aprendidas visa o aprimoramento contínuo dos processos de engenharia, garantindo que os gargalos e problemas identificados durante o ciclo de vida do projeto sejam mitigados em desenvolvimentos futuros.
 
+\section{Lições por Subsistema}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+\begin{itemize}
+    \item \textbf{Estruturas:} A manutenção de um repositório centralizado de arquivos CAD demonstrou-se essencial para evitar retrabalho e falhas de versionamento geométrico. Além disso, a manufatura aditiva (impressão 3D) exigiu iterações preliminares de calibração (ajuste de preenchimento e suportes) até atingir a rigidez ideal do chassi.
+    
+    \item \textbf{Software:} A separação da arquitetura em microsserviços (\textit{frontend}, \textit{backend} e \textit{firmware}) permitiu o desenvolvimento paralelo sem bloqueios mútuos. Aprendemos que o uso de \textit{WebSockets} requer um tratamento rigoroso de reconexão no código para evitar perda de pacotes de telemetria em caso de instabilidade na rede.
+    
+    \item \textbf{Eletrônica:} A prototipagem evidenciou a importância de dimensionar corretamente o espaço físico para os componentes. O processo de soldagem, inicialmente desafiador, foi aprimorado, mitigando problemas de mau contato decorrentes da trepidação dos motores. Conceitos teóricos, como divisores de tensão para os pinos lógicos do ESP32, foram fundamentais para a proteção do circuito.
+    
+    \item \textbf{Energia:} O cálculo prévio do balanço energético (\textit{budget} de potência) foi crucial. A escolha adequada do \textit{pack} de baterias de lítio atendeu à demanda dos motores de tração e da eletrônica lógica, evitando quedas de tensão abruptas (\textit{brownouts}) durante os picos de torque.
+\end{itemize}
 
 \section{Análise SWOT}
 
-\textcolor{red}{A análise SWOT (\textit{Strengths}, \textit{Weaknesses}, \textit{Opportunities}, \textit{Threats}) é usada para identificar os pontos fortes e fracos do produto, e as principais oportunidades e ameaças normalmente associadas aos pontos fortes e fracos identificados. Preencha a Tabela \ref{tab:swot} de forma correspondente.}
+A Tabela \ref{tab:swot} sintetiza as Forças, Fraquezas, Oportunidades e Ameaças identificadas durante o desenvolvimento do produto.
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-\begin{table}[ht]
-% \label{tab:swot}
-\centering
-\caption{Análise SWOT do produto.}
-\begin{tabular}{|c|c|c|} \hline
- & \textbf{Pontos fortes} & \textbf{Pontos fracos}  \\ \hline 
-    {\parbox{0.1\textwidth}{ \textbf{Fatores \\ internos}}}  &
-    {\parbox{0.4\textwidth}{ Forças: 
-        \\ \textcolor{red}{Descreva seus diferenciais competitivos: aquilo que faz de você melhor que seus concorrentes.}
-        \begin{itemize}
-            \item Lorem ipsum
-            \item Lorem ipsum
-        \end{itemize} }} & 
-    {\parbox{0.4\textwidth}{ Fraquezas:
-        \\ \textcolor{red}{Descreva suas principais deficiências: aquilo que faz de você pior que seus concorrentes, e pontos a serem melhorados ou revistos.}
-        \begin{itemize}
-            \item Lorem ipsum
-            \item Lorem ipsum
-        \end{itemize} }}\\ \hline
-    {\parbox{0.1\textwidth}{ \textbf{Fatores \\ externos}}}  &
-    {\parbox{0.4\textwidth}{ Oportunidades:
-        \\ \textcolor{red}{Descreva as principais oportunidades identificadas: eventos potenciais que podem gerar grandes benefícios.}
-        \begin{itemize}
-            \item Lorem ipsum 
-            \item Lorem ipsum
-        \end{itemize} }} & 
-    {\parbox{0.4\textwidth}{ Ameaças:
-        \\ \textcolor{red}{Descreva as principais ameaças identificadas: eventos potenciais que podem causar um grande estrago ao seu negócio.}
-        \begin{itemize}
-            \item Lorem ipsum 
-            \item Lorem ipsum
-        \end{itemize} }}\\ \hline
-\end{tabular}
-\label{tab:swot}
+\begin{table}[H]
+    \centering
+    \small
+    \renewcommand{\arraystretch}{1.4}
+    \caption{Análise SWOT do ecossistema do Micromouse.}
+    \label{tab:swot}
+    \begin{tabularx}{\linewidth}{|c|X|X|}
+        \hline
+        & \textbf{Fatores Positivos} & \textbf{Fatores Negativos} \\ \hline
+        
+        \makecell{\textbf{Ambiente} \\ \textbf{Interno}} & 
+        \textbf{Forças:} \textit{Design} compacto e temático, permitindo baixo centro de gravidade, boa distribuição de massa e facilidade na substituição da bateria. & 
+        \textbf{Fraquezas:} Fiação volumosa na placa perfurada, demandando extenso gerenciamento de cabos para evitar atrito físico e mau contato. \\ \hline
+        
+        \makecell{\textbf{Ambiente} \\ \textbf{Externo}} & 
+        \textbf{Oportunidades:} Evolução modular do algoritmo, permitindo a implementação futura de redes neurais ou mapeamento dinâmico estendido. & 
+        \textbf{Ameaças:} Risco contínuo de queima do microcontrolador (ESP32) por picos de corrente reversa ou inversão acidental de polaridade externa. \\ \hline
+    \end{tabularx}
 \end{table}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-\section{Planejado x realizado}
-\subsection{Objetivos}
-\textcolor{red}{Os objetivos foram alcançados? Responda as questões e comente os pontos mais relevantes – até 700 caracteres, considerando os espaços.}
-\subsection{Prazos}
-\textcolor{red}{O projeto foi entregue dentro do prazo? Responda as questões e comente os pontos mais relevantes – até 700 caracteres, considerando os espaços.}
-\subsection{Orçamento}
-\textcolor{red}{O projeto foi entregue dentro do orçamento? Responda as questões e comente os pontos mais relevantes – até 700 caracteres, considerando os espaços.}
-\subsection{Escopo}
-\textcolor{red}{O  projeto atendeu ao escopo? Responda as questões e comente os pontos mais relevantes – até 700 caracteres, considerando os espaços.}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-\section{Projeto}
-\textcolor{red}{Comente os pontos mais relevantes a serem aperfeiçoados ou adotados em próximos projetos.}
-\subsection{Pontos fortes}
-\begin{enumerate}
-	\item \textcolor{red}{Até 200 caracteres, considerando os espaços.}
-	\item \textcolor{red}{Até 200 caracteres, considerando os espaços.}
-	\item \textcolor{red}{Até 200 caracteres, considerando os espaços.}
-	\item \textcolor{red}{Até 200 caracteres, considerando os espaços.}
-\end{enumerate}
-\subsection{Pontos fracos}
-\begin{enumerate}
-	\item \textcolor{red}{Até 200 caracteres, considerando os espaços.}
-	\item \textcolor{red}{Até 200 caracteres, considerando os espaços.}
-	\item \textcolor{red}{Até 200 caracteres, considerando os espaços.}
-	\item \textcolor{red}{Até 200 caracteres, considerando os espaços.}
+\section{Balanço Gerencial (Planejado \textit{vs.} Realizado)}
+
+\begin{description}
+    \item[Objetivos e Escopo:] Atingidos de forma integral. O protótipo validou a integração eletromecânica e navegou autonomamente na pista utilizando a malha de sensoriamento e a transmissão de telemetria.
+    \item[Prazos e Cronograma:] Execução alinhada às datas estipuladas no TAP. A paralelização entre a modelagem CAD e o desenvolvimento web absorveu os atrasos iniciais de montagem.
+    \item[Orçamento:] O projeto manteve-se no limite da margem de contingência. Os custos operacionais com componentes importados e manufatura aditiva seguiram a previsão estabelecida na EAP.
+\end{description}
+
+\section{Análise Crítica do Projeto}
+
+\begin{multicols}{2}
+\noindent \textbf{Pontos Fortes:}
+\begin{enumerate}[noitemsep, topsep=2pt]
+    \item \textit{Design} estrutural otimizado para leveza e estabilidade.
+    \item Alta coesão da equipe nas frentes simultâneas de engenharia.
+    \item Eficácia do ambiente de testes físicos para \textit{debug} ágil do \textit{hardware}.
 \end{enumerate}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-\section{Recomendações para projetos futuros}
-
-\begin{enumerate}
-	\item \textcolor{red}{Até 200 caracteres, considerando os espaços.}
-	\item \textcolor{red}{Até 200 caracteres, considerando os espaços.}
-	\item \textcolor{red}{Até 200 caracteres, considerando os espaços.}
-	\item \textcolor{red}{Até 200 caracteres, considerando os espaços.}
+\columnbreak
+
+\noindent \textbf{Pontos Fracos:}
+\begin{enumerate}[noitemsep, topsep=2pt]
+    \item Adensamento excessivo de jumpers na placa universal.
+    \item Tempo excessivo despendido na confecção manual da pista de testes em MDF.
 \end{enumerate}
+\end{multicols}
 
+\section{Recomendações e Questões em Aberto}
 
+Com base nas observações empíricas, sugere-se para os ciclos subsequentes de desenvolvimento:
+\begin{itemize}
+    \item \textbf{Mecânica:} Implementar trilhos de encaixe rápido na carcaça 3D para facilitar o acesso preventivo à ponte H e aos reguladores.
+    \item \textbf{Proteção Eletrônica:} Adicionar circuitos de roda livre (diodos \textit{flyback}) isolados e fusíveis rápidos para blindar o ESP32 contra correntes de retorno dos motores N20.
+\end{itemize}
 
+\noindent \textbf{Questões Pendentes (Trabalhos Futuros):} A principal pendência do ecossistema reside na \textbf{calibração fina dos encoders magnéticos}. Faz-se necessário um ajuste algorítmico da malha PID para compensar a inércia dos motores e garantir a precisão milimétrica nas guinadas ortogonais de 90° durante as corridas cronometradas de velocidade (\textit{speed run}).
 
+\section{Desempenho da Cadeia de Fornecimento}
 
+A gestão de aquisições operou dentro da normalidade, não registrando fornecedores com desempenho crítico ou abaixo do esperado:
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-\section{Questões em aberto}
-
-\textcolor{red}{Usar caso haja alguma questão pendente em relação às entregas do projeto (Ex.: Requisitos não entregues, melhoria na programação do software, troca de sensores, entre outros.}
-
-\begin{enumerate}
-	\item \textcolor{red}{Até 200 caracteres, considerando os espaços.}
-	\item \textcolor{red}{Até 200 caracteres, considerando os espaços.}
-	\item \textcolor{red}{Até 200 caracteres, considerando os espaços.}
-	\item \textcolor{red}{Até 200 caracteres, considerando os espaços.}
-\end{enumerate}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-\section{Desempenho dos fornecedores}
-
-\subsection{Fornecedores com desempenho acima do esperado}
-\textcolor{red}{Fornecedores que você certamente convidaria para um próximo projeto. Citar AAAA – justificativa. Até 200 caracteres, considerando os espaços.}
-
-\subsection{Fornecedores com desempenho conforme esperado}
-\textcolor{red}{Fornecedores que você provavelmente convidaria para um próximo projeto. Citar AAAA – justificativa. Até 200 caracteres, considerando os espaços.}
-
-\subsection{Fornecedores com desempenho abaixo do esperado}
-\textcolor{red}{Fornecedores que você não convidaria para um próximo projeto. Citar AAAA – justificativa. Até 200 caracteres, considerando os espaços.}
+\begin{description}
+    \item[Acima do esperado (Laboratório de Impressão 3D):] Forneceu o chassi polimérico com excelente acabamento superficial e exatidão dimensional antes do prazo limite, antecipando o cronograma de testes.
+    \item[Conforme o esperado (Comércio Eletrônico B2C):] Os lojistas em \textit{marketplaces} entregaram os microcontroladores, sensores HC-SR04 e módulos LM2596 dentro da janela de \textit{lead time} prevista, sem apresentar índices de refugos de fábrica.
+    \item[Abaixo do esperado (Distribuidor de Componentes Eletrônicos):] Apesar da entrega rápida, os sensores infravermelhos usados na fase final apresentaram defeitos de fábrica, exigindo a substituição de 2 unidades e atrasando a fase de testes de navegação autônoma.
+\end{description}

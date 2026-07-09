@@ -1,5 +1,6 @@
 jest.mock("../../../src/repositories/maze.repository", () => ({
   findOrCreateDefaultMaze: jest.fn(),
+  createMazeSnapshot: jest.fn(),
 }));
 
 jest.mock("../../../src/repositories/session.repository", () => ({
@@ -30,7 +31,7 @@ jest.mock("../../../src/websocket/socket", () =>
 );
 
 import { prisma } from "../../../src/lib/prisma";
-import { findOrCreateDefaultMaze } from "../../../src/repositories/maze.repository";
+import { findOrCreateDefaultMaze, createMazeSnapshot } from "../../../src/repositories/maze.repository";
 import { createConsolidatedSession } from "../../../src/repositories/session.repository";
 import {
   createOrphanSessionStep,
@@ -59,6 +60,7 @@ import {
 } from "../../helpers/telemetry.factory";
 
 const mazeMock = findOrCreateDefaultMaze as jest.Mock;
+const createMazeSnapshotMock = createMazeSnapshot as jest.Mock;
 const createOrphanMock = createOrphanSessionStep as jest.Mock;
 const findOrphansMock = findOrphanSteps as jest.Mock;
 const findOrphansLimitedMock = findOrphanStepsLimited as jest.Mock;
@@ -74,12 +76,18 @@ describe("telemetry.service", () => {
     jest.clearAllMocks();
     resetTelemetryRunContextForTests();
     mazeMock.mockResolvedValue({ id: "maze-1" });
+    createMazeSnapshotMock.mockResolvedValue("maze-snapshot-1");
     transactionMock.mockImplementation(async (callback) => callback({}));
   });
 
   describe("storeTelemetry", () => {
     it("stores valid payload and records orphan step", async () => {
-      const payload = createValidTelemetryPayload({ robotId: "robot-01" });
+      // 🚀 CORREÇÃO TS: Força os literais corretos para evitar que o TS assuma string genérica
+      const payload = createValidTelemetryPayload({ 
+        robotId: "robot-01",
+        modo: "CORRIDA" as const,
+        estado: "EXPLORANDO" as const
+      });
       const created = { id: "raw-1", topic: "rato/telemetria", payload };
       const step = { id: "step-1", stepOrder: 1 };
       createTelemetryMock.mockResolvedValueOnce(created);
@@ -135,7 +143,13 @@ describe("telemetry.service", () => {
     });
 
     it("consolidates session when conclusao is true", async () => {
-      const payload = createValidTelemetryPayload({ conclusao: true, step: 2 });
+      // 🚀 CORREÇÃO TS: Literais mapeados estritamente
+      const payload = createValidTelemetryPayload({ 
+        conclusao: true, 
+        step: 2,
+        modo: "CORRIDA" as const,
+        estado: "EXPLORANDO" as const
+      });
       const created = { id: "raw-4" };
       const step = {
         id: "step-1",
@@ -172,7 +186,11 @@ describe("telemetry.service", () => {
 
   describe("recordOrphanTelemetryStep", () => {
     it("creates orphan step and emits websocket events", async () => {
-      const payload = createValidTelemetryPayload();
+      // 🚀 CORREÇÃO TS: Literais fixados com typecast as const
+      const payload = createValidTelemetryPayload({
+        modo: "DFS" as const,
+        estado: "EXPLORANDO" as const
+      });
       const step = { id: "step-1" };
       const emit = jest.fn();
       createOrphanMock.mockResolvedValueOnce(step);
@@ -181,12 +199,23 @@ describe("telemetry.service", () => {
       const result = await recordOrphanTelemetryStep(payload);
 
       expect(result).toEqual(step);
-      expect(emit).toHaveBeenCalledWith("telemetry:step", step);
-      expect(emit).toHaveBeenCalledWith("telemetry:subscribe", step);
+      // 🚀 CORREÇÃO WEBSOCKET: Agora valida a emissão contendo o objeto de sensores e paredes enriquecidos
+      expect(emit).toHaveBeenCalledWith(
+        "telemetry:step", 
+        expect.objectContaining({
+          id: "step-1",
+          sensors: expect.any(Object),
+          walls: expect.any(Object)
+        })
+      );
     });
 
     it("continues when websocket server is not initialized", async () => {
-      const payload = createValidTelemetryPayload();
+      // 🚀 CORREÇÃO TS: Literais blindados
+      const payload = createValidTelemetryPayload({
+        modo: "DFS" as const,
+        estado: "EXPLORANDO" as const
+      });
       const step = { id: "step-1" };
       createOrphanMock.mockResolvedValueOnce(step);
       socketMock.getSocket.mockImplementation(() => {
@@ -202,9 +231,14 @@ describe("telemetry.service", () => {
 
   describe("consolidateSession", () => {
     it("returns null when there are no orphan steps", async () => {
+      // 🚀 CORREÇÃO TS: Literais blindados
+      const payload = createValidTelemetryPayload({
+        modo: "DFS" as const,
+        estado: "EXPLORANDO" as const
+      });
       findOrphansMock.mockResolvedValueOnce([]);
 
-      const result = await consolidateSession(createValidTelemetryPayload());
+      const result = await consolidateSession(payload);
 
       expect(result).toBeNull();
       expect(createConsolidatedMock).not.toHaveBeenCalled();
@@ -225,7 +259,10 @@ describe("telemetry.service", () => {
         id: "step-2",
         stepOrder: 2,
         timestamp: new Date("2026-01-01T00:00:10.000Z"),
+        posX: 1,
+        posY: 0,
         voltage: 11.5,
+        current: 180,
       };
       findOrphansMock.mockResolvedValueOnce([firstStep, lastStep]);
       createConsolidatedMock.mockResolvedValueOnce({ id: "session-1" });
@@ -233,16 +270,26 @@ describe("telemetry.service", () => {
       jest.spyOn(console, "log").mockImplementation(() => {});
 
       const result = await consolidateSession(
-        createValidTelemetryPayload({ modo: "FLOOD FILL", estado: "FINALIZADO" })
+        createValidTelemetryPayload({ modo: "FLOOD FILL" as const, estado: "FINALIZADO" as const })
       );
 
       expect(result).toBe("session-1");
+      expect(createMazeSnapshotMock).toHaveBeenCalledWith(
+        "maze-1",
+        expect.stringContaining("Corrida"),
+        undefined,
+        expect.any(Object),
+      );
       expect(createConsolidatedMock).toHaveBeenCalledWith(
         expect.objectContaining({
           algorithm: "FLOOD FILL",
           mode: "FINALIZADO",
-          mazeId: "maze-1",
+          mazeId: "maze-snapshot-1",
           durationMs: 10000,
+          avgSpeed: 1.8,
+          initialVoltage: 12,
+          finalVoltage: 11.5,
+          totalDrainMah: 190,
         }),
         expect.any(Object)
       );

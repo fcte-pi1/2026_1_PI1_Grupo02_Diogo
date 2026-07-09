@@ -1,10 +1,10 @@
-#include "./conexoes.h"
+#include "conexoes.h"
 
 // -- Definições dos globais declarados (extern) em conexoes.h -----------------
-const char *WIFI_SSID = "SUA_REDE_WIFI";      // troque para o wifi conectado ao computador e à ESP32
-const char *WIFI_PASSWORD = "SUA_SENHA_WIFI"; // sua senha
+const char *WIFI_SSID = "Alguém em algum lugar"; // troque para o wifi conectado ao computador e à ESP32
+const char *WIFI_PASSWORD = "87654321"; // sua senha
 
-const char *MQTT_BROKER = "192.168.x.x"; // IP do broker MQTT (Docker) na sua rede
+const char *MQTT_BROKER = "10.60.11.48"; // IP do broker MQTT (Docker) na sua rede
 const int MQTT_PORT = 1883;
 
 WiFiClient wifiClient;
@@ -27,20 +27,30 @@ void connectWiFi()
     Serial.printf("\nWiFi conectado! IP: %s\n", WiFi.localIP());
 }
 
+void initMQTT()
+{
+    // Configura servidor e client ID único (baseado no MAC) uma única vez
+    mqttClient.setServer(MQTT_BROKER, MQTT_PORT);
+}
+
 void connectMQTT()
 {
-    mqttClient.setServer(MQTT_BROKER, MQTT_PORT);
     if (!mqttClient.connected())
     {
-        Serial.print("Tentando conexão MQTT...");
-        if (mqttClient.connect("ESP32Client"))
+        // Client ID único baseado no endereço MAC evita rejeição do broker
+        // quando o ESP32 reinicia rápido e tenta reconectar com o mesmo ID
+        char clientId[32];
+        snprintf(clientId, sizeof(clientId), "ESP32-%06llX",
+                 (unsigned long long)(ESP.getEfuseMac() & 0xFFFFFF));
+
+        Serial.printf("Tentando conexão MQTT (id=%s)...\n", clientId);
+        if (mqttClient.connect(clientId))
         {
             Serial.println("Conectado com sucesso!");
         }
         else
         {
-            Serial.print("Falha, rc=");
-            Serial.println(mqttClient.state());
+            Serial.printf("Falha, rc=%d\n", mqttClient.state());
         }
     }
 }

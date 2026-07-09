@@ -9,6 +9,10 @@
 # node
 node_modules/
 
+# Test coverage
+coverage/
+**/coverage/
+
 
 # LaTeX
 

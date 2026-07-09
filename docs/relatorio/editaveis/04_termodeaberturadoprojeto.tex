@@ -1,124 +1,73 @@
-\chapter{Termo de Abertura do Projeto}
+\chapter[Termo de Abertura do Projeto]{Termo de Abertura do Projeto}
+\vspace{-1cm}
 
-
-\section{Dados do projeto}
+\section{Dados do Projeto}
 \begin{description}
     \item [Nome do Projeto:] RATOBÔ
-    \item [Data de abertura:] 11/05/2026
+    \item [Data de Abertura:] 11/05/2026
     \item [Código:] 1-A
-    \item [Patrocinador:] Universidade de Brasília
-    % \item [Responsável:] ???
-    \item [Gerente:] Gabriel Alves de Araujo/241025523/241025523@aluno.unb.br/(61) 98469-7666
+    \item [Patrocinador:] Universidade de Brasília (UnB)
+    \item [Gerente:] Gabriel Alves de Araujo / Matrícula: 241025523 / E-mail: 241025523@aluno.unb.br / Contato: (61) 98469-7666
 \end{description}
 
 \section{Objetivos}
-O objetivo principal deste projeto é desenvolver e gerenciar a construção de um robô Micromouse autônomo, capaz de mapear e resolver fisicamente labirintos de diferentes dimensões, integrado a uma aplicação web para armazenamento e exibição de dados de telemetria em tempo real, utilizando a gestão por Estrutura Analítica do Projeto (EAP).
+O objetivo principal é desenvolver um robô \textit{Micromouse} autônomo para mapear e resolver labirintos, integrado a uma aplicação web de telemetria em tempo real, sob gestão via Estrutura Analítica do Projeto (EAP).
 
-Para a correta definição, seguem os objetivos detalhados sob a regra SMART:
+Para fins de rastreabilidade, os objetivos específicos seguem a metodologia SMART:
 
 \begin{description}
-    \item [\textit{Specific} (específico):] Desenvolver um sistema robótico autônomo (máximo de 25 cm de comprimento ou largura) capaz de navegar em labirintos de dimensões 4x4, 8x8 e 16x16 sem pular, voar, escalar ou danificar a pista. O projeto engloba a criação de uma interface web conectada a um banco de dados (Modelo Entidade-Relacionamento) para exibir e armazenar em tempo real a telemetria da corrida: tipo de labirinto, trajeto por coordenadas (x,y), consumo de energia, velocidade média, tempo de conclusão e status de sucesso. Todo o projeto será versionado no GitHub seguindo padrões de repositório e controle de tarefas por \textit{issues}.    
-    \item [\textit{Measurable} (mensurável):] O sucesso será atestado pela capacidade do robô em completar os três tamanhos de labirintos de forma totalmente autônoma, pelo armazenamento íntegro dos dados de "Desafio" e "Trajeto" no banco de dados e pela construção física da pista de testes 4x4 com chão preto e paredes brancas de 5 cm com topos vermelhos.
-    \item [\textit{Agreed} (acordado):] O escopo e os requisitos técnicos deste projeto foram definidos em comum acordo entre os membros da equipe e estão plenamente alinhados com as diretrizes e competências técnicas exigidas pela disciplina de Projeto Integrador 1 (PI1). O plano de trabalho recebeu o aval do professor.
-    \item [\textit{Realistic} (realista):] A execução do projeto fundamenta-se na utilização de componentes de baixo custo e alta disponibilidade no mercado nacional, tornando a construção financeiramente viável. A complexidade do algoritmo é compatível com o cronograma acadêmico e com o nível de conhecimento técnico da equipe, prevendo a confecção de um labirinto modular para testes preliminares antes da avaliação oficial.
-    \item [\textit{Time Bound} (Limitado no tempo):]O desenvolvimento está estritamente vinculado ao calendário acadêmico do semestre letivo. O cronograma estabelece que a parte que vamos usar nos testes esteja pronto um pouco antes, garantindo que o protótipo esteja plenamente funcional para a bateria de testes oficiais no labirinto. A entrega final, incluindo o ratinho e a documentação técnica completa, ocorrerá impreterivelmente na data estipulada para a apresentação final da disciplina.
+    \item [\textit{Specific} (Específico):] Criar um robô autônomo (máx. 25 cm) para navegar em malhas $4\times4$, $8\times8$ e $16\times16$ sem danificar a pista. Inclui interface web e banco de dados para telemetria instantânea (coordenadas, energia, velocidade, tempo e status).
+    \item [\textit{Measurable} (Mensurável):] Resolução autônoma dos três labirintos, integridade dos registros de "Desafio" e "Trajeto" no banco de dados e construção de uma pista de testes física $4\times4$ (chão preto, paredes brancas de 5 cm, topos vermelhos).
+    \item [\textit{Agreed} (Acordado):] Escopo e requisitos alinhados entre a equipe multidisciplinar e as competências exigidas pela disciplina de Projeto Integrador 1 (PI1).
+    \item [\textit{Realistic} (Realista):] Viabilidade financeira assegurada pelo uso de componentes de baixo custo. A complexidade algorítmica é compatível com o nível técnico da equipe e com o cronograma de desenvolvimento.
+    \item [\textit{Time Bound} (Limitado no Tempo):] Entregas incrementais vinculadas ao calendário acadêmico, garantindo protótipo e testes operacionais para a avaliação e entrega final na data estipulada pela disciplina.
 \end{description}
 
-
-\section{Mercado-alvo}
-
-O mercado-alvo deste projeto é composto por estudantes e profissionais da área acadêmica, incluindo professores e pesquisadores, além de instituições de ensino, que usufruem diretamente dos produtos e resultados gerados pelo desenvolvimento do micromouse e do sistema de monitoramento associado.
-De forma mais específica, destacam-se:
-
+\section{Mercado-Alvo}
+O ecossistema foca em estudantes, professores e pesquisadores da área tecnológica:
 \begin{itemize}
-
-    \item Estudantes de engenharia e áreas tecnológicas (como Engenharia de Software, Elétrica, Computação e Mecatrônica), que utilizam o projeto como ferramenta prática de aprendizado.
-    \item Instituições de ensino (universidades, faculdades e escolas técnicas), que podem adotar o micromouse como recurso didático.
-    \item Professores e pesquisadores, que utilizam o projeto para experimentação e avaliação de algoritmos.    
-
+    \item \textbf{Estudantes (Engenharias):} Ferramenta prática de aprendizado interdisciplinar e validação de sistemas de controle.
+    \item \textbf{Instituições de Ensino:} Plataforma modular \textit{open-source} para uso como recurso didático em laboratórios de automação.
+    \item \textbf{Pesquisadores:} Base de hardware e simulador web para experimentação e avaliação comparativa de algoritmos de inteligência computacional.
 \end{itemize}
 
-\section{Requisitos}
+\section{Requisitos do Sistema}
+A Tabela \ref{tab:requisitos_micromouse} consolida as necessidades de negócio e restrições técnicas mapeadas para o projeto.
 
 \begin{table}[H] 
     \centering
-    \caption{Requisitos do sistema Micromouse}
+    \small
+    \caption{Requisitos funcionais (RF) e não funcionais (RNF) do sistema Micromouse.}
     \label{tab:requisitos_micromouse}
-    \renewcommand{\arraystretch}{1.3} 
-    \begin{tabular}{|l|l|p{8.5cm}|}
+    \renewcommand{\arraystretch}{1.3}
+    \begin{tabularx}{\linewidth}{|l|l|X|}
         \hline
-        \textbf{Código} & \textbf{Categoria} & \textbf{Descrição do Requisito} \\
-        \hline
-        RF-01 & Navegação Autônoma & O micromouse deve resolver três labirintos de tamanhos diferentes ($4\times4$, $8\times8$ e $16\times16$) de forma totalmente autônoma, descobrindo paredes, mapeando o caminho e detectando a chegada ao centro. \\
-        \hline
-        RF-02 & Interface Web (Telemetria) & O sistema deve exibir os dados de telemetria em tempo real na interface web, incluindo: tipo do labirinto, trajeto, consumo de bateria, velocidade média, tempo e se o desafio foi cumprido (S/N). \\
-        \hline
-        RF-03 & Banco de Dados & O sistema deve armazenar os dados finais das execuções em um banco de dados ao término de cada desafio. \\
-        \hline
-        RF-04 & Consulta de Histórico & A aplicação web deve permitir consultar o banco de dados para exibir informações detalhadas de um labirinto específico ou de todos os labirintos armazenados. \\
-        \hline
-        RNF-01 & Dimensões do Robô & O micromouse não deve exceder 25 cm de comprimento ou largura (não há restrições de altura). \\
-        \hline
-        RNF-02 & Restrições de Locomoção & O robô não pode voar, pular, escalar, utilizar propulsão por combustão/foguete, nem causar qualquer tipo de dano ao labirinto. \\
-        \hline
-        RNF-03 & Inalterabilidade & Não é permitido alterar o código ou a memória do labirinto durante a corrida. Intervenções só são permitidas em caso de colisão ou mau funcionamento. \\
-        \hline
-        RNF-04 & Pista de Testes & O grupo deve desenvolver uma pista de testes física $4\times4$ com chão preto e paredes brancas de 5 cm de altura com topos vermelhos, seguindo as dimensões oficiais. \\
-        \hline
-        RNF-05 & Autoria e Desenvolvimento & O sistema deve ser integralmente desenvolvido pelos alunos utilizando os conhecimentos das engenharias da FCTE, sendo proibido o uso de soluções prontas comerciais ou plágio. \\
-        \hline
-        RNF-06 & Gestão e Repositório & O gerenciamento do projeto e o versionamento de código (código-fonte, CAD, esquemáticos) devem utilizar o GitHub com um repositório padronizado e controle de tarefas através de \textit{issues} limitadas a dois membros por \textit{issue}. \\
-        \hline
-    \end{tabular}
+        \textbf{Cód.} & \textbf{Categoria} & \textbf{Descrição do Requisito} \\ \hline
+        RF-01 & Navegação Autônoma & Resolver labirintos ($4\times4$, $8\times8$, $16\times16$) autonomamente, mapeando paredes e detectando o centro. \\ \hline
+        RF-02 & Interface Web & Exibir telemetria em tempo real: tipo de labirinto, trajeto, bateria, velocidade, tempo e status de conclusão. \\ \hline
+        RF-03 & Banco de Dados & Armazenar os dados finais de cada execução ao término do desafio. \\ \hline
+        RF-04 & Histórico & Permitir consulta na aplicação web detalhando corridas armazenadas. \\ \hline
+        RNF-01 & Dimensões & O robô não deve exceder 25 cm de comprimento/largura (sem restrição de altura). \\ \hline
+        RNF-02 & Locomoção & Proibido voar, pular, escalar, usar combustão ou danificar o labirinto. \\ \hline
+        RNF-03 & Inalterabilidade & Proibido alterar código/memória durante a corrida (exceto em falhas críticas). \\ \hline
+        RNF-04 & Pista Física & Construir pista $4\times4$ (chão preto, paredes brancas de 5 cm com topos vermelhos). \\ \hline
+        RNF-05 & Autoria & Desenvolvimento integral pela equipe (proibido plágio ou soluções prontas). \\ \hline
+        RNF-06 & Gestão (GitHub) & Versionamento e controle de tarefas via \textit{issues} (máx. 2 membros por \textit{issue}). \\ \hline
+    \end{tabularx}
 \end{table}
 
 \section{Justificativa}
+O projeto consolida de forma prática os conceitos multidisciplinares da FCTE, unindo Engenharia de Software (arquitetura web e conectividade), Eletrônica (microcontroladores), Energia (eficiência) e Aeroespacial (cinemática). Além disso, preenche uma lacuna didática ao oferecer uma plataforma \textit{open-source} de baixo custo que, diferentemente de kits comerciais restritos, exige o domínio da construção do protótipo, gerando um ecossistema documentado para pesquisas em robótica universitária.
 
-O projeto do \textit{Micromouse} surgiu como uma oportunidade de 
-desenvolver, na prática, um sistema robótico autônomo completo, 
-integrando hardware, software embarcado e uma interface web de 
-monitoramento. Para estudantes de engenharia, esse tipo de projeto 
-é valioso porque exige a aplicação simultânea de conhecimentos de 
-diferentes áreas, algo que dificilmente acontece em disciplinas 
-isoladas. O desenvolvimento do sistema serve como ponto de encontro entre
-as engenharias de Software, Eletrônica, Energia e Aeroespacial
-presentes na FCTE.
-
-Além disso, o \textit{Micromouse} pode ser utilizado como recurso 
-didático por instituições de ensino, já que combina conceitos de 
-algoritmos, eletrônica, controle e comunicação de dados em um único 
-sistema tangível. Professores e pesquisadores também se beneficiam 
-do projeto ao utilizá-lo para experimentação e avaliação de 
-diferentes abordagens de navegação autônoma.
-
-Portanto, o projeto se justifica por gerar um produto com aplicação 
-direta no contexto acadêmico, desenvolvido inteiramente pela equipe 
-sem o uso de soluções prontas, o que reforça o aprendizado 
-interdisciplinar proposto pela disciplina de Projeto Integrador de 
-Engenharia 1.
-
-\section{Indicadores}
-
+\section{Indicadores de Sucesso}
+Para fins de avaliação técnica e acadêmica, estabelecem-se os seguintes indicadores:
 \begin{enumerate}
-    \item Número de alunos matriculados em cursos de engenharia.
-    \item Relevância de competições de micromouse ao redor do mundo.
-    \item Número de cursos de engenharia envolvidos no projeto.
-    \item Quantidade de alunos interessados em robótica universitária.
-    \item Número de faculdades que podem utilizar o projeto para fins didáticos.
-    \item Crescimento de robótica e automação no setor educacional e industrial.
-    \item Número de empresas que valorizam profissionais com capacidade de trabalhar em grupo.
-    \item Quantidade de estudantes com dúvidas de como desenvolver um projeto de ponta a ponta.
-    \item Número de diferentes ferramentas educacionais e profissionais utilizadas.
-    \item Necessidade de profissionais capacitados em programação embarcada, controle e automação. 
-    
+    \item Índice de assertividade do mapeamento espacial nas malhas $4\times4$, $8\times8$ e $16\times16$.
+    \item Tempo médio de resposta do \textit{pipeline} de telemetria (\textit{delay} WebSocket).
+    \item Taxa de integridade dos pacotes persistidos no banco de dados PostgreSQL.
+    \item Quantidade de colisões físicas registradas por ciclo de corrida.
+    \item Erro percentual da odometria e sensores frente às dimensões reais da pista.
+    \item Eficiência energética (Ah) em função da velocidade média dos motores.
+    \item Índice de cobertura de testes automatizados (\textit{coverage}) alcançado.
+    \item Vazão de tarefas (\textit{throughput}) medida pelo fechamento de \textit{issues} no GitHub.
 \end{enumerate}
-
-% \section{Aprovações}
-
-% \begin{tabular}{ l l }
-%   \textbf{Patrocinador:} & \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_ \\
-%   & \\
-%   \textbf{CEO:} & \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_ \\
-%   & \\
-%   \textbf{Gerente:} & \_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_\_ \\
-% \end{tabular}

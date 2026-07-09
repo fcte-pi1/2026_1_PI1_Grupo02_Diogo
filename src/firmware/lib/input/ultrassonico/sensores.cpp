@@ -158,3 +158,4 @@ float getDistanciaDireita() { return _distD; }
 bool temParedeFrente() { return _distF < DISTANCIA_PAREDE_CM; }
 bool temParedeEsquerda() { return _distE < DISTANCIA_PAREDE_CM; }
 bool temParedeDireita() { return _distD < DISTANCIA_PAREDE_CM; }
+

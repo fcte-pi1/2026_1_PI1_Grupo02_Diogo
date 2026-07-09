@@ -1,50 +1,58 @@
+\begin{landscape}
+
 \chapter{Orçamento}
-
-\begin{table}[htpb]
-\begin{center}
-\caption{Orçamento geral.}
-\begin{tabular}{|c|c|c|}
+\vspace{-1cm}
+\begin{table}[H]
+\centering
+\caption{Orçamento geral por categoria estrutural.}
+\label{tab:orcamento_geral}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabular}{|l|c|c|}
 \hline
-\textbf{Geral}          & \textbf{Previsto (R\$)} & \textbf{Realizado (R\$)} \\ \hline
-Matéria-prima           & 29,90                   & ----                     \\ \hline
-Componentes eletrônicos & 258,63                  & 258,63                   \\ \hline
-Componentes elétricos   & 100,90                  & ----                     \\ \hline
-Montagem                & 68,14                   & ----                     \\ \hline
+\textbf{Categoria} & \textbf{Custo Previsto (R\$)} & \textbf{Custo Realizado (R\$)} \\ \hline
+Matéria-prima & 29,90 & 59,90 \\ \hline
+Componentes Eletrônicos & 258,63 & 469,32 \\ \hline
+Componentes Elétricos & 100,50 & 100,50 \\ \hline
+Montagem e Manufatura & 68,14 & 91,90 \\ \hline
+\textbf{Custo Total Estimado} & \textbf{457,17} & \textbf{721,62} \\ \hline
 \end{tabular}
-\end{center}
 \end{table}
 
-\begin{table}[htpb]
-\begin{center}
-\footnotesize
-\setlength{\tabcolsep}{3pt}
+\vspace{0.5cm}
 
-\caption{Orçamento por aquisição.}
-
-\begin{tabular}{|c|c|c|c|c|}
+\begin{table}[H]
+\centering
+\small
+\caption{Detalhamento de orçamento por aquisição de item ou serviço.}
+\label{tab:orcamento_detalhado}
+\renewcommand{\arraystretch}{1.3}
+\begin{tabularx}{\linewidth}{|X|l|c|c|l|}
 \hline
-\textbf{Item ou serviço} & \textbf{Tipo} & \textbf{Previsto (R\$)} & \textbf{Realizado (R\$)} & \textbf{Responsável} \\ \hline
-
-Sensores HC-SR04                    & Comp. eletrônico & (3x15,80)47,40  & 47,40  & Guilherme     \\ \hline
-Modulo Abaixador Tensao(LM2596)     & Comp. eletrônico & 12,50           & 12,50  & Guilherme     \\ \hline
-CHAVE GANGORRA 3T (KCD1-102)        & Comp. eletrônico & (2x0,79)1,58    & 1,58   & Guilherme     \\ \hline
-Ponte H - MX1508                    & Comp. eletrônico & 7,90            & 7,90   & Guilherme     \\ \hline
-Buzzer 5V (Ativo)                   & Comp. eletrônico & (2x5,50)11,00   & 11,00  & Guilherme     \\ \hline
-Sensor de Tensão (0 - 25VDC)        & Comp. eletrônico & 4,50            & 4,50   & Guilherme     \\ \hline
-LEDS VERMELHOS (5mm)                & Comp. eletrônico & (6x0,18)1,08    & 1,08   & Guilherme     \\ \hline
-Motores Dc 6v N20 750 Rpm           & Comp. eletrônico & (2x66,90)133,80 & 133,80 & Gabriel       \\ \hline
-ESP32                               & Comp. eletrônico & 38,87           & 38,87  & Gabriel       \\ \hline
-Componentes eletrônicos (geral)     & Comp. eletrônico & ---             & 11,22  & Pedro Côrtes  \\ \hline
-Bateria 12v 2000mAh (com carregador)& Comp. elétrico   & 99,90           & 99,90  & Marco Antônio \\ \hline
-Fusível                             & Comp. elétrico   & (2x0,30)0,60    & 0,60    & Guilherme     \\ \hline
-PLACA PERFURADA (10X15CM)           & Matéria-prima    & 19,90           & 19,90  & Guilherme     \\ \hline
-Madeira (arena)                     & Matéria-prima    & 10,00           & 40,00    & Paola         \\ \hline
-Roda com pneu                       & Montagem         & (2x10,90)21,80  & 24,90  & Pedro Côrtes  \\ \hline
-Caster Ball                         & Montagem         & 8,99            & ---    & Pedro Côrtes  \\ \hline
-Suporte dos motores                 & Montagem         & (2x3,90)7,80    & 5,00    & Pedro Côrtes  \\ \hline
-Parafusos                           & Montagem         & 19,55           & 15,00  & Pedro Côrtes  \\ \hline
-Impressão 3D                        & Montagem         & 10,00           & 47,00  & Pedro Côrtes  \\ \hline
-
-\end{tabular}
-\end{center}
+\textbf{Item ou Serviço} & \textbf{Categoria} & \textbf{Previsto (R\$)} & \textbf{Realizado (R\$)} & \textbf{Responsável} \\ \hline
+Sensores HC-SR04 (3 un.) & Comp. Eletrônico & 47,40 & 47,40 & Guilherme \\ \hline
+Módulo Step-Down LM2596 & Comp. Eletrônico & 12,50 & 12,50 & Guilherme \\ \hline
+Chave Gangorra 3T KCD1-102 (2 un.) & Comp. Eletrônico & 1,58 & 1,58 & Guilherme \\ \hline
+Ponte H MX1508 & Comp. Eletrônico & 7,90 & 7,90 & Guilherme \\ \hline
+Buzzer Ativo 5V (2 un.) & Comp. Eletrônico & 11,00 & 11,00 & Guilherme \\ \hline
+Sensor de Tensão 0-25VDC & Comp. Eletrônico & 4,50 & 4,50 & Guilherme \\ \hline
+LEDs Vermelhos 5mm (6 un.) & Comp. Eletrônico & 1,08 & 1,08 & Guilherme \\ \hline
+Motor DC 6V N20 750 RPM (2 un.) & Comp. Eletrônico & 133,80 & 133,80 & Gabriel \\ \hline
+ESP32 DevKit V1 (un. original) & Comp. Eletrônico & 38,87 & 38,87 & Gabriel \\ \hline
+ESP32 DevKit V1 (reposição — queima) & Comp. Eletrônico & 0,00 & 38,87 & Gabriel \\ \hline
+Sensor VL53L0X ToF (2 un. com defeito de fábrica) & Comp. Eletrônico & 0,00 & 72,00 & Gabriel \\ \hline
+Sensor VL53L0X ToF (2 un. funcionais) & Comp. Eletrônico & 0,00 & 37,00 & Gabriel \\ \hline
+Conectores Molex e Switchers & Comp. Eletrônico & 0,00 & 51,60 & Gabriel \\ \hline
+Componentes diversos (miscelânea) & Comp. Eletrônico & 0,00 & 11,22 & Pedro Côrtes \\ \hline
+Bateria 12V 2000mAh c/ Carregador & Comp. Elétrico & 99,90 & 99,90 & Marco Antônio \\ \hline
+Fusível (2 un.) & Comp. Elétrico & 0,60 & 0,60 & Guilherme \\ \hline
+Placa Perfurada Universal 10x15cm & Matéria-prima & 19,90 & 19,90 & Guilherme \\ \hline
+Madeira MDF (Pista e Arena) & Matéria-prima & 10,00 & 40,00 & Paola \\ \hline
+Roda com Pneu (2 un.) & Montagem & 21,80 & 24,90 & Pedro Côrtes \\ \hline
+Caster Ball (Roda Boba) & Montagem & 8,99 & 0,00 & Pedro Côrtes \\ \hline
+Suporte dos Motores N20 (2 un.) & Montagem & 7,80 & 5,00 & Pedro Côrtes \\ \hline
+Parafusos e Fixadores & Montagem & 19,55 & 15,00 & Pedro Côrtes \\ \hline
+Serviço de Impressão 3D & Montagem & 10,00 & 47,00 & Pedro Côrtes \\ \hline
+\end{tabularx}
 \end{table}
+
+\end{landscape}

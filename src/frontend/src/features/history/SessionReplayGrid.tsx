@@ -1,46 +1,94 @@
-import type { SessionStep } from "../../types/session";
+import { useMemo } from "react";
+import { MazeGrid } from "../../components/MazeGrid";
+import type { MazeData, SessionStep } from "../../types/session";
 
-const GRID_SIZE = 8;
+const DEFAULT_GRID_SIZE = 16;
+/** Sessões antigas do TestView às vezes apontavam para o maze padrão 16x16. */
+const MAX_REPLAY_GRID_SIZE = 8;
 
 interface SessionReplayGridProps {
   steps: SessionStep[];
   activeIndex: number;
+  maze?: MazeData;
 }
 
-export function SessionReplayGrid({ steps, activeIndex }: SessionReplayGridProps) {
+function resolveReplaySize(
+  maze: MazeData | undefined,
+  steps: SessionStep[],
+): { width: number; height: number } {
+  const configuredWidth = maze?.width ?? DEFAULT_GRID_SIZE;
+  const configuredHeight = maze?.height ?? DEFAULT_GRID_SIZE;
+
+  const maxStepX = steps.reduce((max, step) => Math.max(max, step.posX), 0);
+  const maxStepY = steps.reduce((max, step) => Math.max(max, step.posY), 0);
+
+  // Se o maze veio 16x16 mas o trajeto cabe em 8x8 (TestView), encolhe o replay.
+  const looksLikeOversizedDefault =
+    configuredWidth > MAX_REPLAY_GRID_SIZE ||
+    configuredHeight > MAX_REPLAY_GRID_SIZE;
+
+  if (
+    looksLikeOversizedDefault &&
+    maxStepX < MAX_REPLAY_GRID_SIZE &&
+    maxStepY < MAX_REPLAY_GRID_SIZE
+  ) {
+    return { width: MAX_REPLAY_GRID_SIZE, height: MAX_REPLAY_GRID_SIZE };
+  }
+
+  return {
+    width: Math.min(configuredWidth, Math.max(DEFAULT_GRID_SIZE, maxStepX + 1)),
+    height: Math.min(
+      configuredHeight,
+      Math.max(DEFAULT_GRID_SIZE, maxStepY + 1),
+    ),
+  };
+}
+
+export function SessionReplayGrid({
+  steps,
+  activeIndex,
+  maze,
+}: SessionReplayGridProps) {
   const active = steps[activeIndex];
-  const visitedKeys = new Set(
-    steps.slice(0, activeIndex + 1).map((s) => `${s.posX},${s.posY}`)
+  const replayedSteps = steps.slice(0, activeIndex + 1);
+  const { width, height } = useMemo(
+    () => resolveReplaySize(maze, steps),
+    [maze, steps],
   );
 
-  return (
-    <div
-      className="grid gap-1 w-full max-w-sm mx-auto p-3 bg-surface-container-high/30 border border-outline-variant/20"
-      style={{ gridTemplateColumns: `repeat(${GRID_SIZE}, minmax(0, 1fr))` }}
-      aria-label="Mapa do replay"
-    >
-      {Array.from({ length: GRID_SIZE * GRID_SIZE }, (_, cellIndex) => {
-        const x = cellIndex % GRID_SIZE;
-        const y = Math.floor(cellIndex / GRID_SIZE);
-        const key = `${x},${y}`;
-        const isRobot = active?.posX === x && active?.posY === y;
-        const isTrail = visitedKeys.has(key) && !isRobot;
+  const robotRotation = useMemo(() => {
+    if (activeIndex === 0) return 0;
+    const curr = steps[activeIndex];
+    const prev = steps[activeIndex - 1];
+    const dx = curr.posX - prev.posX;
+    const dy = curr.posY - prev.posY;
 
-        return (
-          <div
-            key={key}
-            className={[
-              "aspect-square min-h-[22px] border border-outline-variant/10 transition-colors duration-200",
-              isRobot
-                ? "bg-primary border-primary shadow-[0_0_14px] shadow-primary/50 scale-110 z-10"
-                : isTrail
-                  ? "bg-primary/25 border-primary/30"
-                  : "bg-surface-container-lowest/50",
-            ].join(" ")}
-            title={isRobot ? `Robô em (${x}, ${y})` : undefined}
-          />
-        );
-      })}
+    if (dx === 0 && dy > 0) return 0;
+    if (dx > 0 && dy === 0) return 90;
+    if (dx === 0 && dy < 0) return 180;
+    if (dx < 0 && dy === 0) return 270;
+    return 0;
+  }, [steps, activeIndex]);
+
+  const visibleCells = useMemo(() => {
+    if (!maze?.cells?.length) return [];
+    return maze.cells.filter(
+      (cell) => cell.posX < width && cell.posY < height,
+    );
+  }, [maze?.cells, width, height]);
+
+  return (
+    <div className="w-full h-full max-w-full max-h-full min-h-0 flex items-center justify-center p-2 overflow-auto">
+      <MazeGrid
+        cells={visibleCells}
+        steps={replayedSteps}
+        currentX={active?.posX ?? 0}
+        currentY={active?.posY ?? 0}
+        robotRotation={robotRotation}
+        width={width}
+        height={height}
+        ariaLabel="Mapa do replay"
+      />
     </div>
   );
 }

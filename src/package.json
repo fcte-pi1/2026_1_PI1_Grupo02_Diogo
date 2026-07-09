@@ -1,8 +1,9 @@
 {
-  "dependencies": {
-    "coverage": "^0.4.1"
-  },
-  "devDependencies": {
-    "@vitest/coverage-v8": "^4.1.6"
+  "name": "rato-telemetria",
+  "private": true,
+  "scripts": {
+    "test:coverage": "npm run test:coverage --prefix backend && npm run test:coverage --prefix frontend",
+    "test:coverage:backend": "npm run test:coverage --prefix backend",
+    "test:coverage:frontend": "npm run test:coverage --prefix frontend"
   }
 }
